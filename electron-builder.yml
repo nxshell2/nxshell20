@@ -1,0 +1,43 @@
+appId: org.nxshell.shell
+productName: NxShell
+copyright: Copyright © 2020-2021 NxShell Team
+artifactName: ${productName}-${arch}-${os}-${version}-${env.buildTimes}.${ext}
+electronVersion: 43.2.0
+extraResources:
+  - from: pack/native/node_modules
+    to: node_modules
+  - from: build/resources/nxshell.png
+    to: nxshell.png
+files:
+  - filter: "!native"
+directories:
+  buildResources: build/resources
+  output: dist/apppackage
+  app: pack
+target:
+  - target: zip
+win:
+  icon: build/resources/appx/Square512x512Logo.png
+  target:
+    - appx
+    - nsis
+appx:
+  publisherDisplayName: nxshell
+  identityName: 64354nxshell.nxshell
+  publisher: CN=13CA10C8-3E4F-483D-844A-FB63CF8E93F7
+  applicationId: nxshell.com
+nsis:
+  oneClick: false
+  allowToChangeInstallationDirectory: true
+linux:
+  target:
+    - AppImage
+    - snap
+    - deb
+  icon: build/resources/icons
+  category: Development
+mac:
+  target: dmg
+  icon: build/resources/mac/icon-128.icns
+  category: public.app-category.developer-tools
+afterPack: ./afterPackHook.js

@@ -1,0 +1,9 @@
+node_modules/
+pack/
+dist/
+core/dist/
+shell/dist/
+shell/devtools/webpack/dist/
+electron-builder.env
+.DS_Store
+*.log

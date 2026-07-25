@@ -1,0 +1,24 @@
+@import "reset";
+@import url(./theme/dark.scss);
+@import url(./theme/light.scss);
+@import url(./theme/pink.scss);
+
+@keyframes breathe {
+  0% {
+    opacity: 0.5;
+  }
+
+  100% {
+    opacity: 1;
+  }
+}
+
+@-webkit-keyframes breathe {
+  0% {
+    opacity: 0.5;
+  }
+
+  100% {
+    opacity: 1;
+  }
+}

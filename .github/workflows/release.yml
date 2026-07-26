@@ -124,7 +124,7 @@ jobs:
       - name: Collect release assets
         run: |
           mkdir -p release-assets
-          find artifacts -type f \( -name '*.dmg' -o -name '*.exe' -o -name '*.appx' -o -name '*.zip' -o -name '*.AppImage' -o -name '*.snap' -o -name '*.deb' \) -exec cp {} release-assets/ \;
+          find artifacts -type f \( -name '*.dmg' -o -name '*.exe' -o -name '*.appx' -o -name '*.zip' -o -name '*.AppImage' -o -name '*.deb' \) -exec cp {} release-assets/ \;
           ls -la release-assets/
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2

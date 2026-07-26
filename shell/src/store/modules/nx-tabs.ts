@@ -2,7 +2,7 @@ import { defineStore } from 'pinia'
 import { onMounted, onUnmounted, ref } from 'vue'
 import { subscript } from '@/services/eventbus'
 import router from '@/router'
-import { getFileIcon, getFolderIcon, getSystemIcon } from '@/icons/system-icon'
+import { getFileIcon, getSystemIcon } from '@/icons/system-icon'
 
 import { getProfile, updateProfile } from '@/services/globalSetting'
 import sessionManager from '@/services/sessionMgr'

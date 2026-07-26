@@ -120,7 +120,7 @@ export default {
             //     this.oldY = evt.clientY;
             // };
 
-            this.mouseUpHandler = (evt) => {
+            this.mouseUpHandler = (_evt) => {
                 this.endDrag();
             };
 
@@ -134,7 +134,7 @@ export default {
                 let axisY = axis == "y" || axis == "both";
 
                 let mouseout = {};
-                let isMouseOut = false;
+                let _isMouseOut = false;
                 let offsetX = evt.clientX - this.parentPosistion.left;
                 let offsetY = evt.clientY - this.parentPosistion.top;
 

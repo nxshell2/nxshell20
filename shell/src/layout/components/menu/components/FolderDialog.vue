@@ -43,8 +43,8 @@ const sessionManager = proxy.$sessionManager
 const validateFolderName = (rule, value, callback) => {
     if (!value) {
         callback(new Error(t('home.fileview.createdir-dialog.placeholder')))
-    } else if (/[\/:*?."？《》、，。'<>|]/.test(value)) {
-        callback(new Error(t('home.fileview.createdir-dialog.invalid-dir-name', ['\\ / : * ? \" < > | '])))
+    } else if (/[/:*?."？《》、，。'<>|]/.test(value)) {
+        callback(new Error(t('home.fileview.createdir-dialog.invalid-dir-name', ['\\ / : * ? " < > | '])))
     } else {
         callback()
     }

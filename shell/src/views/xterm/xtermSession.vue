@@ -32,7 +32,7 @@ const sessionIdMapSftpDir = ref({})
 const tunnelMapTitle = ref({})
 const settingStore = useSettingStore()
 const { layoutMode } = storeToRefs(settingStore)
-const proxy = getCurrentInstance()?.proxy
+const _proxy = getCurrentInstance()?._proxy
 const initWidth = ref(0)
 const visible = (sessionId) => (layoutMode.value === 'normal' ? currentSessionId.value === sessionId : true)
 const xtermStyle = computed(() => {

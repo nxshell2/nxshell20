@@ -66,7 +66,7 @@ const searchCursor = ref()
 const themeConfig = ref(new Compartment())
 const editorRef = ref()
 const editorInstance = ref()
-const instance = getCurrentInstance()
+const _instance = getCurrentInstance()
 const proxy = getCurrentInstance()?.proxy
 const sessionInstance = proxy.$sessionManager.getSessionInstanceById(props.sessionId)
 

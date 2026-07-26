@@ -479,7 +479,8 @@
                 "send-many": "所有打开的会话",
                 "send-one": "当前会话",
                 "lock": "锁定会话",
-                "select-all": "选中所有"
+                "select-all": "选中所有",
+                "ask-ai": "Ask AI"
             },
             "delete-dialog": {
                 "title": "关闭会话实例",
@@ -488,6 +489,35 @@
             "save-dialog": {
                 "title": "关闭在线编辑",
                 "message": "确定保存文档到服务器?"
+            }
+        },
+        "ai": {
+            "panel-title": "AI 助手",
+            "thinking": "正在思考...",
+            "input-placeholder": "继续追问...",
+            "send": "发送",
+            "explain-prompt": "请解释这段输出并给出修复建议",
+            "copy-command": "复制",
+            "insert-terminal": "插入终端",
+            "copied": "已复制到剪贴板",
+            "confirm-required": "此命令有风险，请确认后再执行",
+            "no-response": "AI 未返回内容",
+            "error": "请求失败",
+            "clear": "清空",
+            "close": "关闭",
+            "settings": {
+                "title": "AI 设置",
+                "provider": "AI 提供商",
+                "provider-ollama": "Ollama (本地)",
+                "provider-openai": "OpenAI 兼容",
+                "ollama-url": "Ollama 地址",
+                "ollama-model": "模型",
+                "openai-url": "API 地址",
+                "openai-key": "API Key",
+                "openai-model": "模型",
+                "context-lines": "上下文行数",
+                "save": "保存设置",
+                "saved": "AI 设置已保存"
             }
         },
         "welcome": {

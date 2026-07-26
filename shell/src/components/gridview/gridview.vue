@@ -297,7 +297,7 @@ export default {
 		get_render_items() {
 			try {
 				this.getViewSize()
-			} catch (e) {}
+			} catch { /* ignore */ }
 
 			let render_total = 500
 			this.view.renderStart = 0

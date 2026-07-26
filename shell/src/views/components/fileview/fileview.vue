@@ -474,7 +474,7 @@ export default {
 			selectedItems: [],
 			sortBy: false,
 			// currentPath: "/home/wang/desktop/apps/nxshell/sftp/127.0.0.1/root"
-			checkPath: (path) => true,
+			checkPath: (_path) => true,
 
 			searchKeyWords: '',
 			searchResult: [],
@@ -658,7 +658,7 @@ export default {
 	},
 
 	watch: {
-		cwd(newCWD, oldCWD) {
+		cwd(newCWD, _oldCWD) {
 			if (newCWD !== this.currentPath) {
 				this.goTo(newCWD)
 			}
@@ -761,7 +761,7 @@ export default {
 		this.checkPath = async (entryPath) => {
 			const fsInstance = await this.getFs()
 			try {
-				const stat = await fsInstance.lstat(entryPath)
+				const _stat = await fsInstance.lstat(entryPath)
 			} catch (e) {
 				if (e.message === 'No such file') {
 					this.$confirm(
@@ -1100,22 +1100,23 @@ export default {
 			this.closeAskDialog()
 		},
 
-		upload(filePath, type, progressId, createFolder = false) {
-			return new Promise(async (resolve, reject) => {
-				const transfer = await createDataTransfer()
-				const connId = await this.getconn()
-				transfer._setFrom({
-					nodeUUID: '',
-					path: filePath,
-					type,
-					createFolder
-				})
-				transfer._setTo({
-					connId: connId,
-					nodeUUID: this.hostInfo.uuid,
-					path: this.currentPath,
-					type: 'dir'
-				})
+		async upload(filePath, type, progressId, createFolder = false) {
+			const transfer = await createDataTransfer()
+			const connId = await this.getconn()
+			transfer._setFrom({
+				nodeUUID: '',
+				path: filePath,
+				type,
+				createFolder
+			})
+			transfer._setTo({
+				connId: connId,
+				nodeUUID: this.hostInfo.uuid,
+				path: this.currentPath,
+				type: 'dir'
+			})
+
+			return new Promise((resolve, reject) => {
 				transfer.on('prepare', () => {
 					this.updateProgress(progressId, 0, this.$t('home.fileview.mainview.progress.prepare-upload'))
 				})
@@ -1149,22 +1150,23 @@ export default {
 			})
 		},
 
-		download(fromPath, toPath, type, progressId, createFolder = false) {
-			return new Promise(async (resolve, reject) => {
-				const transfer = await createDataTransfer()
-				const connId = await this.getconn()
-				transfer._setFrom({
-					connId: connId,
-					nodeUUID: this.hostInfo.uuid,
-					path: fromPath,
-					type,
-					createFolder
-				})
-				transfer._setTo({
-					nodeUUID: '',
-					path: toPath,
-					type
-				})
+		async download(fromPath, toPath, type, progressId, createFolder = false) {
+			const transfer = await createDataTransfer()
+			const connId = await this.getconn()
+			transfer._setFrom({
+				connId: connId,
+				nodeUUID: this.hostInfo.uuid,
+				path: fromPath,
+				type,
+				createFolder
+			})
+			transfer._setTo({
+				nodeUUID: '',
+				path: toPath,
+				type
+			})
+
+			return new Promise((resolve, reject) => {
 				transfer.on('prepare', () => {
 					this.updateProgress(progressId, 0, this.$t('home.fileview.mainview.progress.prepare-download'))
 				})

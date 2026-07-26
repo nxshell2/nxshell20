@@ -16,7 +16,7 @@ export default {
 <script setup>
 import { useI18n } from "vue-i18n"
 
-const props = defineProps({
+const _props = defineProps({
 	// Icon name
 	icon: {
 		type: String,

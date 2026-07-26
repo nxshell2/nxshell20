@@ -275,7 +275,7 @@ const handleSessionInstRemove = (index) => {
  * @param index 选中的Tab 编号
  * @param sessionType 选中的Tab会话类型
  */
-function handleSessionTabsContextMenu(index, sessionType) {
+function _handleSessionTabsContextMenu(index, sessionType) {
 	checkedTabType.value = sessionType
 	nxTabStore.updateActiveTabIndex(index)
 }

@@ -131,6 +131,81 @@
 						</el-row>
 					</el-col>
 				</el-row>
+
+			<div class="n-setting-divider"></div>
+
+			<div class="n-setting-section-title">{{ t('home.ai.settings.title') }}</div>
+			<el-row :gutter="40">
+				<el-col :xs="24" :sm="24" :md="24" :lg="12" :xl="12">
+					<el-row :gutter="40" style="margin-bottom: 20px">
+						<el-col :span="8" class="n-setting-content__label">{{ t('home.ai.settings.provider') }}</el-col>
+						<el-col :span="16">
+							<el-select v-model="aiConfig.provider" @change="handleAIConfigChange">
+								<el-option :label="t('home.ai.settings.provider-ollama')" value="ollama" />
+								<el-option :label="t('home.ai.settings.provider-openai')" value="openai" />
+							</el-select>
+						</el-col>
+					</el-row>
+				</el-col>
+				<el-col :xs="24" :sm="24" :md="24" :lg="12" :xl="12">
+					<el-row :gutter="40" style="margin-bottom: 20px">
+						<el-col :span="8" class="n-setting-content__label">{{ t('home.ai.settings.context-lines') }}</el-col>
+						<el-col :span="16">
+							<el-input-number v-model="aiConfig.maxContextLines" :min="10" :max="200" :step="10" controls-position="right" style="width: 218px" @change="handleAIConfigChange" />
+						</el-col>
+					</el-row>
+				</el-col>
+			</el-row>
+			<template v-if="aiConfig.provider === 'ollama'">
+				<el-row :gutter="40">
+					<el-col :xs="24" :sm="24" :md="24" :lg="12" :xl="12">
+						<el-row :gutter="40" style="margin-bottom: 20px">
+							<el-col :span="8" class="n-setting-content__label">{{ t('home.ai.settings.ollama-url') }}</el-col>
+							<el-col :span="16">
+								<el-input v-model="aiConfig.ollama.baseUrl" @change="handleAIConfigChange" />
+							</el-col>
+						</el-row>
+					</el-col>
+					<el-col :xs="24" :sm="24" :md="24" :lg="12" :xl="12">
+						<el-row :gutter="40" style="margin-bottom: 20px">
+							<el-col :span="8" class="n-setting-content__label">{{ t('home.ai.settings.ollama-model') }}</el-col>
+							<el-col :span="16">
+								<el-input v-model="aiConfig.ollama.model" @change="handleAIConfigChange" />
+							</el-col>
+						</el-row>
+					</el-col>
+				</el-row>
+			</template>
+			<template v-if="aiConfig.provider === 'openai'">
+				<el-row :gutter="40">
+					<el-col :xs="24" :sm="24" :md="24" :lg="12" :xl="12">
+						<el-row :gutter="40" style="margin-bottom: 20px">
+							<el-col :span="8" class="n-setting-content__label">{{ t('home.ai.settings.openai-url') }}</el-col>
+							<el-col :span="16">
+								<el-input v-model="aiConfig.openai.baseUrl" @change="handleAIConfigChange" />
+							</el-col>
+						</el-row>
+					</el-col>
+					<el-col :xs="24" :sm="24" :md="24" :lg="12" :xl="12">
+						<el-row :gutter="40" style="margin-bottom: 20px">
+							<el-col :span="8" class="n-setting-content__label">{{ t('home.ai.settings.openai-model') }}</el-col>
+							<el-col :span="16">
+								<el-input v-model="aiConfig.openai.model" @change="handleAIConfigChange" />
+							</el-col>
+						</el-row>
+					</el-col>
+				</el-row>
+				<el-row :gutter="40">
+					<el-col :xs="24" :sm="24" :md="24" :lg="12" :xl="12">
+						<el-row :gutter="40" style="margin-bottom: 20px">
+							<el-col :span="8" class="n-setting-content__label">{{ t('home.ai.settings.openai-key') }}</el-col>
+							<el-col :span="16">
+								<el-input v-model="aiConfig.openai.apiKey" type="password" show-password @change="handleAIConfigChange" />
+							</el-col>
+						</el-row>
+					</el-col>
+				</el-row>
+			</template>
 			</el-scrollbar>
 		</div>
 	</div>
@@ -138,8 +213,9 @@
 
 <script setup>
 import { getProfile, setProfile } from "@/services/globalSetting"
+import { getAIConfig, saveAIConfig } from "@/services/ai/config"
 import xtermThemeList from "@/views/session/components/xtermTheme/index.vue"
-import { charset, cursorBlink, cursorStyle, fontFamily, fontSize, fontWeight, language, letterSpacing, lineHeight, termTheme, xterm } from "./constants"
+import { charset, cursorBlink, cursorStyle, fontFamily, fontSize, fontWeight, letterSpacing, lineHeight, termTheme } from "./constants"
 import { settingFormReset } from "./constants/default.js"
 import { onBeforeMount, onMounted, ref } from "vue"
 import { useI18n } from "vue-i18n"
@@ -149,6 +225,10 @@ const settingsForm = ref({
 })
 const fontFamilyList = ref({ ...fontFamily })
 const { t } = useI18n()
+const aiConfig = ref(getAIConfig())
+const handleAIConfigChange = async () => {
+	await saveAIConfig(aiConfig.value)
+}
 const handlerSettingChange = async () => {
 	const defaultSettings = getProfile("xterm") ?? {}
 	await setProfile("xterm", { ...defaultSettings, ...settingsForm.value })
@@ -218,6 +298,19 @@ onMounted(() => {
 		&__label {
 			color: var(--n-text-color-base);
 		}
+	}
+
+	.n-setting-divider {
+		height: 1px;
+		background-color: var(--n-border-color);
+		margin: 24px 0;
+	}
+
+	.n-setting-section-title {
+		font-size: 18px;
+		font-weight: 700;
+		color: var(--n-text-color-base);
+		margin-bottom: 16px;
 	}
 }
 

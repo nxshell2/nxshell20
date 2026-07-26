@@ -23,24 +23,28 @@
 				</span>
 			</el-tooltip>
 		</div>
-		<PtXterm
-			class="xterm-pt"
-			ref="xterm"
-			:sendToAllTerm="keyboardToAll"
-			@xterm-focus="xtermFocus"
-			@sendToAll="openSendAll"
-			@line-data="handleLog"
-			@file-drop="handleFileDrop"
-			@link="openLink"
-			@key="onXtermKey"
-			@termdata="onXtermData"
-			@resize="onXtermResize"
-			@titleChange="onTitleChange"
-			@shortcut="handleShortCutEvent"
-			v-context-menu="xtermMenu"
-			:options="options"
-		/>
-		<pt-auth-dialog ref="dialog" @authOk="handleAuthOk" />
+		<div class="xterm-main-area">
+			<PtXterm
+				class="xterm-pt"
+				ref="xterm"
+				:sendToAllTerm="keyboardToAll"
+				@xterm-focus="xtermFocus"
+				@sendToAll="openSendAll"
+				@line-data="handleLog"
+				@file-drop="handleFileDrop"
+				@link="openLink"
+				@key="onXtermKey"
+				@termdata="onXtermData"
+				@resize="onXtermResize"
+				@titleChange="onTitleChange"
+				@shortcut="handleShortCutEvent"
+				v-context-menu="xtermMenu"
+				@ask-ai="handleAskAI"
+				:options="options"
+			/>
+			<pt-auth-dialog ref="dialog" @authOk="handleAuthOk" />
+			<ai-assistant-panel ref="aiAssistantPanel" @insert-command="handleInsertCommand" />
+		</div>
 	</div>
 </template>
 
@@ -48,6 +52,7 @@
 import path from "path"
 import xtermTheme from "xterm-theme"
 import PtAuthDialog from "../components/auth/auth"
+import AIAssistantPanel from "../components/ai/AIAssistantPanel.vue"
 import { getProfile } from "@/services/globalSetting"
 import * as EventBus from "../../services/eventbus"
 import { PtXterm } from "@/components"
@@ -62,7 +67,8 @@ export default {
 	name: "XtermInstance",
 	components: {
 		PtXterm,
-		PtAuthDialog
+		PtAuthDialog,
+		"ai-assistant-panel": AIAssistantPanel
 	},
 	props: {
 		sessionInstanceId: {
@@ -101,6 +107,11 @@ export default {
 					label: "home.session-instance.context-menu.search",
 					type: "normal",
 					handler: this.handleSearch
+				},
+				{
+					label: "home.session-instance.context-menu.ask-ai",
+					type: "normal",
+					handler: this.handleAskAI
 				},
 				{
 					label: "home.session-instance.context-menu.fullscreen",
@@ -276,7 +287,7 @@ export default {
 				// 把输出的http协议转换为ssh
 				url = sessionURL.href.replace("http", "ssh")
 			} else if (config.protocal === "telnet") {
-				const { hostAddress, hostTelnetPort, username, password } = config
+				const { hostAddress, hostTelnetPort } = config
 				url = `telnet://${hostAddress}:${hostTelnetPort}`
 			} else if (config.protocal === "localshell") {
 				url = "LocalShell Tool"
@@ -414,34 +425,34 @@ export default {
 				return
 			}
 			this.mousetrap = new mousetrap(/*this.$refs.xterm*/)
-			this.mousetrap.bind("alt+c", (e) => {
+			this.mousetrap.bind("alt+c", (_e) => {
 				this.handleCopy()
 			})
-			this.mousetrap.bind("alt+v", (e) => {
+			this.mousetrap.bind("alt+v", (_e) => {
 				this.handlePaste()
 			})
-			this.mousetrap.bind("alt+s", (e) => {
+			this.mousetrap.bind("alt+s", (_e) => {
 				this.handleSelectPaste()
 			})
-			this.mousetrap.bind("alt+f", (e) => {
+			this.mousetrap.bind("alt+f", (_e) => {
 				this.handleFind()
 			})
-			this.mousetrap.bind("alt+Enter", (e) => {
+			this.mousetrap.bind("alt+Enter", (_e) => {
 				this.handleFullscreen()
 			})
-			this.mousetrap.bind("alt+l", (e) => {
+			this.mousetrap.bind("alt+l", (_e) => {
 				this.handleLock()
 			})
-			this.mousetrap.bind("alt+a", (e) => {
+			this.mousetrap.bind("alt+a", (_e) => {
 				this.handleSelectAll()
 			})
-			this.mousetrap.bind("alt+-", (e) => {
+			this.mousetrap.bind("alt+-", (_e) => {
 				this.handleZoomIn()
 			})
-			this.mousetrap.bind("alt+=", (e) => {
+			this.mousetrap.bind("alt+=", (_e) => {
 				this.handleZoomOut()
 			})
-			this.mousetrap.bind("alt+0", (e) => {
+			this.mousetrap.bind("alt+0", (_e) => {
 				this.handleZoomOver()
 			})
 		},
@@ -520,7 +531,7 @@ export default {
 			for (let i = 0; i < files.length; i++) {
 				let file = files[i]
 				try {
-					let type = file.isDir ? "dir" : "file"
+					let _type = file.isDir ? "dir" : "file"
 					await this.xzm.dropFile(file.path)
 				} catch (err) {
 					console.log("file drop error ", err)
@@ -614,6 +625,22 @@ export default {
 			}
 			let uri = "https://cn.bing.com/search?q=" + s
 			this.openLink(uri)
+		},
+		handleAskAI(selectedText = "") {
+			selectedText = selectedText || this.$refs.xterm?.getSelection() || ""
+			const recentOutput = this.$refs.xterm?.getRecentOutput(50) || ""
+			const sessionConfig = this.$sessionManager?.getSessionConfigByInstanceId(this.sessionInstanceId)
+			const hostInfo = sessionConfig?.config || {}
+			this.$refs.aiAssistantPanel?.showAI({
+				selectedText,
+				recentOutput,
+				hostInfo,
+				sessionType: sessionConfig?.type || "ssh"
+			})
+		},
+		handleInsertCommand(command) {
+			this.$refs.xterm?.pasteText(command)
+			this.$refs.xterm?.focus()
 		},
 		async handleFullscreen() {
 			try {
@@ -749,6 +776,8 @@ export default {
 .xterm-instance {
 	width: 100%;
 	height: 100%;
+	display: flex;
+	flex-direction: column;
 
 	.session-toolbar {
 		display: flex;
@@ -801,8 +830,18 @@ export default {
 		}
 	}
 
+	.xterm-main-area {
+		display: flex;
+		flex-direction: row;
+		flex: 1;
+		min-height: 0;
+		overflow: hidden;
+	}
+
 	.xterm-pt {
-		height: calc(100% - 40px);
+		flex: 1;
+		min-width: 0;
+		min-height: 0;
 	}
 }
 </style>

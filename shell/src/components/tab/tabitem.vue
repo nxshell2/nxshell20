@@ -53,6 +53,7 @@ export default {
 				}
 				return iconProp
 			}
+			return null
 		}
 	},
 

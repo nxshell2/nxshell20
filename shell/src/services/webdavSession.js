@@ -11,11 +11,6 @@ class WDSession extends SessionInterface {
 
     async init() {
         const cfg = this.params;
-        let secure = cfg.secure;
-        try{
-            secure = JSON.parse(cfg.secure);
-        }catch(e){
-        }
         const sftpFsInstance = await createFsInstance({
             url: cfg.url,
             protocol: 'webdav',

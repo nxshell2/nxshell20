@@ -45,7 +45,7 @@ export default {
 		},
 
 		async transform(files, transFunc) {
-			let count = !!this.multi ? files.length : 1
+			let count = this.multi ? files.length : 1
 			let ret = []
 			let fileNames = []
 			for (let i = 0; i < count; i++) {

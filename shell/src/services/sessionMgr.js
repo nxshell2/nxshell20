@@ -7,7 +7,7 @@ import { EventEmitter } from "events";
 import { insert } from "../../common/utils";
 import { IdGenerator } from "../../common/utils/idGenerator";
 import WaitObject from "../../common/utils/waitObject";
-import { getSessionFactory, SessionInterface, SESSION_TYPES } from "./session";
+import { getSessionFactory, SESSION_TYPES } from "./session";
 
 import { getNodeSessionInstanceByUUID } from "./nxsys/nodes";
 
@@ -111,7 +111,7 @@ export class SessionConfig extends EventEmitter {
                 uuid: this.uuid,
                 ...this.config
             }));
-        }).catch((err) => {
+        }).catch((_err) => {
 
         });
 
@@ -317,7 +317,7 @@ class SessionManager extends EventEmitter {
         this.saveSessionConfigs()
     }
 
-    handleSessionConfigUpdate(sessCfgObj) {
+    handleSessionConfigUpdate(_sessCfgObj) {
         // this.emit("session-update", sessCfgObj);
         this.saveSessionConfigs();
     }
@@ -334,11 +334,11 @@ class SessionManager extends EventEmitter {
             return;
         }
 
-        const handleSessionConfigRemove = (sessCfgObj) => {
+        const _handleSessionConfigRemove = (sessCfgObj) => {
             this.handleSessionConfigRemove(sessCfgObj);
         }
 
-        const handleSessionConfigUpdate = (sessCfgObj) => {
+        const _handleSessionConfigUpdate = (sessCfgObj) => {
             this.handleSessionConfigUpdate(sessCfgObj);
         }
 
@@ -741,14 +741,14 @@ class SessionManager extends EventEmitter {
      * @param {Boolean} [useSessionConfig]  使用会话的配置，如果使用配置则只使用来源会话的配置
      *                                      否则，直接复用来源的实例
      */
-    duplicateSessionInstance(fromSessionInstance, useSessionConfig = true) {
+    duplicateSessionInstance(fromSessionInstance, _useSessionConfig = true) {
         // TODO: add code here
         let instId = fromSessionInstance.getId();
         let sessionCfg = this.getSessionConfigByInstanceId(instId);
         return this.createSessionInstance(sessionCfg);
     }
 
-    async duplicateSshInstance(fromSessionInstance, useSessionConfig = true) {
+    async duplicateSshInstance(fromSessionInstance, _useSessionConfig = true) {
         let connId = -1;
         try {
             connId = await fromSessionInstance.getTermConnId();

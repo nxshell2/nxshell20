@@ -127,7 +127,7 @@ export default {
 			rfb.scaleViewport = true
 			rfb.resizeSession = true
 
-			this.resizeObject = new ResizeObserver((e) => {
+			this.resizeObject = new ResizeObserver((_e) => {
 				this.rfb.scaleViewport = true
 			})
 			this.resizeObject.observe(this.$refs.screen)

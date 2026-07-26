@@ -1,4 +1,4 @@
-const { NxTerminal, NXTERMINAL_EVENTS } = require("../../../common/nxsys/terminal");
+const { NxTerminal } = require("../../../common/nxsys/terminal");
 
 export class NxTerminalClient extends NxTerminal {
     cols = 0;

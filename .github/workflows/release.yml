@@ -3,7 +3,7 @@ name: Release
 on:
   push:
     tags:
-      - 'v*'
+      - 'release/v*'
 
 permissions:
   contents: write
@@ -31,7 +31,10 @@ jobs:
           key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
           restore-keys: |
             ${{ runner.os }}-node-
-      - run: make dist
+      - name: Extract version from tag
+        id: version
+        run: echo "version=${GITHUB_REF_NAME#release/v}" >> "$GITHUB_OUTPUT"
+      - run: make dist VERSION=${{ steps.version.outputs.version }}
       - uses: actions/upload-artifact@v4
         with:
           name: dist-macos
@@ -61,7 +64,10 @@ jobs:
           key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
           restore-keys: |
             ${{ runner.os }}-node-
-      - run: make dist
+      - name: Extract version from tag
+        id: version
+        run: echo "version=${GITHUB_REF_NAME#release/v}" >> "$GITHUB_OUTPUT"
+      - run: make dist VERSION=${{ steps.version.outputs.version }}
       - uses: actions/upload-artifact@v4
         with:
           name: dist-windows
@@ -91,7 +97,10 @@ jobs:
           key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
           restore-keys: |
             ${{ runner.os }}-node-
-      - run: make dist
+      - name: Extract version from tag
+        id: version
+        run: echo "version=${GITHUB_REF_NAME#release/v}" >> "$GITHUB_OUTPUT"
+      - run: make dist VERSION=${{ steps.version.outputs.version }}
       - uses: actions/upload-artifact@v4
         with:
           name: dist-linux
@@ -105,6 +114,9 @@ jobs:
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
+      - name: Extract version from tag
+        id: version
+        run: echo "version=${GITHUB_REF_NAME#release/v}" >> "$GITHUB_OUTPUT"
       - name: Download all artifacts
         uses: actions/download-artifact@v4
         with:
@@ -118,7 +130,7 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ github.ref_name }}
-          name: Release ${{ github.ref_name }}
+          name: Release ${{ steps.version.outputs.version }}
           files: release-assets/*
           draft: false
           prerelease: false

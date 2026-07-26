@@ -31,6 +31,9 @@
 		<div v-if="urlTip" class="xterm-link-tip" :style="{ left: urlTipPosition.left + 'px', top: urlTipPosition.top + 'px' }">
 			{{ $t("components.pt-xterm.open-url") }}
 		</div>
+		<div v-if="aiTip.show" class="xterm-ai-tip" :style="{ left: aiTip.left + 'px', top: aiTip.top + 'px' }" @click="handleAskAIClick">
+			{{ $t('home.session-instance.context-menu.ask-ai') }}
+		</div>
 	</div>
 </template>
 
@@ -50,7 +53,7 @@ export default {
 	props: {
 		options: {
 			type: Object,
-			default: {}
+			default: () => ({})
 		},
 		sendToAllTerm: {
 			type: Boolean,
@@ -66,6 +69,12 @@ export default {
 			ptViewResizeHandler: null,
 			urlTip: "",
 			urlTipPosition: {
+				left: 0,
+				top: 0
+			},
+			aiTip: {
+				show: false,
+				text: "",
 				left: 0,
 				top: 0
 			},
@@ -91,7 +100,7 @@ export default {
 			//this.resizeObserve.observe(this.$el);
 			const options = { wordSeparator: " /:?,;.", ...this.options }
 			// 优化xterm终端边距
-			if (options.hasOwnProperty("theme") && options.theme) {
+			if (Object.prototype.hasOwnProperty.call(options, "theme") && options.theme) {
 				const { background = "#000" } = options.theme
 				this.backgroundColor = background
 			}
@@ -126,7 +135,7 @@ export default {
 							// hide tip
 							this.urlTip = ""
 						},
-						willLinkActivate(evt, uri) {
+						willLinkActivate(evt, _uri) {
 							return evt.ctrlKey
 						}
 					}
@@ -141,7 +150,7 @@ export default {
 
 			const webgl = new WebglAddon()
 			try {
-				webgl.onContextLoss((e) => webgl.dispose())
+				webgl.onContextLoss((_e) => webgl.dispose())
 				this.terminal.loadAddon(webgl)
 			} catch (e) {
 				console.log("WebGL init fail, it will fallback to canvas", e)
@@ -166,7 +175,7 @@ export default {
 				this.$emit("titleChange", title)
 			})
 
-			this.terminal.onLineFeed((e) => {
+			this.terminal.onLineFeed((_e) => {
 				if (this.logging) {
 					this.$emit("line-data", this.getLineString())
 				}
@@ -174,7 +183,7 @@ export default {
 			// 绑定选中复制
 			const { selectedCopy = false } = getProfile("xterm")
 			if (selectedCopy) {
-				this.terminal.onSelectionChange((e) => {
+				this.terminal.onSelectionChange((_e) => {
 					function copyTextToClipboard(text) {
 						try {
 							powertools.clipboardWriteText(text)
@@ -187,6 +196,20 @@ export default {
 					select && copyTextToClipboard(select)
 				})
 			}
+
+			// 绑定选中文本显示 Ask AI 浮动按钮
+			this.updateAiTipDebounced = debounce(() => {
+				this.updateAiTip()
+			}, 150)
+			this.terminal.onSelectionChange(() => {
+				this.$nextTick(() => {
+					this.updateAiTipDebounced()
+				})
+			})
+			this.hideAiTipHandler = () => {
+				this.aiTip.show = false
+			}
+			this.$refs.xtermContainer.addEventListener("mousedown", this.hideAiTipHandler)
 			// 绑定右键粘贴功能1
 			// document.addEventListener("contextmenu", this.contextmenuPast)
 			this.$refs.xtermContainer.addEventListener("contextmenu", this.contextmenuPast)
@@ -328,6 +351,22 @@ export default {
 			return this.terminal?.getSelection()
 		},
 
+		getRecentOutput(maxLines = 50) {
+			const terminal = this.terminal
+			if (!terminal) return ""
+			const buffer = terminal.buffer.active
+			const totalLines = buffer.length
+			const startLine = Math.max(0, totalLines - maxLines)
+			const lines = []
+			for (let i = startLine; i < totalLines; i++) {
+				const line = buffer.getLine(i)
+				if (line) {
+					lines.push(line.translateToString(true).trimEnd())
+				}
+			}
+			return lines.join("\n")
+		},
+
 		pasteText(s) {
 			console.log("粘贴")
 			this.terminal?.paste(s)
@@ -356,6 +395,57 @@ export default {
 			setTimeout(() => {
 				this.terminal?.focus()
 			}, 100)
+		},
+		updateAiTip() {
+			if (!this.terminal) return
+			const selection = this.terminal.getSelection()
+			if (!selection || selection.length === 0) {
+				this.aiTip.show = false
+				return
+			}
+
+			const position = this.terminal.getSelectionPosition()
+			if (!position) {
+				this.aiTip.show = false
+				return
+			}
+
+			// xterm getSelectionPosition may return {start, end} or {startColumn, startRow, endColumn, endRow}
+			let startX, startY, endX, endY
+			if (position.start && position.end) {
+				startX = position.start.x
+				startY = position.start.y
+				endX = position.end.x
+				endY = position.end.y
+			} else {
+				startX = position.startColumn
+				startY = position.startRow
+				endX = position.endColumn
+				endY = position.endRow
+			}
+			if ([startX, startY, endX, endY].some(v => v === undefined || v === null)) {
+				this.aiTip.show = false
+				return
+			}
+
+			const renderDimensions = this.terminal?._core?._renderService?.dimensions
+			if (!renderDimensions) {
+				this.aiTip.show = false
+				return
+			}
+			const { actualCellWidth, actualCellHeight } = renderDimensions
+
+			const endRow = Math.max(startY, endY)
+			const endCol = endY > startY ? endX : Math.max(startX, endX)
+
+			this.aiTip.text = selection
+			this.aiTip.left = endCol * actualCellWidth
+			this.aiTip.top = (endRow + 1) * actualCellHeight + 4
+			this.aiTip.show = true
+		},
+		handleAskAIClick() {
+			this.$emit("ask-ai", this.aiTip.text)
+			this.aiTip.show = false
 		},
 
 		fit() {
@@ -441,6 +531,14 @@ export default {
 		//     this.ptViewResizeHandler = null;
 		// }
 		this.$refs.xtermContainer?.removeEventListener("contextmenu", this.contextmenuPast)
+		if (this.hideAiTipHandler) {
+			this.$refs.xtermContainer?.removeEventListener("mousedown", this.hideAiTipHandler)
+			this.hideAiTipHandler = null
+		}
+		if (this.updateAiTipDebounced) {
+			this.updateAiTipDebounced.cancel()
+			this.updateAiTipDebounced = null
+		}
 		// document.removeEventListener("contextmenu", this.contextmenuPast)
 	}
 }
@@ -480,6 +578,23 @@ export default {
 		font-size: 14px;
 		padding: 0 10px;
 		background-color: lightgray;
+	}
+
+	.xterm-ai-tip {
+		position: absolute;
+		z-index: 1000;
+		background-color: var(--n-button-primary);
+		color: var(--n-button-primary-text);
+		border-radius: 4px;
+		padding: 4px 10px;
+		font-size: 12px;
+		cursor: pointer;
+		white-space: nowrap;
+		box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+
+		&:hover {
+			background-color: var(--n-button-primary-hover);
+		}
 	}
 
 	.xterm-search {

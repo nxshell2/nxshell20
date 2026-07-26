@@ -81,7 +81,7 @@ export class SessionInterface extends EventEmitter {
      * 此会话实例引用的会话实例
      * @type {SessionInterface}
      */
-    ref = null;
+    _ref = null;
     /**
      * 此会话实例被引用的会话实例
      * @type {SessionInterface[]}
@@ -117,7 +117,7 @@ export class SessionInterface extends EventEmitter {
         if (!(session instanceof SessionInterface)) {
             return;
         }
-        this.ref = session;
+        this._ref = session;
         session.refBy(this);
     }
 
@@ -152,9 +152,9 @@ export class SessionInterface extends EventEmitter {
     }
 
     unref() {
-        if (this.ref) {
-            this.ref.unRefBy(this);
-            this.ref = null;
+        if (this._ref) {
+            this._ref.unRefBy(this);
+            this._ref = null;
         }
     }
 

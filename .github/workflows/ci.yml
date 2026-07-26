@@ -50,6 +50,9 @@ jobs:
       - name: Install dependencies
         run: make install
 
+      - name: Run lint
+        run: make lint
+
       - name: Build core (main process)
         run: make core
 

@@ -1,6 +1,5 @@
 import { createApp, defineComponent, h, nextTick } from 'vue'
 import PtMenu from './menu.vue'
-import PtMenuItem from './menuitem.vue'
 import NIcon from '../svgicon/index.vue'
 import Element from '@/element'
 import { getI18n } from '@/locals'

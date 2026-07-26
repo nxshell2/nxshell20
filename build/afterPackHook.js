@@ -1,6 +1,8 @@
 const fs = require("fs");
 const path = require("path");
 
+const rootDir = path.resolve(__dirname, "..");
+
 function copyDirContents(src, dest) {
     if (!fs.existsSync(src)) {
         return;
@@ -30,14 +32,14 @@ module.exports = async (context) => {
     fs.mkdirSync(destDir, { recursive: true });
 
     // Vue renderer output
-    copyDirContents(path.join(__dirname, "shell", "dist"), destDir);
+    copyDirContents(path.join(rootDir, "shell", "dist"), destDir);
 
     // ptservices service bundle
-    copyDirContents(path.join(__dirname, "shell", "devtools", "webpack", "dist"), destDir);
+    copyDirContents(path.join(rootDir, "shell", "devtools", "webpack", "dist"), destDir);
 
     // package.json identifying powertools-shell
     fs.copyFileSync(
-        path.join(__dirname, "shell", "ptservices", "package.json"),
+        path.join(rootDir, "shell", "ptservices", "package.json"),
         path.join(destDir, "package.json")
     );
 };

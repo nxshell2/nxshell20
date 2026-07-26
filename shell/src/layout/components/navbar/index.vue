@@ -75,7 +75,7 @@ const themeIconConstants = {
 	hazy: "Sunny"
 }
 console.log("设置", locale.value, getProfile("xterm")?.language)
-const doCapture = async (e) => {
+const doCapture = async (_e) => {
 	capture.value = !capture.value
 	captureIcon.value = capture.value ? "VideoPlay" : "VideoPause"
 	if (capture.value) {

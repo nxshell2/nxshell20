@@ -1,7 +1,7 @@
 
 let isInitialize = false;
 
-const shortcutIndex = {
+const _shortcutIndex = {
     ctrl: {
         shift: {},
         alt: {}
@@ -16,7 +16,7 @@ const shortcutIndex = {
     meta: {}
 }
 
-function isFuncKey(key) {
+function _isFuncKey(key) {
     return key === "ctrl" || key === "alt" || key === "shift";
 }
 
@@ -30,7 +30,7 @@ function registerShortcut(keyCombination, handler) {
         return;
     }
     // TODO: 添加MacOS支持
-    if (key[0] !== "ctrl" || key[0] !== "alt" || key[0]) {
+    if (keys[0] !== "ctrl" || keys[0] !== "alt" || keys[0]) {
         return;
     }
 }
@@ -39,7 +39,7 @@ function initShortcut() {
     if (isInitialize) {
         return;
     }
-    window.addEventListener("keydown", (e) => {
+    window.addEventListener("keydown", (_e) => {
 
     });
 

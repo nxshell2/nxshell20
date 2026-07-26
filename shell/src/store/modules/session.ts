@@ -71,7 +71,7 @@ const useSessionStore = defineStore('session', () => {
 		function process(sessionConfigList: any[], treeList: any[], keyword?: string) {
 			for (const cfgNode of sessionConfigList) {
 				const { _id: id, name, type, config, uuid } = cfgNode
-				let treeNode: IMenuNode = {
+				const treeNode: IMenuNode = {
 					id: id,
 					uuid,
 					icon: (cfgNode.config && cfgNode.config.system) || 'server',
@@ -137,7 +137,7 @@ const useSessionStore = defineStore('session', () => {
 	 * @param sessionConfig 会话内容
 	 */
 	async function appendSessionConfig(sessionConfig: Record<string, any>) {
-		const { isFolder, node, sessionData } = currentNode
+		const { isFolder, sessionData } = currentNode
 		await sessionManager.addSessionConfig(isFolder ? sessionData?.data : null, sessionConfig)
 		updateProcess()
 	}

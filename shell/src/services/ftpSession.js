@@ -12,9 +12,10 @@ class FTPSession extends SessionInterface {
     async init() {
         const cfg = this.cfg;
         let secure = cfg.secure;
-        try{
+        try {
             secure = JSON.parse(cfg.secure);
-        }catch(e){
+        } catch {
+            /* ignore */
         }
 
         let nodeInstance;

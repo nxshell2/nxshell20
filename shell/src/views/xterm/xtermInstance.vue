@@ -287,7 +287,7 @@ export default {
 				// 把输出的http协议转换为ssh
 				url = sessionURL.href.replace("http", "ssh")
 			} else if (config.protocal === "telnet") {
-				const { hostAddress, hostTelnetPort, username, password } = config
+				const { hostAddress, hostTelnetPort } = config
 				url = `telnet://${hostAddress}:${hostTelnetPort}`
 			} else if (config.protocal === "localshell") {
 				url = "LocalShell Tool"
@@ -425,34 +425,34 @@ export default {
 				return
 			}
 			this.mousetrap = new mousetrap(/*this.$refs.xterm*/)
-			this.mousetrap.bind("alt+c", (e) => {
+			this.mousetrap.bind("alt+c", (_e) => {
 				this.handleCopy()
 			})
-			this.mousetrap.bind("alt+v", (e) => {
+			this.mousetrap.bind("alt+v", (_e) => {
 				this.handlePaste()
 			})
-			this.mousetrap.bind("alt+s", (e) => {
+			this.mousetrap.bind("alt+s", (_e) => {
 				this.handleSelectPaste()
 			})
-			this.mousetrap.bind("alt+f", (e) => {
+			this.mousetrap.bind("alt+f", (_e) => {
 				this.handleFind()
 			})
-			this.mousetrap.bind("alt+Enter", (e) => {
+			this.mousetrap.bind("alt+Enter", (_e) => {
 				this.handleFullscreen()
 			})
-			this.mousetrap.bind("alt+l", (e) => {
+			this.mousetrap.bind("alt+l", (_e) => {
 				this.handleLock()
 			})
-			this.mousetrap.bind("alt+a", (e) => {
+			this.mousetrap.bind("alt+a", (_e) => {
 				this.handleSelectAll()
 			})
-			this.mousetrap.bind("alt+-", (e) => {
+			this.mousetrap.bind("alt+-", (_e) => {
 				this.handleZoomIn()
 			})
-			this.mousetrap.bind("alt+=", (e) => {
+			this.mousetrap.bind("alt+=", (_e) => {
 				this.handleZoomOut()
 			})
-			this.mousetrap.bind("alt+0", (e) => {
+			this.mousetrap.bind("alt+0", (_e) => {
 				this.handleZoomOver()
 			})
 		},
@@ -531,7 +531,7 @@ export default {
 			for (let i = 0; i < files.length; i++) {
 				let file = files[i]
 				try {
-					let type = file.isDir ? "dir" : "file"
+					let _type = file.isDir ? "dir" : "file"
 					await this.xzm.dropFile(file.path)
 				} catch (err) {
 					console.log("file drop error ", err)

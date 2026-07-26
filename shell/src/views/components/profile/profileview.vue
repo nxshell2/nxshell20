@@ -50,7 +50,7 @@ export default {
 
 	watch: {
 		profileValues: {
-			handler(val, oldVal) {
+			handler(_val, _oldVal) {
 				this.$emit('update:modelValue', this.profileValues)
 			},
 			deep: true

@@ -44,9 +44,9 @@ export async function setProfile(categoryName: GlobalCategoryType, profile: IPro
 }
 
 export async function updateProfile(categoryName: GlobalCategoryType, profile: IProfile): Promise<void> {
-	let old = globalCategory[categoryName] || {}
+	const old = globalCategory[categoryName] || {}
 	for (const _k in profile) {
-		if (profile.hasOwnProperty(_k)) {
+		if (Object.prototype.hasOwnProperty.call(profile, _k)) {
 			old[_k] = profile[_k]
 		}
 	}

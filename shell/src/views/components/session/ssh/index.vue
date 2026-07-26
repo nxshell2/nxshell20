@@ -170,7 +170,7 @@
 					<!-- 主题 -->
 					<el-tab-pane :label="t('components.session.theme.label')" name="fourth">
 						<div class="n-theme-form">
-							<template v-for="item in configItems">
+							<template v-for="item in configItems" :key="item.name">
 								<el-row :title="t(item.description)" class="item">
 									<el-col :span="6">
 										<label>{{ t(item.title) }}</label>
@@ -311,12 +311,12 @@ const sessionManager = proxy.$sessionManager
 const sessionConfig = ref()
 const { group } = storeToRefs(sessionStore)
 const showModal = (sessionId) => {
-	if (!!sessionId) {
+	if (sessionId) {
 		isEdit.value = true
 		sessionConfig.value = sessionManager.getSessionConfigById(sessionId)
 		const { config } = sessionConfig.value
 		// 旧会话端口转发兼容
-		if (config.hasOwnProperty("forwardInRemoteHost") && !["127.0.0.1", "localhost"].includes(config.forwardInRemoteHost)) {
+		if (Object.prototype.hasOwnProperty.call(config, "forwardInRemoteHost") && !["127.0.0.1", "localhost"].includes(config.forwardInRemoteHost)) {
 			const { forwardInRemoteHost, forwardInRemotePort, forwardInLocalHost, forwardInLocalPort } = config
 			sessionConfig.value["config"]["forwardIn"] = [
 				{

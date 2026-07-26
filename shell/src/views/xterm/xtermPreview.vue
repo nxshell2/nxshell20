@@ -32,7 +32,7 @@ const FORECOLOR = {
     WHITE: 37
 };
 
-const BGCOLOR = {
+const _BGCOLOR = {
     BLACK: 40,
     RED: 41,
     GREEN: 42,
@@ -94,6 +94,7 @@ export default {
             this.writePreviewData()
             // initialize theme info
             if (!this.context) {
+                // eslint-disable-next-line vue/no-mutating-props
                 this.context = settingFormReset
             }
             this.setTheme(this.getTheme())
@@ -131,7 +132,7 @@ export default {
                 const wrSeq = `\x1b[${ mode };${ fc }${ bc ? ";" + bc : "" }m${ str }\x1b[0m${ crlf ? '\r\n' : '' }`;
                 this.$refs.xterm?.write(wrSeq);
             }
-            const wr = (str, keywords, mode, fc, bc, crlf = false) => {
+            const _wr = (str, keywords, mode, fc, bc, crlf = false) => {
                 const wrSeq = `${ str }\x1b[${ mode };${ fc }${ bc ? ";" + bc : "" }m${ keywords }\x1b[0m${ crlf ? '\r\n' : '' }`;
                 this.$refs.xterm?.write(wrSeq);
             }

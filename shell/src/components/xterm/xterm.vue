@@ -53,7 +53,7 @@ export default {
 	props: {
 		options: {
 			type: Object,
-			default: {}
+			default: () => ({})
 		},
 		sendToAllTerm: {
 			type: Boolean,
@@ -100,7 +100,7 @@ export default {
 			//this.resizeObserve.observe(this.$el);
 			const options = { wordSeparator: " /:?,;.", ...this.options }
 			// 优化xterm终端边距
-			if (options.hasOwnProperty("theme") && options.theme) {
+			if (Object.prototype.hasOwnProperty.call(options, "theme") && options.theme) {
 				const { background = "#000" } = options.theme
 				this.backgroundColor = background
 			}
@@ -135,7 +135,7 @@ export default {
 							// hide tip
 							this.urlTip = ""
 						},
-						willLinkActivate(evt, uri) {
+						willLinkActivate(evt, _uri) {
 							return evt.ctrlKey
 						}
 					}
@@ -150,7 +150,7 @@ export default {
 
 			const webgl = new WebglAddon()
 			try {
-				webgl.onContextLoss((e) => webgl.dispose())
+				webgl.onContextLoss((_e) => webgl.dispose())
 				this.terminal.loadAddon(webgl)
 			} catch (e) {
 				console.log("WebGL init fail, it will fallback to canvas", e)
@@ -175,7 +175,7 @@ export default {
 				this.$emit("titleChange", title)
 			})
 
-			this.terminal.onLineFeed((e) => {
+			this.terminal.onLineFeed((_e) => {
 				if (this.logging) {
 					this.$emit("line-data", this.getLineString())
 				}
@@ -183,7 +183,7 @@ export default {
 			// 绑定选中复制
 			const { selectedCopy = false } = getProfile("xterm")
 			if (selectedCopy) {
-				this.terminal.onSelectionChange((e) => {
+				this.terminal.onSelectionChange((_e) => {
 					function copyTextToClipboard(text) {
 						try {
 							powertools.clipboardWriteText(text)

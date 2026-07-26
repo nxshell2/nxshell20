@@ -14,7 +14,7 @@ const DANGEROUS_PATTERNS = [
     { pattern: /rm\s+-\w*f\w*r?\s+/i, reason: "Recursive force delete" },
     { pattern: /\bdd\s+if=.*of=\/dev\//i, reason: "Direct disk write" },
     { pattern: /mkfs/i, reason: "Format filesystem" },
-    { pattern: /:\(\)\s*\{\s*:\|\s*:\&\s*\}\s*;/i, reason: "Fork bomb" },
+    { pattern: /:\(\)\s*\{\s*:\|\s*:&\s*\}\s*;/i, reason: "Fork bomb" },
     { pattern: />\s*\/dev\/sd[a-z]/i, reason: "Direct write to disk device" },
     { pattern: /shred\s+/i, reason: "Secure shred file/disk" },
     { pattern: /DROP\s+(TABLE|DATABASE)/i, reason: "SQL DROP" },

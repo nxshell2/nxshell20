@@ -16,7 +16,7 @@ const xtermInstance = ref()
 onMounted(() => {
 	const options = { wordSeparator: ' /\\()"\'-.,:;<>~!@#$%^&*|+=[]{}~?│', ...props }
 	// 优化xterm终端边距
-	if (options.hasOwnProperty('theme') && options.theme) {
+	if (Object.prototype.hasOwnProperty.call(options, 'theme') && options.theme) {
 		const { background = '#000' } = options.theme
 		this.backgroundColor = background
 	}

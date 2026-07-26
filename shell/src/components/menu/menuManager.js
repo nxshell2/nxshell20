@@ -83,7 +83,7 @@ function initDefaultMenuHandler() {
 	//     closeAllMenu();
 	// })
 
-	window.addEventListener("blur", (evt) => {
+	window.addEventListener("blur", (_evt) => {
 		closeAllMenu()
 	})
 }

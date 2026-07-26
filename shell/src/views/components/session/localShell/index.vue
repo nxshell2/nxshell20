@@ -56,7 +56,7 @@
 					<!-- 主题 -->
 					<el-tab-pane :label="t('components.session.theme.label')" name="theme">
 						<div class="n-theme-form">
-							<template v-for="item in configItems">
+							<template v-for="item in configItems" :key="item.name">
 								<el-row :title="t(item.description)" class="item">
 									<el-col :span="6">
 										<label>{{ t(item.title) }}</label>

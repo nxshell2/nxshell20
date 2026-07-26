@@ -37,7 +37,7 @@ export class SessionConfig {
         this.subSessions = [];
     }
 
-    addSessionConfig(sessionNode: SessionConfig, index?: number) {
+    addSessionConfig(sessionNode: SessionConfig, _index?: number) {
         if (this.type === "node") {
             throw new Error("session node can not add sub-config");
         }
@@ -67,7 +67,7 @@ export class SessionConfig {
         };
 
         for (let i: number = 0; i < this.subSessions.length; i++) {
-            let sessionConfig = this.subSessions[i];
+            const sessionConfig = this.subSessions[i];
             if (sessionConfig._id === id) {
                 ret.sessionConfig = sessionConfig;
                 ret.index = i;
@@ -78,7 +78,7 @@ export class SessionConfig {
         return ret;
     }
 
-    removeSubSessionConfig(session: SessionConfig | number, move: Boolean = false): void {
+    removeSubSessionConfig(session: SessionConfig | number, move: boolean = false): void {
         let removeSession: SessionConfig[];
         let removeIdx: number;
         removeIdx = typeof session === "number" ? session : this.subSessions.findIndex((val:SessionConfig) => {
@@ -93,7 +93,7 @@ export class SessionConfig {
         // 递归删除子节点
         const curRemoveNode: SessionConfig = removeSession[0];
         for (let i: number = curRemoveNode.subSessions.length - 1; i > 0; i--) {
-            let sessItem = curRemoveNode.subSessions[i];
+            const sessItem = curRemoveNode.subSessions[i];
             curRemoveNode.removeSubSessionConfig(sessItem);
         }
         // TODO: 通知配置节点被删除
@@ -101,7 +101,7 @@ export class SessionConfig {
 
     duplicate(): SessionConfig {
         const duplicate = (parent: SessionConfig): SessionConfig => {
-            let config: SessionConfig = new SessionConfig(
+            const config: SessionConfig = new SessionConfig(
                 parent.name,
                 parent.type,
                 parent.config ? parent.config: null,
@@ -109,7 +109,7 @@ export class SessionConfig {
             );
 
             parent.subSessions.forEach((subSession) => {
-                let newSubSession = duplicate(subSession);
+                const newSubSession = duplicate(subSession);
                 config.addSessionConfig(newSubSession);
             })
 

@@ -37,9 +37,9 @@ class NxNodeClient extends NxNode {
         }
         return fsIns;
     }
-    async getNetInstance(reuseConnId=-1) {}
-    async getGUIInstance(reuseConnId=-1) {}
-    async getUserInstance(reuseConnId=-1) {}
+    async getNetInstance(_reuseConnId=-1) {}
+    async getGUIInstance(_reuseConnId=-1) {}
+    async getUserInstance(_reuseConnId=-1) {}
 
     dispose() {
         this.service.callObject(this.handler, "dispose");

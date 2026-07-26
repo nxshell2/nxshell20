@@ -10,7 +10,7 @@ const clipboardStore = {
     },
     object: {
         value: null,
-        action
+        action: ""
     }
 };
 

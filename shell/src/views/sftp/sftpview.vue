@@ -74,7 +74,7 @@ export default {
 	},
 
 	methods: {
-		handleOpenDir(dir) {},
+		handleOpenDir(_dir) {},
 		handleAuthOk(data) {
 			this.sessionInstance?.sendControlData(data)
 		}

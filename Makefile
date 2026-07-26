@@ -5,7 +5,7 @@
 #   make clean     - remove build outputs
 #   make clean-all - remove build outputs and node_modules
 
-.PHONY: all install dev core shell native pack dist clean clean-all
+.PHONY: all install lint lint-fix dev core shell native pack dist clean clean-all
 
 export buildTimes := $(shell date -u +%Y%m%d%H%M)
 VERSION := $(shell node -p "require('./package.json').version")
@@ -29,6 +29,15 @@ shell/node_modules: shell/package.json
 node_modules: package.json
 	npm install --production=false
 	touch $@
+
+# -----------------------------------------------------------------------------
+# Lint
+# -----------------------------------------------------------------------------
+lint: shell/node_modules
+	cd shell && npm run lint
+
+lint-fix: shell/node_modules
+	cd shell && npm run lint:fix
 
 # -----------------------------------------------------------------------------
 # Local development

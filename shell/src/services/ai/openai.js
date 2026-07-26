@@ -36,12 +36,14 @@ export async function chat(messages, config, onChunk) {
     const decoder = new TextDecoder()
     let fullText = ""
     let buffer = ""
+    let done = false
 
-    while (true) {
-        const { done, value } = await reader.read()
+    while (!done) {
+        const chunk = await reader.read()
+        done = chunk.done
         if (done) break
 
-        buffer += decoder.decode(value, { stream: true })
+        buffer += decoder.decode(chunk.value, { stream: true })
         const lines = buffer.split("\n")
         buffer = lines.pop() || ""
 

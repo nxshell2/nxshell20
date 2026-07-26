@@ -28,7 +28,7 @@ class Storage {
      * 同步本地数据到远程
      * @param {String} name 同步的数据名称
      */
-    async syncToRemote(name) {
+    async syncToRemote(_name) {
         // TODO:
     }
 
@@ -36,7 +36,7 @@ class Storage {
      * 同步远程配置到本地
      * @param {String} name 同步的数据名称
      */
-    async syncToLocal(name) {
+    async syncToLocal(_name) {
         // TODO:
     }
 
@@ -56,7 +56,7 @@ class Storage {
         return await this.localStorage.read(name)
     }
 
-    async saveSoftConfig(object, sync = false) {
+    async saveSoftConfig(object, _sync = false) {
         const ls = this.localStorage;
         await ls.saveSoftConfig(object)
     }

@@ -23,7 +23,7 @@ const systems: ISystemProps[] = [
     { icon: 'ubuntu-kylin', keywords: ['kylin', 'ubuntu', 'linux'] },
 ]
 
-export function querySearch(keyword: string, callback: Function): void {
+export function querySearch(keyword: string, callback: (_results: { icon: string; keywords: string[] }[]) => void): void {
     const results = keyword ? systems.filter(x => x.keywords.includes(keyword.toLowerCase())) : systems
     callback(results)
 }

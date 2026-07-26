@@ -119,24 +119,22 @@ export class xzmodem {
             } else {
                 let r_handle = await fsClient.open(filePath, "r");
                 let position = 0;
-                while(true) {
-                    let {bytesRead, buffer} = await fsClient.read(r_handle, rwBuffer, 0, BUFF_SIZE, position);
-                    if(bytesRead) {
-                        xfer.send(buffer.slice(0, bytesRead));
+                let bytesRead = BUFF_SIZE;
+                while (bytesRead >= BUFF_SIZE) {
+                    const readResult = await fsClient.read(r_handle, rwBuffer, 0, BUFF_SIZE, position);
+                    bytesRead = readResult.bytesRead;
+                    if (bytesRead) {
+                        xfer.send(readResult.buffer.slice(0, bytesRead));
                     }
                     position += bytesRead;
                     that.writeProgress(fileObj.name, fileObj.size, position);
-
-                    if(bytesRead < BUFF_SIZE) {
-                        break;
-                    }
                 }
                 xfer.end( [] ).then(()=>{
                     that.sending = false;
                     that.send_file = null;
                     zsession.close();
                     fsClient.close(r_handle);
-                }).catch((e) => {
+                }).catch((_e) => {
                     that.sending = false;
                     that.send_file = null;
                     zsession.close();

@@ -1,6 +1,5 @@
 import { SESSION_TYPES, SessionInterface, registerSessionFactory } from "./session";
 import {createNodeSessionInstance} from "./nxsys/nodes";
-import { NxTerminalClient } from "./nxsys/terminal";
 
 
 const WaitObject = require("../../common/utils/waitObject");

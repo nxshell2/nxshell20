@@ -4,12 +4,12 @@ export default class StorageProviderInterface {
         this.providerName = name;
     }
 
-    save(name, object) {
+    save(_name, _object) {
         throw new Error("Save function not implemented");
     }
-    read(name) {
+    read(_name) {
         throw new Error("Read function not implemented");
     }
 
-    configure(config) {}
+    configure(_config) {}
 }

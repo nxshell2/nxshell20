@@ -3,7 +3,7 @@ import { ref } from "vue";
 
 
 const useMenuStore = defineStore('menu', () => {
-    const menus = ref([])
+    const _menus = ref([])
 })
 
 export default useMenuStore

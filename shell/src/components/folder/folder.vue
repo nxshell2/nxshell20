@@ -77,7 +77,7 @@ export default {
 	.n-input-file {
 		width: auto !important;
 
-		::v-deep .el-input__suffix {
+		:deep(.el-input__suffix) {
 			right: 0 !important;
 		}
 	}

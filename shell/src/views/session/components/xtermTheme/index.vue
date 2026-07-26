@@ -134,7 +134,7 @@ const handleSearch = (data) => {
 		z-index: 999;
 		background-color: var(--n-color-bg-dialog);
 
-		::v-deep .el-autocomplete {
+		:deep(.el-autocomplete) {
 			width: 100%;
 		}
 	}

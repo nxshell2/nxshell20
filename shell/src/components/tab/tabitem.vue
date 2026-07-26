@@ -78,7 +78,7 @@ export default {
 	user-select: none;
 	transition: all 0.2s;
 
-	::v-deep .el-tag {
+	:deep(.el-tag) {
 		width: 100%;
 		height: 100%;
 		line-height: 30px;

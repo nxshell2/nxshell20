@@ -1,4 +1,4 @@
-@import "const";
+@use "const" as *;
 
 %reset-margin-padding {
   margin: 0;

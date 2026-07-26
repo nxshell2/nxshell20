@@ -91,7 +91,7 @@ const handleClick = () => {
 </script>
 
 <style lang="scss" scoped>
-@import '@/assets/scss/_const.scss';
+@use '@/assets/scss/_const.scss' as *;
 
 .nx-content-submenu {
 	left: 100px;

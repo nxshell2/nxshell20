@@ -166,7 +166,7 @@ onMounted(() => {
 </script>
 
 <style lang="scss">
-@import '@/assets/scss/_const.scss';
+@use '@/assets/scss/_const.scss' as *;
 
 .pt-window {
   display: flex;

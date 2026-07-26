@@ -125,7 +125,7 @@ export default {
 	align-items: center;
 	width: 100%;
 
-	::v-deep .el-input-group__append {
+	:deep(.el-input-group__append) {
 		.el-button {
 			span {
 				padding-right: 10px;

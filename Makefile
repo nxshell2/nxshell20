@@ -8,7 +8,7 @@
 .PHONY: all install lint lint-fix dev core shell native pack dist clean clean-all
 
 export buildTimes := $(shell date -u +%Y%m%d%H%M)
-VERSION := $(shell node -p "require('./package.json').version")
+VERSION ?= $(shell node -p "require('./package.json').version")
 ELECTRON_VERSION := 43.2.0
 
 all: dist

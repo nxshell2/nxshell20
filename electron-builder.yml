@@ -40,4 +40,4 @@ mac:
   target: dmg
   icon: build/resources/mac/icon-128.icns
   category: public.app-category.developer-tools
-afterPack: ./afterPackHook.js
+afterPack: ./build/afterPackHook.js

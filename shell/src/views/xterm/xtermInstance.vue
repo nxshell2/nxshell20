@@ -23,24 +23,28 @@
 				</span>
 			</el-tooltip>
 		</div>
-		<PtXterm
-			class="xterm-pt"
-			ref="xterm"
-			:sendToAllTerm="keyboardToAll"
-			@xterm-focus="xtermFocus"
-			@sendToAll="openSendAll"
-			@line-data="handleLog"
-			@file-drop="handleFileDrop"
-			@link="openLink"
-			@key="onXtermKey"
-			@termdata="onXtermData"
-			@resize="onXtermResize"
-			@titleChange="onTitleChange"
-			@shortcut="handleShortCutEvent"
-			v-context-menu="xtermMenu"
-			:options="options"
-		/>
-		<pt-auth-dialog ref="dialog" @authOk="handleAuthOk" />
+		<div class="xterm-main-area">
+			<PtXterm
+				class="xterm-pt"
+				ref="xterm"
+				:sendToAllTerm="keyboardToAll"
+				@xterm-focus="xtermFocus"
+				@sendToAll="openSendAll"
+				@line-data="handleLog"
+				@file-drop="handleFileDrop"
+				@link="openLink"
+				@key="onXtermKey"
+				@termdata="onXtermData"
+				@resize="onXtermResize"
+				@titleChange="onTitleChange"
+				@shortcut="handleShortCutEvent"
+				v-context-menu="xtermMenu"
+				@ask-ai="handleAskAI"
+				:options="options"
+			/>
+			<pt-auth-dialog ref="dialog" @authOk="handleAuthOk" />
+			<ai-assistant-panel ref="aiAssistantPanel" @insert-command="handleInsertCommand" />
+		</div>
 	</div>
 </template>
 
@@ -48,6 +52,7 @@
 import path from "path"
 import xtermTheme from "xterm-theme"
 import PtAuthDialog from "../components/auth/auth"
+import AIAssistantPanel from "../components/ai/AIAssistantPanel.vue"
 import { getProfile } from "@/services/globalSetting"
 import * as EventBus from "../../services/eventbus"
 import { PtXterm } from "@/components"
@@ -62,7 +67,8 @@ export default {
 	name: "XtermInstance",
 	components: {
 		PtXterm,
-		PtAuthDialog
+		PtAuthDialog,
+		"ai-assistant-panel": AIAssistantPanel
 	},
 	props: {
 		sessionInstanceId: {
@@ -101,6 +107,11 @@ export default {
 					label: "home.session-instance.context-menu.search",
 					type: "normal",
 					handler: this.handleSearch
+				},
+				{
+					label: "home.session-instance.context-menu.ask-ai",
+					type: "normal",
+					handler: this.handleAskAI
 				},
 				{
 					label: "home.session-instance.context-menu.fullscreen",
@@ -615,6 +626,22 @@ export default {
 			let uri = "https://cn.bing.com/search?q=" + s
 			this.openLink(uri)
 		},
+		handleAskAI(selectedText = "") {
+			selectedText = selectedText || this.$refs.xterm?.getSelection() || ""
+			const recentOutput = this.$refs.xterm?.getRecentOutput(50) || ""
+			const sessionConfig = this.$sessionManager?.getSessionConfigByInstanceId(this.sessionInstanceId)
+			const hostInfo = sessionConfig?.config || {}
+			this.$refs.aiAssistantPanel?.showAI({
+				selectedText,
+				recentOutput,
+				hostInfo,
+				sessionType: sessionConfig?.type || "ssh"
+			})
+		},
+		handleInsertCommand(command) {
+			this.$refs.xterm?.pasteText(command)
+			this.$refs.xterm?.focus()
+		},
 		async handleFullscreen() {
 			try {
 				EventBus.publish("enter-fullscreen", "open")
@@ -749,6 +776,8 @@ export default {
 .xterm-instance {
 	width: 100%;
 	height: 100%;
+	display: flex;
+	flex-direction: column;
 
 	.session-toolbar {
 		display: flex;
@@ -801,8 +830,18 @@ export default {
 		}
 	}
 
+	.xterm-main-area {
+		display: flex;
+		flex-direction: row;
+		flex: 1;
+		min-height: 0;
+		overflow: hidden;
+	}
+
 	.xterm-pt {
-		height: calc(100% - 40px);
+		flex: 1;
+		min-width: 0;
+		min-height: 0;
 	}
 }
 </style>

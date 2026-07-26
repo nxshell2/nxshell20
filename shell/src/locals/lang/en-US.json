@@ -477,7 +477,8 @@
                 "send-many": "All SSH Terminal",
                 "send-one": "Current SSH Terminal",
                 "lock": "Lock Sessions",
-                "select-all": "Select All"
+                "select-all": "Select All",
+                "ask-ai": "Ask AI"
             },
             "delete-dialog": {
                 "title": "Close Session Instance",
@@ -486,6 +487,35 @@
             "save-dialog": {
                 "title": "Close Sftp Editor",
                 "message": "Are you sure to save the file?"
+            }
+        },
+        "ai": {
+            "panel-title": "AI Assistant",
+            "thinking": "Thinking...",
+            "input-placeholder": "Ask follow-up...",
+            "send": "Send",
+            "explain-prompt": "Please explain this output and suggest a fix",
+            "copy-command": "Copy",
+            "insert-terminal": "Insert to Terminal",
+            "copied": "Copied to clipboard",
+            "confirm-required": "This command is risky, please confirm before executing",
+            "no-response": "AI returned no content",
+            "error": "Request failed",
+            "clear": "Clear",
+            "close": "Close",
+            "settings": {
+                "title": "AI Settings",
+                "provider": "AI Provider",
+                "provider-ollama": "Ollama (Local)",
+                "provider-openai": "OpenAI Compatible",
+                "ollama-url": "Ollama URL",
+                "ollama-model": "Model",
+                "openai-url": "API URL",
+                "openai-key": "API Key",
+                "openai-model": "Model",
+                "context-lines": "Context Lines",
+                "save": "Save Settings",
+                "saved": "AI settings saved"
             }
         },
         "welcome": {

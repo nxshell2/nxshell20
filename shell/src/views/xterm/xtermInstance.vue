@@ -22,6 +22,11 @@
 					<Position />
 				</span>
 			</el-tooltip>
+			<el-tooltip v-if="toolbarShow" class="item" effect="dark" :content="$t('home.session-instance.sys-monitor.title')" placement="top-start">
+				<span class="btn" @click="openSysMonitor">
+					<Monitor />
+				</span>
+			</el-tooltip>
 		</div>
 		<div class="xterm-main-area">
 			<PtXterm
@@ -44,6 +49,7 @@
 			/>
 			<pt-auth-dialog ref="dialog" @authOk="handleAuthOk" />
 			<ai-assistant-panel ref="aiAssistantPanel" @insert-command="handleInsertCommand" />
+			<sys-monitor ref="sysMonitor" :sessionInstance="sessionInstance" />
 		</div>
 	</div>
 </template>
@@ -53,6 +59,7 @@ import path from "path"
 import xtermTheme from "xterm-theme"
 import PtAuthDialog from "../components/auth/auth"
 import AIAssistantPanel from "../components/ai/AIAssistantPanel.vue"
+import SysMonitor from "./components/SysMonitor.vue"
 import { getProfile } from "@/services/globalSetting"
 import * as EventBus from "../../services/eventbus"
 import { PtXterm } from "@/components"
@@ -68,7 +75,8 @@ export default {
 	components: {
 		PtXterm,
 		PtAuthDialog,
-		"ai-assistant-panel": AIAssistantPanel
+		"ai-assistant-panel": AIAssistantPanel,
+		"sys-monitor": SysMonitor
 	},
 	props: {
 		sessionInstanceId: {
@@ -328,6 +336,10 @@ export default {
 
 		updateTunnelTitle(id, title) {
 			this.tunnelMapTitle[id] = title
+		},
+
+		openSysMonitor() {
+			this.$refs.sysMonitor?.show()
 		},
 
 		async openSFTP() {
@@ -666,7 +678,7 @@ export default {
 			}
 			if (["Tomorrow", "Spring"].indexOf(themeName) >= 0) {
 				// Fix selection no effect
-				theme.selection = theme.brightBlack
+				theme.selectionBackground = theme.brightBlack
 			}
 			return theme
 		},

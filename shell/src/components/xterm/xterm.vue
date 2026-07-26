@@ -40,12 +40,12 @@
 <script>
 import mousetrap from "mousetrap"
 import debounce from "lodash/debounce"
-import "../../../node_modules/xterm/css/xterm.css"
-import { Terminal } from "xterm"
-import { WebLinksAddon } from "xterm-addon-web-links"
-import { FitAddon } from "xterm-addon-fit"
-import { WebglAddon } from "xterm-addon-webgl"
-import { SearchAddon } from "xterm-addon-search"
+import "@xterm/xterm/css/xterm.css"
+import { Terminal } from "@xterm/xterm"
+import { WebLinksAddon } from "@xterm/addon-web-links"
+import { FitAddon } from "@xterm/addon-fit"
+import { WebglAddon } from "@xterm/addon-webgl"
+import { SearchAddon } from "@xterm/addon-search"
 import { getProfile } from "@/services/globalSetting"
 
 export default {
@@ -120,7 +120,8 @@ export default {
 							if (!renderDimensions) {
 								return
 							}
-							const { actualCellWidth, actualCellHeight } = renderDimensions
+							const actualCellWidth = renderDimensions.css.cell.width
+							const actualCellHeight = renderDimensions.css.cell.height
 
 							// show tip
 							this.urlTip = uri
@@ -380,15 +381,19 @@ export default {
 		setTheme(theme = {}) {
 			// 优化xterm终端边距
 			this.backgroundColor = theme.background
-			this.terminal?.setOption("theme", theme)
+			if (this.terminal) {
+				this.terminal.options.theme = theme
+			}
 		},
 
 		setOption(name, value) {
-			this.terminal?.setOption(name, value)
+			if (this.terminal) {
+				this.terminal.options[name] = value
+			}
 		},
 
 		getOption(name) {
-			return this.terminal?.getOption(name)
+			return this.terminal?.options[name]
 		},
 
 		focus() {
@@ -433,14 +438,19 @@ export default {
 				this.aiTip.show = false
 				return
 			}
-			const { actualCellWidth, actualCellHeight } = renderDimensions
+			const actualCellWidth = renderDimensions.css.cell.width
+			const actualCellHeight = renderDimensions.css.cell.height
 
-			const endRow = Math.max(startY, endY)
+			// v6 getSelectionPosition returns buffer coordinates; convert to viewport coordinates
+			const viewportY = this.terminal.buffer.active.viewportY
+			const startRow = startY - viewportY
+			const endRow = endY - viewportY
+			const viewportEndRow = Math.max(startRow, endRow)
 			const endCol = endY > startY ? endX : Math.max(startX, endX)
 
 			this.aiTip.text = selection
 			this.aiTip.left = endCol * actualCellWidth
-			this.aiTip.top = (endRow + 1) * actualCellHeight + 4
+			this.aiTip.top = (viewportEndRow + 1) * actualCellHeight + 4
 			this.aiTip.show = true
 		},
 		handleAskAIClick() {

@@ -111,6 +111,14 @@ class ShellSession extends SessionInterface {
         return await this.terminal.getConnId();
     }
 
+    async exec(command) {
+        if (!this.terminal) {
+            throw new Error('Terminal not ready');
+        }
+        await this.clientReady?.wait();
+        return await this.terminal.exec(command);
+    }
+
     _close_terminal() {
         if(this.terminal) {
             this.terminal.dispose();

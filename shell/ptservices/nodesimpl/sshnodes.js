@@ -201,6 +201,26 @@ class SSH2Terminal extends NxTerminal {
         _remove_used_port(this.socks5_port);
     }
 
+    async exec(command) {
+        const conn = this.parent.refConnection(this.connId);
+        if (!conn) {
+            throw new Error('SSH connection not available');
+        }
+        return new Promise((resolve, reject) => {
+            conn.exec(command, (err, stream) => {
+                if (err) {
+                    reject(err);
+                    return;
+                }
+                let stdout = '';
+                let stderr = '';
+                stream.on('data', (data) => { stdout += data.toString(); });
+                stream.stderr.on('data', (data) => { stderr += data.toString(); });
+                stream.on('close', () => { resolve({ stdout, stderr }); });
+            });
+        });
+    }
+
     async close() {
         if (this.shellStream) {
             this.shellStream.close();

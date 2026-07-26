@@ -81,6 +81,7 @@ pack: core shell
 # -----------------------------------------------------------------------------
 dist: pack native
 	@echo "buildTimes=$(buildTimes)" > electron-builder.env
+	@node -e "const fs=require('fs'); const p='pack/package.json'; const pkg=JSON.parse(fs.readFileSync(p,'utf8')); pkg.version='$(VERSION)'; fs.writeFileSync(p, JSON.stringify(pkg,null,2)+'\\n');"
 	npx electron-builder --config electron-builder.yml
 
 # -----------------------------------------------------------------------------

@@ -139,18 +139,14 @@ export default {
 			width: 100px;
 		}
 
-		::v-deep .el-progress {
-			&-bar {
-				&__outer,
-				&__inner {
-					border-radius: 0 !important;
-				}
-			}
+		:deep(.el-progress-bar__outer),
+		:deep(.el-progress-bar__inner) {
+			border-radius: 0 !important;
+		}
 
-			&__text {
-				font-size: 14px !important;
-				color: var(--n-text-color-base);
-			}
+		:deep(.el-progress__text) {
+			font-size: 14px !important;
+			color: var(--n-text-color-base);
 		}
 	}
 

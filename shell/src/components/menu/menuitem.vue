@@ -36,7 +36,7 @@ export default {
 </script>
 
 <script setup>
-import { popMenu, pushMenu } from './menuManager'
+import { popMenu, pushMenu, closeAllMenu } from './menuManager'
 import { useI18n } from 'vue-i18n'
 import { computed, getCurrentInstance, ref } from 'vue'
 
@@ -86,11 +86,12 @@ const handleClick = () => {
 	if (typeof props.item.handler === 'function') {
 		props.item.handler()
 	}
+	closeAllMenu()
 }
 </script>
 
 <style lang="scss" scoped>
-@import '@/assets/scss/_const.scss';
+@use '@/assets/scss/_const.scss' as *;
 
 .nx-content-submenu {
 	left: 100px;

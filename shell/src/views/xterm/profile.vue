@@ -879,19 +879,17 @@ export default {
 		height: 100%;
 		padding-left: 10px;
 
-		::v-deep .el-tabs {
-			&__item {
-				color: var(--n-text-color-base) !important;
+		:deep(.el-tabs__item) {
+			color: var(--n-text-color-base) !important;
 
-				&.is-active {
-					background-color: var(--n-hover-bg-color);
-					color: var(--n-text-color-active) !important;
-				}
+			&.is-active {
+				background-color: var(--n-hover-bg-color);
+				color: var(--n-text-color-active) !important;
 			}
+		}
 
-			&__active-bar {
-				background-color: var(--n-tabs-item-active);
-			}
+		:deep(.el-tabs__active-bar) {
+			background-color: var(--n-tabs-item-active);
 		}
 	}
 

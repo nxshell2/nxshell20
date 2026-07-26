@@ -478,7 +478,7 @@ onBeforeUnmount(() => {
 </script>
 
 <style lang="scss">
-//::v-deep .collapse-transition{
+//:deep(.collapse-transition) {
 //  transition: none !important;
 //}
 .nx-menu-wrapper {

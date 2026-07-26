@@ -90,7 +90,7 @@
 					>
 						<el-descriptions-item :span='10'>
 							<template #label >
-								<n-icon size='28' :name='filePropDialog.dirent.fileicon' />
+								<n-icon v-if='filePropDialog.dirent.fileicon' size='28' :name='filePropDialog.dirent.fileicon' />
 							</template>
 							{{ filePropDialog.dirent.filename }}
 						</el-descriptions-item>
@@ -1849,7 +1849,7 @@ export default {
     text-align: right;
   }
 
-  ::v-deep .el-input__inner {
+  :deep(.el-input__inner) {
     border: 1px solid var(--n-bg-color-base) !important;
   }
 }

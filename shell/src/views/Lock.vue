@@ -2,14 +2,14 @@
 	<div class="lock-page">
 		<div class="n-lock-config">
 			<div class="n-lock-config__header">
-				<n-space v-if="!userLock">
-					<Lock />
-					{{ t('lock.lock_desc') }} {{ aa }} {{ userLock }}
-				</n-space>
-				<n-space v-else>
-					<Unlock />
-					{{ t('lock.unlock_desc') }}
-				</n-space>
+				<div v-if="!userLock" class="n-lock-config__title">
+					<Lock style="font-size: 28px" />
+					<span>{{ t('lock.lock_desc') }}</span>
+				</div>
+				<div v-else class="n-lock-config__title">
+					<Unlock style="font-size: 28px" />
+					<span>{{ t('lock.unlock_desc') }}</span>
+				</div>
 			</div>
 			<el-form ref="lockFormRef" :model="lockForm" :rules="rules" label-width="100px" @submit.prevent>
 				<el-form-item v-if="!userLock" prop="password" :label="t('lock.password_desc')">
@@ -29,14 +29,14 @@
 				</n-space>
 			</div>
 			<div v-else class="n-lock-config__footer">
-				<el-button type="primary" @click="handleUnLock">{{ t('components.OK') }} ass</el-button>
+				<el-button type="primary" @click="handleUnLock">{{ t('components.OK') }}</el-button>
 			</div>
 		</div>
 	</div>
 </template>
 
 <script setup>
-import { computed, reactive, ref } from 'vue'
+import { reactive, ref } from 'vue'
 import { useSettingStore } from '@/store'
 import { storeToRefs } from 'pinia'
 import { useI18n } from 'vue-i18n'
@@ -47,7 +47,6 @@ const { t } = useI18n()
 const lockFormRef = ref()
 const settingStore = useSettingStore()
 const { userLock } = storeToRefs(settingStore)
-const aa = computed(() => settingStore.userLock)
 
 const router = useRouter()
 
@@ -87,7 +86,6 @@ const back = () => {
 const handleOk = () => {
 	lockFormRef.value?.validate((valid) => {
 		if (valid) {
-			alert('submit!')
 			userLock.value = true
 		} else {
 			return false
@@ -95,13 +93,16 @@ const handleOk = () => {
 	})
 }
 const handleUnLock = () => {
-	// if (password_input.value === password.value) {
-	// 	userLock.value = false
-	// 	password_input.value = ''
-	// 	back()
-	// } else {
-	// 	Message.error('密码输入错误！')
-	// }
+	if (lockForm.password_input === lockForm.password) {
+		userLock.value = false
+		lockForm.password_input = ''
+		lockForm.password = ''
+		lockForm.verify = ''
+		back()
+	} else {
+		ElMessage.error('密码输入错误！')
+		lockForm.password_input = ''
+	}
 }
 </script>
 
@@ -126,6 +127,16 @@ const handleUnLock = () => {
 			height: 80px;
 			font-size: 20px;
 			font-weight: 800;
+		}
+
+		&__title {
+			display: inline-flex;
+			align-items: center;
+			gap: 10px;
+
+			span {
+				white-space: nowrap;
+			}
 		}
 
 		&__footer {

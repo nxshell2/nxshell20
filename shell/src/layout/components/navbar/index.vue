@@ -166,7 +166,7 @@ onMounted(() => {
 	border-color: var(--n-border-color);
 	background-color: var(--n-bg-color-light);
 
-	::v-deep .el-dropdown-menu__item:not(.is-disabled) {
+	:deep(.el-dropdown-menu__item:not(.is-disabled)) {
 		color: var(--n-text-color-base);
 		border-radius: 4px;
 
@@ -185,7 +185,7 @@ onMounted(() => {
 		background-color: var(--n-bg-color-base);
 	}
 
-	::v-deep .popper__arrow {
+	:deep(.popper__arrow) {
 		border-top-color: var(--n-bg-color-light) !important;
 
 		&::after {
@@ -218,7 +218,7 @@ onMounted(() => {
 	.icon-setting-container {
 		padding-bottom: 10px;
 
-		::v-deep .el-button {
+		:deep(.el-button) {
 			width: 40px;
 
 			i {

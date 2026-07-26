@@ -666,7 +666,7 @@ export default {
 			}
 			if (["Tomorrow", "Spring"].indexOf(themeName) >= 0) {
 				// Fix selection no effect
-				theme.selection = theme.brightBlack
+				theme.selectionBackground = theme.brightBlack
 			}
 			return theme
 		},

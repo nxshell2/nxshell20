@@ -7,7 +7,7 @@
 
 <script lang="ts" setup>
 import { onMounted, ref } from 'vue'
-import { Terminal } from 'xterm'
+import { Terminal } from '@xterm/xterm'
 
 const props = defineProps({})
 const xtermRef = ref()

@@ -148,7 +148,9 @@
             "create-session": "新建会话",
             "save-config": "导出配置文件",
             "import-config": "导入配置文件",
-            "rename": "重命名"
+            "rename": "重命名",
+            "refresh": "刷新",
+            "mount-manager": "配置源管理"
         },
         "profile": {
             "global-setting": "全局设置",
@@ -707,5 +709,58 @@
         "sftp": {
             "err-dialog-title": "操作异常"
         }
+    },
+    "mount": {
+        "manager": {
+            "title": "配置源管理"
+        },
+        "add": "添加",
+        "edit": "编辑",
+        "delete": "删除",
+        "readonly": "只读",
+        "default": "默认",
+        "testConnection": "测试连接",
+        "testFailed": "连接测试失败",
+        "addSuccess": "添加成功",
+        "updateSuccess": "更新成功",
+        "saveFailed": "保存失败",
+        "deleteConfirm": "确定要删除配置源 \"{name}\" 吗？删除后该配置源下的会话将不再显示。",
+        "deleteSuccess": "删除成功",
+        "deleteFailed": "删除失败",
+        "type": {
+            "local": "本地"
+        },
+        "form": {
+            "name": "名称",
+            "namePlaceholder": "请输入配置源名称",
+            "nameRequired": "请输入名称",
+            "type": "类型",
+            "typeRequired": "请选择类型",
+            "url": "URL",
+            "urlRequired": "请输入URL",
+            "basePath": "路径",
+            "host": "主机",
+            "hostRequired": "请输入主机地址",
+            "port": "端口",
+            "username": "用户名",
+            "password": "密码",
+            "authType": "认证方式",
+            "authPassword": "密码",
+            "authKey": "密钥",
+            "privateKey": "私钥路径",
+            "privateKeyPlaceholder": "~/.ssh/id_rsa",
+            "readonly": "只读模式"
+        },
+        "status": {
+            "loading": "加载中...",
+            "offline": "离线",
+            "online": "在线",
+            "error": "错误"
+        }
+    },
+    "common": {
+        "cancel": "取消",
+        "save": "保存",
+        "warning": "警告"
     }
 }

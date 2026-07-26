@@ -59,9 +59,14 @@
 							<el-col :span="12">
 								<!-- 端口 -->
 								<el-form-item :label="$t('home.profile.serial.port.title')" prop="port">
-									<el-select v-model="sessionForm.port">
-										<el-option v-for="(item, index) in serialPorts" :value="item" :key="index">
-											{{ item }}
+									<el-select v-model="sessionForm.port" style="width: 100%">
+										<el-option
+											v-for="(item, index) in serialPorts"
+											:key="index"
+											:label="item.path || item"
+											:value="item.path || item"
+										>
+											{{ item.path || item }}
 										</el-option>
 									</el-select>
 								</el-form-item>

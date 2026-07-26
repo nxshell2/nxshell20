@@ -1,6 +1,7 @@
 import { defineStore } from 'pinia'
 import { onMounted, reactive, ref } from 'vue'
 import sessionManager from '@/services/sessionMgr'
+import mountManager from '@/services/storage/mountManager'
 
 export interface IMenuNode {
 	id: number
@@ -8,6 +9,11 @@ export interface IMenuNode {
 	text: string
 	icon: string
 	isFolder: boolean
+	isMount?: boolean
+	mountId?: string
+	mountType?: string
+	mountStatus?: string
+	readonly?: boolean
 	type: string
 	protocol: string
 	data: Record<string, any>
@@ -107,11 +113,71 @@ const useSessionStore = defineStore('session', () => {
 				search.value = true
 				menuTree.value.splice(0, menuTree.value.length)
 			}
-			const sessionConfigs = sessionManager.getSessionConfigs()
 			// 清空数组
 			group.value.splice(0)
 			menuTree.value.splice(0)
-			process(sessionConfigs, menuTree.value, keyword)
+
+			// 获取所有挂载点根节点
+			const mountRoots = sessionManager.getMountRoots()
+			
+			if (mountRoots.length === 0) {
+				// 兼容旧逻辑：没有挂载点时使用默认
+				const sessionConfigs = sessionManager.getSessionConfigs()
+				process(sessionConfigs, menuTree.value, keyword)
+			} else if (mountRoots.length === 1) {
+				// 只有一个挂载点时，直接显示其子会话（不显示挂载点根节点）
+				const root = mountRoots[0]
+				process(root.subSessions, menuTree.value, keyword)
+			} else {
+				// 多个挂载点时，显示挂载点作为顶级节点
+				for (const mountRoot of mountRoots) {
+					const mount = mountManager.getMount(mountRoot.mountId)
+					const mountStatus = mount?.status || (mountRoot.mountId === 'local' ? 'online' : 'loading')
+					const mountNode: IMenuNode = {
+						id: mountRoot._id,
+						uuid: mountRoot.uuid,
+						icon: getMountIcon(mount?.type || 'local', mountStatus),
+						text: mountRoot.name,
+						isFolder: true,
+						isMount: true,
+						mountId: mountRoot.mountId,
+						mountType: mount?.type || 'local',
+						mountStatus: mountStatus,
+						readonly: mount?.readonly || false,
+						type: 'folder',
+						protocol: '',
+						data: mountRoot.toJSONObject(false),
+						children: []
+					}
+					
+					process(mountRoot.subSessions, mountNode.children!, keyword)
+					
+					// 搜索时只显示有匹配结果的挂载点
+					if (!keyword || mountNode.children!.length > 0) {
+						menuTree.value.push(mountNode)
+					}
+				}
+			}
+		}
+
+		/**
+		 * 获取挂载点图标
+		 */
+		function getMountIcon(type: string, status?: string): string {
+			// 根据状态返回不同图标
+			if (status === 'offline' || status === 'error') {
+				return 'cloud-offline'
+			}
+			if (status === 'loading') {
+				return 'loading'
+			}
+			// 根据类型返回图标
+			switch (type) {
+				case 'webdav': return 'cloud'
+				case 'sftp': return 'server'
+				case 's3': return 'cloud-storage'
+				default: return 'folder-client'
+			}
 		}
 
 		/**
@@ -136,9 +202,9 @@ const useSessionStore = defineStore('session', () => {
 	 *
 	 * @param sessionConfig 会话内容
 	 */
-	async function appendSessionConfig(sessionConfig: Record<string, any>) {
+	async function appendSessionConfig(sessionConfig: any) {
 		const { isFolder, sessionData } = currentNode
-		await sessionManager.addSessionConfig(isFolder ? sessionData?.data : null, sessionConfig)
+		await sessionManager.addSessionConfig(isFolder ? sessionData?.data : null, sessionConfig as any)
 		updateProcess()
 	}
 

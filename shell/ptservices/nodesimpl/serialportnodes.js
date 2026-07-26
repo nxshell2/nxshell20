@@ -1,4 +1,3 @@
-const { NxNode } = require("../../common/nxsys/nodes");
 const { NXTERMINAL_EVENTS, NxTerminal } = require("../../common/nxsys/terminal");
 const { PROTOCOLS, PROTOCOL_CAPS_MAP } = require("../../common/nxsys/consts");
 const { register } = require("./registry");
@@ -30,7 +29,7 @@ class SerialPortTerminal extends NxTerminal {
     async init() {
         let conn = this.parent.refConnection(this.connId);
         
-        return await new Promise((resolve, reject) => {
+        return await new Promise((resolve) => {
             this.serialStream = conn;
             conn.on("close", () => {
                 this.emit(NXTERMINAL_EVENTS.CLOSE);
@@ -75,7 +74,7 @@ class SerialPortTerminal extends NxTerminal {
             this.serialStream.write(data);
         }
     }
-    async setWindowSize(cols, rows) {
+    async setWindowSize(_cols, _rows) {
         
     }
 
@@ -129,7 +128,10 @@ class SerialPortNodes extends NxNodeServer {
         } else {
             open_options.xany = true;
         }
-        const serial_port = new SerialPort(this.config.port, open_options);
+        const serial_port = new SerialPort({
+            path: this.config.port,
+            ...open_options
+        });
         this.serialPortSession = serial_port;
         return  new Promise((resolve, reject) => {
             serial_port.open((e) => {
@@ -183,12 +185,12 @@ class SerialPortNodes extends NxNodeServer {
         return handler;
     }
 
-    async getFSInstance(reuseConnId=-1) {
+    async getFSInstance(_reuseConnId=-1) {
 
     }
-    async getNetInstance(reuseConnId=-1) {}
-    async getGUIInstance(reuseConnId=-1) {}
-    async getUserInstance(reuseConnId=-1) {}
+    async getNetInstance(_reuseConnId=-1) {}
+    async getGUIInstance(_reuseConnId=-1) {}
+    async getUserInstance(_reuseConnId=-1) {}
 
     getPathLib() {
         return super.getPathLib().posix;

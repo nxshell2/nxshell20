@@ -48,6 +48,31 @@ import { WebglAddon } from "@xterm/addon-webgl"
 import { SearchAddon } from "@xterm/addon-search"
 import { getProfile } from "@/services/globalSetting"
 
+// Workaround for xterm.js WebGL addon: it may call getImageData with
+// zero/negative/float/undefined dimensions causing crashes.
+function patchGetImageData(proto) {
+	if (!proto || !proto.getImageData) return
+	const original = proto.getImageData
+	proto.getImageData = function (sx, sy, sw, sh) {
+		// Convert to valid integers, fallback to 1 if invalid
+		const isx = Number.isFinite(sx) ? Math.floor(sx) : 0
+		const isy = Number.isFinite(sy) ? Math.floor(sy) : 0
+		let isw = Number.isFinite(sw) ? Math.floor(sw) : 1
+		let ish = Number.isFinite(sh) ? Math.floor(sh) : 1
+		if (isw < 1) isw = 1
+		if (ish < 1) ish = 1
+		return original.call(this, isx, isy, isw, ish)
+	}
+}
+
+if (typeof window !== "undefined" && !window.__nxGetImageDataPatched) {
+	patchGetImageData(CanvasRenderingContext2D.prototype)
+	if (typeof OffscreenCanvasRenderingContext2D !== "undefined") {
+		patchGetImageData(OffscreenCanvasRenderingContext2D.prototype)
+	}
+	window.__nxGetImageDataPatched = true
+}
+
 export default {
 	name: "PtXterm",
 	props: {
@@ -146,15 +171,20 @@ export default {
 			this.terminal.loadAddon(fitAddon)
 
 			this.terminal.open(this.$refs.xtermContainer)
-			fitAddon.fit()
+			try {
+				fitAddon.fit()
+			} catch (e) {
+				console.log("fit fail:", e)
+			}
 			this.fitAddon = fitAddon
 
+			// Load WebGL addon for better performance
 			const webgl = new WebglAddon()
 			try {
 				webgl.onContextLoss((_e) => webgl.dispose())
 				this.terminal.loadAddon(webgl)
 			} catch (e) {
-				console.log("WebGL init fail, it will fallback to canvas", e)
+				console.log("WebGL init fail, fallback to canvas:", e)
 			}
 
 			this.searchAddon = new SearchAddon()

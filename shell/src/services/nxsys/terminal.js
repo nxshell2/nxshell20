@@ -35,6 +35,10 @@ export class NxTerminalClient extends NxTerminal {
         return await this.service.callObject(this.handler, "getConnId");
     }
 
+    async exec(command) {
+        return await this.service.callObject(this.handler, "exec", command);
+    }
+
     async getWindowSize() {
         const { cols, rows } = this;
         return {

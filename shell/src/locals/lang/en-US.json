@@ -146,7 +146,9 @@
             "create-session": "Create session",
             "save-config": "Export config",
             "import-config": "Import config",
-            "rename": "Rename"
+            "rename": "Rename",
+            "refresh": "Refresh",
+            "mount-manager": "Configuration Sources"
         },
         "profile": {
             "global-setting": "Global Settings",
@@ -705,5 +707,58 @@
         "sftp": {
             "err-dialog-title": "Operation Error"
         }
+    },
+    "mount": {
+        "manager": {
+            "title": "Configuration Sources"
+        },
+        "add": "Add",
+        "edit": "Edit",
+        "delete": "Delete",
+        "readonly": "Read-only",
+        "default": "Default",
+        "testConnection": "Test Connection",
+        "testFailed": "Connection test failed",
+        "addSuccess": "Added successfully",
+        "updateSuccess": "Updated successfully",
+        "saveFailed": "Save failed",
+        "deleteConfirm": "Are you sure you want to delete \"{name}\"? Sessions under this source will no longer be displayed.",
+        "deleteSuccess": "Deleted successfully",
+        "deleteFailed": "Delete failed",
+        "type": {
+            "local": "Local"
+        },
+        "form": {
+            "name": "Name",
+            "namePlaceholder": "Enter source name",
+            "nameRequired": "Name is required",
+            "type": "Type",
+            "typeRequired": "Type is required",
+            "url": "URL",
+            "urlRequired": "URL is required",
+            "basePath": "Path",
+            "host": "Host",
+            "hostRequired": "Host is required",
+            "port": "Port",
+            "username": "Username",
+            "password": "Password",
+            "authType": "Auth Type",
+            "authPassword": "Password",
+            "authKey": "Key",
+            "privateKey": "Private Key Path",
+            "privateKeyPlaceholder": "~/.ssh/id_rsa",
+            "readonly": "Read-only Mode"
+        },
+        "status": {
+            "loading": "Loading...",
+            "offline": "Offline",
+            "online": "Online",
+            "error": "Error"
+        }
+    },
+    "common": {
+        "cancel": "Cancel",
+        "save": "Save",
+        "warning": "Warning"
     }
 }

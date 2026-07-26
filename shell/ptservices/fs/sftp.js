@@ -4,8 +4,6 @@ const fs = require('fs');
 const { PtFileSystem } = require("../../common/filesystem/filesystem");
 const { Dirent } = require("../../common/filesystem/dirent")
 const { IdGenerator } = require("../../common/utils/idGenerator");
-const { resolve } = require('path');
-
 function normalizeAttr(attrs) {
     return {
         mode: attrs.mode,
@@ -177,7 +175,7 @@ class SFTPFileSystem extends PtFileSystem {
                 reject(new Error('handle no exits'));
                 return;
             }
-            this.sftp.read(this.openedFiles[handle], buffer, offset, length, position, (error, bytesRead, buff, pos)=> {
+            this.sftp.read(this.openedFiles[handle], buffer, offset, length, position, (error, bytesRead)=> {
                 if(error) {
                     reject(error);
                 } else {
@@ -197,7 +195,7 @@ class SFTPFileSystem extends PtFileSystem {
                 return;
             }
 
-            this.sftp.write(this.openedFiles[handle], buffer, offset, lenght, position, (err, bytesWrite, buff) => {
+            this.sftp.write(this.openedFiles[handle], buffer, offset, lenght, position, (err, bytesWrite) => {
                 if (err) {
                     reject(err);
                     return;
@@ -306,6 +304,32 @@ class SFTPFileSystem extends PtFileSystem {
     async syncWriteLocalFileContent(local_file, v) {
         const local_path = path.join(os.tmpdir(), local_file)
         return fs.writeFileSync(local_path, v);
+    }
+
+    async readFileContent(filePath) {
+        const handle = await this.open(filePath, 'r');
+        try {
+            const stats = await this.stat(filePath);
+            const size = stats.size;
+            if (size === 0) {
+                return '';
+            }
+            const buffer = Buffer.alloc(size);
+            await this.read(handle, buffer, 0, size, 0);
+            return buffer.toString('utf8');
+        } finally {
+            await this.close(handle);
+        }
+    }
+
+    async writeFileContent(filePath, content) {
+        const handle = await this.open(filePath, 'w');
+        try {
+            const buffer = Buffer.from(content, 'utf8');
+            await this.write(handle, buffer, 0, buffer.length, 0);
+        } finally {
+            await this.close(handle);
+        }
     }
 
     dispose() {

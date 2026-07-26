@@ -17,18 +17,37 @@
 				@node-drop="handleNodeDrop"
 				@node-click="handleNodeSelected"
 			>
-				<template v-slot="{ node, data: { type, icon, protocol, children, data } }">
-					<span class="custom-tree-node" @dblclick.stop="handleHostOpen(data)" @mouseenter="showExtend = true" @mouseleave="showExtend = false">
+				<template v-slot="{ node, data: nodeData }">
+					<span class="custom-tree-node" :class="{ 'mount-offline': nodeData.isMount && nodeData.mountStatus === 'offline' }" @dblclick.stop="handleHostOpen(nodeData.data)" @mouseenter="showExtend = true" @mouseleave="showExtend = false">
 						<n-space>
-							<n-icon v-show="type === 'node'" :name="icon" />
-							<n-icon v-show="type === 'folder'" :name="`${node.expanded ? 'folder-client-open' : 'folder-client'}`" />
+							<!-- 挂载点节点 -->
+							<template v-if="nodeData.isMount">
+								<n-icon v-if="nodeData.mountStatus === 'loading'" name="loading" class="mount-loading" />
+								<!-- 离线/错误：显示类型图标（红色）+ 离线标记 -->
+								<template v-else-if="nodeData.mountStatus === 'offline' || nodeData.mountStatus === 'error'">
+									<n-icon v-if="nodeData.mountType === 'sftp'" name="server" class="mount-error" />
+									<n-icon v-else-if="nodeData.mountType === 'webdav'" name="cloud" class="mount-error" />
+									<n-icon v-else name="folder-client" class="mount-error" />
+									<span class="mount-offline-dot">●</span>
+								</template>
+								<!-- 在线挂载点 -->
+								<n-icon v-else-if="nodeData.mountType === 'sftp'" name="server" />
+								<n-icon v-else-if="nodeData.mountType === 'webdav'" name="cloud" />
+								<n-icon v-else name="folder-client" />
+							</template>
+							<!-- 普通节点 -->
+							<n-icon v-else-if="nodeData.type === 'node'" :name="nodeData.icon" />
+							<!-- 文件夹节点 -->
+							<n-icon v-else-if="nodeData.type === 'folder'" :name="`${node.expanded ? 'folder-client-open' : 'folder-client'}`" />
 							<span :title="node.label || '-'">{{ node.label }}</span>
+							<span v-if="nodeData.isMount && nodeData.mountStatus === 'loading'" class="mount-status-text">{{ $t('mount.status.loading') }}</span>
+							<span v-if="nodeData.isMount && nodeData.mountStatus === 'offline'" class="mount-status-text mount-status-error">{{ $t('mount.status.offline') }}</span>
 						</n-space>
-						<span class="session-extend" v-show="showExtend" style='--n-hover-bg-color: #00000018'>
-							<el-tooltip v-if="type === 'node' && protocol === 'ssh'" effect="dark" :content="$t('home.sessions-context-menu.sftp')" placement="top-start">
-								<nx-button icon="folder-sftp-open" @click.stop="handleOpenSFTP(data)" />
+						<span class="session-extend" v-show="showExtend && !nodeData.isMount" style='--n-hover-bg-color: #00000018'>
+							<el-tooltip v-if="nodeData.type === 'node' && nodeData.protocol === 'ssh'" effect="dark" :content="$t('home.sessions-context-menu.sftp')" placement="top-start">
+								<nx-button icon="folder-sftp-open" @click.stop="handleOpenSFTP(nodeData.data)" />
 							</el-tooltip>
-							<nx-button icon="Delete" @click.stop="handleDelete(data._id)" />
+							<nx-button icon="Delete" @click.stop="handleDelete(nodeData.data._id)" />
 						</span>
 					</span>
 				</template>
@@ -39,6 +58,8 @@
 		<nx-folder-dialog ref="folderDialogRef" />
 		<!-- 编辑及新建会话弹窗 -->
 		<component ref="sessionModalRef" :is="sessionModal" />
+		<!-- 挂载点管理 -->
+		<mount-manager v-model="mountManagerVisible" @change="handleMountChange" />
 	</div>
 </template>
 
@@ -46,6 +67,7 @@
 import { SESSION_CONFIG_TYPE } from "@/services/sessionMgr"
 import { subscript, unsubscript } from "@/services/eventbus"
 import NxFolderDialog from "./components/FolderDialog.vue"
+import MountManager from "@/views/components/mount/MountManager.vue"
 import NSpace from "@/components/space"
 import { showContextMenu } from "@/components/menu/contextmenu"
 import { storeToRefs } from "pinia"
@@ -72,8 +94,33 @@ const sessionManager = proxy.$sessionManager
 const sessionModal = shallowRef()
 const sessionModalRef = ref()
 const showExtend = ref(false)
+const mountManagerVisible = ref(false)
+
 const createFolder = (name) => {
 	folderDialogRef.value?.show(name)
+}
+
+const showMountManager = () => {
+	mountManagerVisible.value = true
+}
+
+const handleMountChange = () => {
+	// 挂载点变化后刷新会话树
+	sessionStore.updateProcess()
+}
+
+const refreshMount = async () => {
+	// 刷新当前挂载点的会话
+	const mountId = currentNode.value.sessionData?.mountId
+	if (mountId) {
+		try {
+			await sessionManager.loadMountSessions(mountId)
+		} catch (e) {
+			console.warn(`Refresh mount ${mountId} failed:`, e)
+		} finally {
+			sessionStore.updateProcess()
+		}
+	}
 }
 
 const clipboard = reactive({
@@ -371,6 +418,60 @@ const contextMenus = {
 			label: "home.sessions-context-menu.import-config",
 			type: "normal",
 			handler: importSessionConfig
+		},
+		{
+			label: "home.sessions-context-menu.mount-manager",
+			type: "normal",
+			handler: () => showMountManager()
+		}
+	],
+	// 挂载点根节点的右键菜单
+	mount: [
+		{
+			label: "home.sessions-context-menu.create-folder",
+			type: "normal",
+			handler: createFolder
+		},
+		{
+			label: "home.sessions-context-menu.create-session",
+			type: "submenu",
+			submenu: [
+				{
+					label: "SSH",
+					type: "normal",
+					handler: () => createShellModal("ssh")
+				},
+				{
+					label: "SFTP",
+					type: "normal",
+					handler: () => createShellModal("ftp")
+				},
+				{
+					label: "Serial",
+					type: "normal",
+					handler: () => createShellModal("serial")
+				},
+				{
+					label: "Telnet",
+					type: "normal",
+					handler: () => createShellModal("telnet")
+				},
+				{
+					label: "VNC",
+					type: "normal",
+					handler: () => createShellModal("vnc")
+				}
+			]
+		},
+		{
+			label: "home.sessions-context-menu.refresh",
+			type: "normal",
+			handler: () => refreshMount()
+		},
+		{
+			label: "home.sessions-context-menu.mount-manager",
+			type: "normal",
+			handler: () => showMountManager()
 		}
 	]
 }
@@ -423,7 +524,11 @@ const nodeContextmenu = (event, data, node, _vnode) => {
 	sessionStore.updateCurrentNode(sessionTreeRef.value, node, data)
 	const { type: nodeType } = data.data
 	let menuContent = []
-	if (data.isFolder) {
+
+	// 挂载点根节点的右键菜单
+	if (data.isMount) {
+		menuContent = contextMenus.mount
+	} else if (data.isFolder) {
 		menuContent = contextMenus.folder
 	}
 
@@ -447,6 +552,11 @@ const menuSearch = (value, data) => {
 	if (!value) return true
 	return data.text.indexOf(value) !== -1
 }
+// 监听远程挂载点加载完成
+const onMountSessionsLoaded = () => {
+	sessionStore.updateProcess()
+}
+
 onMounted(() => {
 	// 订阅主机搜索事件
 	subscript("nx-menu-search", (keywords) => {
@@ -461,6 +571,8 @@ onMounted(() => {
 	// 订阅会话创建事件
 	// subscript('create-session-toolbar', () => telnetModalRef.value?.showModal())
 	subscript("create-session-toolbar", (type) => createShellModal(type))
+	// 监听远程挂载点会话加载完成
+	sessionManager.on("mount-sessions-loaded", onMountSessionsLoaded)
 	nextTick(() => sessionStore.updateCurrentNode(sessionTreeRef.value))
 })
 onBeforeUnmount(() => {
@@ -474,6 +586,8 @@ onBeforeUnmount(() => {
 	unsubscript("session-added", () => sessionStore.updateProcess())
 	// 订阅会话创建事件
 	unsubscript("create-session-toolbar", () => sshModalRef.value?.showModal())
+	// 移除远程挂载点监听
+	sessionManager.off("mount-sessions-loaded", onMountSessionsLoaded)
 })
 </script>
 
@@ -563,6 +677,42 @@ onBeforeUnmount(() => {
 			}
 		}
 	}
+}
+
+// 挂载点状态样式
+.mount-loading {
+	animation: spin 1s linear infinite;
+	color: var(--el-color-primary);
+}
+
+.mount-error {
+	color: var(--el-color-danger);
+}
+
+.mount-offline-dot {
+	color: var(--el-color-danger);
+	font-size: 8px;
+	margin-left: -2px;
+	margin-top: -4px;
+}
+
+.mount-offline {
+	opacity: 0.6;
+}
+
+.mount-status-text {
+	font-size: 11px;
+	color: var(--el-text-color-secondary);
+	margin-left: 4px;
+}
+
+.mount-status-error {
+	color: var(--el-color-danger);
+}
+
+@keyframes spin {
+	from { transform: rotate(0deg); }
+	to { transform: rotate(360deg); }
 }
 
 .custom-tree-node {

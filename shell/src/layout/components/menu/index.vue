@@ -67,7 +67,9 @@
 import { SESSION_CONFIG_TYPE } from "@/services/sessionMgr"
 import { subscript, unsubscript } from "@/services/eventbus"
 import NxFolderDialog from "./components/FolderDialog.vue"
+// eslint-disable-next-line no-unused-vars, @typescript-eslint/no-unused-vars
 import MountManager from "@/views/components/mount/MountManager.vue"
+import mountManager from "@/services/storage/mountManager"
 import NSpace from "@/components/space"
 import { showContextMenu } from "@/components/menu/contextmenu"
 import { storeToRefs } from "pinia"
@@ -115,6 +117,14 @@ const refreshMount = async () => {
 	if (mountId) {
 		try {
 			await sessionManager.loadMountSessions(mountId)
+			// 加载成功，更新挂载点状态为在线
+			const mount = sessionManager.getMountRoots().find(r => r.mountId === mountId)
+			if (mount) {
+				const mountInfo = mountManager.getMount(mountId)
+				if (mountInfo) {
+					mountInfo.status = "online"
+				}
+			}
 		} catch (e) {
 			console.warn(`Refresh mount ${mountId} failed:`, e)
 		} finally {
@@ -289,6 +299,11 @@ const contextMenus = {
 					label: "VNC",
 					type: "normal",
 					handler: () => createShellModal("vnc")
+				},
+				{
+					label: "localShell",
+					type: "normal",
+					handler: () => createShellModal("localShell")
 				}
 			]
 		},
@@ -460,6 +475,11 @@ const contextMenus = {
 					label: "VNC",
 					type: "normal",
 					handler: () => createShellModal("vnc")
+				},
+				{
+					label: "localShell",
+					type: "normal",
+					handler: () => createShellModal("localShell")
 				}
 			]
 		},

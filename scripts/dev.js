@@ -1,20 +1,22 @@
 #!/usr/bin/env node
+const path = require("path");
 const { spawn } = require("child_process");
 const http = require("http");
-const path = require("path");
 const readline = require("readline");
 
 const root = path.resolve(__dirname, "..");
 const shellDir = path.join(root, "shell");
+const shellPackage = require(path.join(shellDir, "package.json"));
 const coreDir = path.join(root, "core");
 const ptservicesDir = path.join(shellDir, "ptservices");
 
-const shellPackage = require(path.join(shellDir, "package.json"));
+const ptservicesBuildDir = path.join(shellDir, "devtools", "webpack", "dist");
+const ptservicesOutput = path.join(ptservicesBuildDir, "index.js");
 
 const injectAppPackage = {
     name: "powertools-shell",
     version: shellPackage.version,
-    main: path.join(ptservicesDir, "index.js"),
+    main: ptservicesOutput,
     resources: {
         icon: "",
         path: ptservicesDir,
@@ -102,10 +104,36 @@ function runCommand(name, cmd, args, cwd, env = process.env) {
     return child;
 }
 
-console.log("Starting shell dev server...");
+function runBuild(name, cmd, args, cwd) {
+    const child = spawn(cmd, args, {
+        cwd,
+        env: process.env,
+        detached: true,
+        stdio: ["ignore", "pipe", "pipe"]
+    });
+    prefixOutput(child, name);
+    return child;
+}
+
+function waitForChild(child) {
+    return new Promise((resolve, reject) => {
+        child.on("exit", (code) => {
+            if (code === 0) {
+                resolve();
+            } else {
+                reject(new Error(`${child.spawnargs.join(" ")} exited with code ${code}`));
+            }
+        });
+    });
+}
+
+console.log("Building ptservices...");
+const buildChild = runBuild("ptservices-build", "node", ["devtools/buildservice.js"], shellDir);
+const buildPromise = waitForChild(buildChild);
+
 runCommand("shell", "npm", ["run", "serve"], shellDir);
 
-waitForServer("http://localhost:8080")
+Promise.all([buildPromise, waitForServer("http://localhost:8080")])
     .then(() => {
         console.log("Shell dev server ready, starting core...");
         const env = {

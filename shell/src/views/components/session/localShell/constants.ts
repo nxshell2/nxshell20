@@ -3,5 +3,5 @@ export const defaultForm = {
 	protocal: "localshell",
 	hostName: "",
 	system: "powershell",
-	group: "",
+	shellType: "powershell",
 }

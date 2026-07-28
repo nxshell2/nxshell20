@@ -3,7 +3,6 @@ export const defaultForm = {
 	protocal: 'ftp',
 	hostName: '',
 	system: 's-ftp',
-	group: '',
 	secure: 'false',
 	hostAddress: '',
 	hostFtpPort: 21

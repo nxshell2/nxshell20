@@ -49,8 +49,20 @@
             }
         },
         "session": {
+            "modal-title-add": "Add {protocol} Session",
+            "modal-title-edit": "Edit {protocol} Session",
+            "protocol-names": {
+                "SSH": "SSH",
+                "FTP": "FTP",
+                "Telnet": "Telnet",
+                "Serial": "Serial",
+                "VNC": "VNC",
+                "LocalShell": "Local Shell"
+            },
             "base": {
                 "label": "Universal",
+                "system-icon": "System/Icon",
+                "system-icon-placeholder": "Select system icon",
                 "link-type": {
                     "label": "Link Type",
                     "placeholder": "Please select link type",
@@ -61,7 +73,8 @@
                 }
             },
             "port": {
-                "label": "Port"
+                "label": "Port",
+                "add": "Add"
             },
             "advanced": {
                 "label": "Advanced"
@@ -69,7 +82,8 @@
             "theme": {
                 "label": "Theme"
             },
-            "ssh": {
+            "serial": {
+                "portRequired": "Please select serial port"
             }
         }
     },
@@ -158,6 +172,7 @@
                 "host-name": {
                     "title": "Host name",
                     "placeholder": "Please enter hostname",
+                    "required": "Please enter session name",
                     "description": "The host name can use characters or numbers, which is required."
                 },
                 "host-group": {
@@ -187,6 +202,16 @@
                     "ftpdescription": "Port number,default to 21.",
                     "telnetdescription": "Port number,default to 23.",
                     "vncdescription": "Port number,default to 5800."
+                },
+                "shell-type": {
+                    "title": "Shell Type",
+                    "description": "Select local shell type",
+                    "options": {
+                        "powershell": "PowerShell",
+                        "cmd": "CMD",
+                        "bash": "Bash",
+                        "zsh": "Zsh"
+                    }
                 }
             },
             "system": {
@@ -380,11 +405,13 @@
                     "title": "socksv5 proxy",
                     "host": {
                         "title": "Proxy IP",
-                        "description": "Proxy IP information"
+                        "description": "Proxy IP information",
+                        "placeholder": "Please enter proxy host address"
                     },
                     "port": {
                         "title": "Proxy Port",
-                        "description": "Proxy Port information"
+                        "description": "Proxy Port information",
+                        "placeholder": "Please enter proxy host port"
                     }
                 },
                 "username": {

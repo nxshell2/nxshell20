@@ -1,29 +1,38 @@
 const path = require("path");
 
-const babelModule = {
+const tsModule = {
     rules: [
         {
-            test: /\.js$/,
+            test: /\.ts$/,
             use: {
-                loader: "babel-loader"
+                loader: "ts-loader",
+                options: {
+                    transpileOnly: true
+                }
             }
         }
     ]
+}
+
+const resolve = {
+    extensions: ['.ts', '.js', '.json']
 }
 
 const main = {
     mode: "production",
     target: "electron-main",
     entry: {
-        index: "./index.js"
+        index: "./index.ts"
     },
     output: {
         filename: "[name].js",
         path: path.resolve(__dirname, "dist")
     },
-    module: babelModule,
+    module: tsModule,
+    resolve,
     optimization: {
-        minimize: true
+        minimize: true,
+        nodeEnv: false
     }
 };
 
@@ -31,15 +40,17 @@ const loader = {
     mode: "production",
     target: "electron-main",
     entry: {
-        AppLoader: "./src/core/AppLoader.js"
+        AppLoader: "./src/core/AppLoader.ts"
     },
     output: {
         filename: "[name].js",
         path: path.resolve(__dirname, "dist")
     },
-    module: babelModule,
+    module: tsModule,
+    resolve,
     optimization: {
-        minimize: true
+        minimize: true,
+        nodeEnv: false
     }
 };
 
@@ -47,15 +58,17 @@ const preload = {
     mode: "production",
     target: "electron-preload",
     entry: {
-        AppClient: "./src/core/AppClient.js"
+        AppClient: "./src/core/AppClient.ts"
     },
     output: {
         filename: "[name].js",
         path: path.resolve(__dirname, "dist")
     },
-    module: babelModule,
+    module: tsModule,
+    resolve,
     optimization: {
-        minimize: true
+        minimize: true,
+        nodeEnv: false
     }
 }
 

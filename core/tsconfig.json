@@ -1,0 +1,22 @@
+{
+    "compilerOptions": {
+        "target": "ESNext",
+        "module": "CommonJS",
+        "moduleResolution": "node",
+        "strict": false,
+        "allowJs": true,
+        "esModuleInterop": true,
+        "skipLibCheck": true,
+        "noEmit": true,
+        "resolveJsonModule": true,
+        "baseUrl": ".",
+        "paths": {
+            "@/*": ["src/*"]
+        }
+    },
+    "include": [
+        "src/**/*.ts",
+        "src/**/*.js",
+        "index.js"
+    ]
+}

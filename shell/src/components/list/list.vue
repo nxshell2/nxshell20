@@ -12,7 +12,7 @@
 </template>
 
 <script>
-import PtListItem from "./listitem.js";
+import PtListItem from "./listitem.ts";
 
 export default {
     name: "PtList",

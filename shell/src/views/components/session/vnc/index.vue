@@ -1,250 +1,113 @@
 <template>
-	<el-dialog
-		title="VNC 会话"
-		v-model="visible"
-		append-to-body
-		width="70%"
-		:show-close="false"
-		:destroy-on-close="false"
-		:close-on-click-modal="false"
-		@close="handlerClose"
+	<SessionFormLayout
+		ref="formLayoutRef"
+		protocol="VNC"
+		:rules="vncFormRules"
+		:default-form="defaultForm"
+		description="vnc session"
+		:form-data="formData"
+		@save="handleSave"
+		@save-and-connect="handleSaveAndConnect"
+		@cancel="handleCancel"
 	>
-		<el-form
-			ref="telnetFormRef"
-			:model="sessionForm"
-			:rules="telnetFormRules"
-			class="n-session-ssh-container"
-			label-position="top"
-			label-width="80px"
-		>
-			<div class="n-session-ssh-container__left">
-				<el-form-item :label="t('home.profile.base.host-name.title')" prop="hostName">
-					<el-input
-						v-model="sessionForm.hostName"
-						:placeholder="t('home.profile.base.host-name.placeholder')"
-					/>
-				</el-form-item>
-				<el-form-item :label="t('home.profile.base.host-name.title')" prop="system">
-					<n-space>
-						<el-autocomplete
-							v-model="sessionForm.system"
-							value-key="icon"
-							:fetch-suggestions="querySearch"
-							clearable
-							placeholder="请输入内容"
-						/>
-						<n-icon :name="sessionForm.system" size="24" />
-					</n-space>
-				</el-form-item>
-				<el-form-item :label="t('home.profile.base.host-group.title')" prop="group">
-					<el-select
-						v-model="sessionForm.group"
-						:placeholder="t('home.profile.base.host-group.placeholder')"
-						style="width: 100%"
-					>
-						<el-option
-							v-for="(item, index) in group"
-							:label="item.label"
-							:value="item.value"
-							:key="index"
-						/>
-					</el-select>
-				</el-form-item>
-			</div>
-			<div class="n-session-ssh-container__right">
-				<el-tabs v-model="activeTab" type="border-card">
-					<!-- 通用 -->
-					<el-tab-pane :label="t('components.session.base.label')" name="base">
-						<el-row :gutter="10">
-							<el-col :span="12">
-								<!-- 主机 -->
-								<el-form-item :label="$t('home.profile.base.host.title')" prop="hostAddress">
-									<el-input v-model="sessionForm.hostAddress" />
-								</el-form-item>
-							</el-col>
-							<el-col :span="12">
-								<!-- 端口 -->
-								<el-form-item :label="$t('home.profile.base.port.title')" prop="hostVncPort">
-									<el-input-number v-model="sessionForm.hostVncPort" :min="1" :max="65535" controls-position="right"/>
-								</el-form-item>
-							</el-col>
-						</el-row>
-						<el-row :gutter="10">
-							<el-col :span="12">
-								<!-- 用户名 -->
-								<el-form-item :label="$t('home.profile.auth.username.title')" prop="username">
-									<el-input v-model="sessionForm.username" />
-								</el-form-item>
-							</el-col>
-							<el-col :span="12">
-								<!-- 密码 -->
-								<el-form-item :label="$t('home.profile.auth.password.title')" prop="password">
-									<el-input v-model="sessionForm.password" />
-								</el-form-item>
-							</el-col>
-						</el-row>
-					</el-tab-pane>
-				</el-tabs>
-			</div>
-		</el-form>
-		<template #footer><div  class="dialog-footer">
-			<el-button @click="handlerClose">{{ t('components.Cancel') }}</el-button>
-			<el-button type="primary" @click="handleOk">{{ t('components.OK') }}</el-button>
-			<el-button type="primary" @click="handleSaveAndConnect">
-				{{ t('home.profile.operator.save-conn') }}
-			</el-button>
-		</div></template>
-	</el-dialog>
+		<template #base>
+			<el-row :gutter="10">
+				<el-col :span="12">
+					<el-form-item :label="$t('home.profile.base.host.title')" prop="hostAddress">
+						<el-input v-model="formData.hostAddress" />
+					</el-form-item>
+				</el-col>
+				<el-col :span="12">
+					<el-form-item :label="$t('home.profile.base.port.title')" prop="hostVncPort">
+						<el-input-number v-model="formData.hostVncPort" :min="1" :max="65535" controls-position="right"/>
+					</el-form-item>
+				</el-col>
+			</el-row>
+			<el-row :gutter="10">
+				<el-col :span="12">
+					<el-form-item :label="$t('home.profile.auth.username.title')" prop="username">
+						<el-input v-model="formData.username" />
+					</el-form-item>
+				</el-col>
+				<el-col :span="12">
+					<el-form-item :label="$t('home.profile.auth.password.title')" prop="password">
+						<el-input v-model="formData.password" />
+					</el-form-item>
+				</el-col>
+			</el-row>
+		</template>
+	</SessionFormLayout>
 </template>
+
 <script setup>
-import { querySearch } from '@/icons/system-icon'
+import { ref } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { publish } from '@/services/eventbus'
 import { SESSION_CONFIG_TYPE, SessionConfig } from '@/services/sessionMgr'
+import sessionManager from '@/services/sessionMgr'
 import { useSessionStore } from '@/store'
-import { storeToRefs } from 'pinia'
-import { getCurrentInstance, ref } from 'vue'
-import { useI18n } from 'vue-i18n'
+import SessionFormLayout from '../SessionFormLayout.vue'
 import { defaultForm } from './constants'
 
 const { t } = useI18n()
 const emits = defineEmits(['ok', 'cancel'])
-const visible = ref(false)
-const telnetFormRef = ref()
-const sessionForm = ref({ ...defaultForm })
-const telnetFormRules = {
-	hostName: [{ required: true, message: '请输入会话名称', trigger: 'blur' }],
-	hostAddress: [{ required: true, message: '请输入主机地址', trigger: 'blur' }],
-	hostVncPort: [{ required: true, message: '请输入主机端口', trigger: 'blur' }]
-}
 const sessionStore = useSessionStore()
-const { group } = storeToRefs(sessionStore)
-const activeTab = ref('base')
-const isEdit = ref(false)
-const proxy = getCurrentInstance()?.proxy
-const sessionManager = proxy.$sessionManager
-const sessionConfig = ref()
+const formLayoutRef = ref()
+const deepClone = (obj) => JSON.parse(JSON.stringify(obj || {}))
+const formData = ref(deepClone(defaultForm))
 
-const showModal = (sessionId) => {
-	if (sessionId) {
-		isEdit.value = true
-		sessionConfig.value = sessionManager.getSessionConfigById(sessionId)
-		// 移除旧会话中无用属性
-		const newFormKeys = Object.keys(sessionForm.value)
-		const oldFormKeys = Object.keys(sessionConfig.value.config)
-		// 删除oldFormKeys 中不在newFormKeys中的属性
-		for (let i = 0, len = oldFormKeys.length; i < len; i++) {
-			const key = oldFormKeys[i]
-			if (!newFormKeys.includes(key)) {
-				delete sessionConfig.value[key]
-			}
-		}
-		sessionForm.value = { ...sessionForm.value, ...sessionConfig.value.config }
-	}
-	visible.value = true
+const vncFormRules = {
+	hostName: [{ required: true, message: t('home.profile.base.host-name.required'), trigger: 'blur' }],
+	hostAddress: [{ required: true, message: t('home.profile.base.host.placeholder'), trigger: 'blur' }],
+	hostVncPort: [{ required: true, message: t('home.profile.base.port.placeholder'), trigger: 'blur' }]
 }
 
-const saveOrUpdateSession = () => {
-	const sessionName = sessionForm.value.hostName
-	if (isEdit.value) {
-		// 更新配置信息
-		sessionConfig.value.update(sessionName, Object.assign(sessionConfig.value.config, sessionForm.value), '')
+const saveOrUpdateSession = async () => {
+	const layout = formLayoutRef.value
+	const formVal = layout.getFormData()
+	const isEdit = layout.getIsEdit()
+	const sessionConfig = layout.getSessionConfig()
+	const sessionName = formVal.hostName
+
+	if (isEdit) {
+		sessionConfig.update(sessionName, Object.assign(sessionConfig.config, formVal), '')
 	} else {
-		// 创建会话配置
-		sessionConfig.value = new SessionConfig(
+		const newConfig = new SessionConfig(
 			sessionName,
 			SESSION_CONFIG_TYPE.NODE,
-			sessionForm.value,
-			'telnet session'
+			formVal,
+			'vnc session'
 		)
-		// 添加会话配置
-		sessionStore.appendSessionConfig(sessionConfig.value)
+		await sessionStore.appendSessionConfig(newConfig)
 	}
-	// 刷新菜单
 	publish('refresh-session-tree')
+	return { formVal, sessionConfig, isEdit }
 }
 
-const handleOk = () => {
-	telnetFormRef.value.validate((valid) => {
-		if (!valid) {
-			return false
-		}
-		saveOrUpdateSession()
-		emits('ok', sessionForm.value)
-		visible.value = false
-	})
+const handleSave = async () => {
+	const { formVal } = await saveOrUpdateSession()
+	formLayoutRef.value?.close()
+	emits('ok', formVal)
 }
 
-const handleSaveAndConnect = () => {
-	telnetFormRef.value.validate((valid) => {
-		if (!valid) {
-			return false
-		}
-		saveOrUpdateSession()
-		sessionManager.createSessionInstance(sessionConfig.value)
-		emits('ok', sessionForm.value)
-		visible.value = false
-	})
+const handleSaveAndConnect = async () => {
+	const { formVal, sessionConfig } = await saveOrUpdateSession()
+	await sessionManager.createSessionInstance(sessionConfig)
+	formLayoutRef.value?.close()
+	emits('ok', formVal)
 }
 
-const handlerClose = () => {
-	isEdit.value = false
-	activeTab.value = 'base'
-	sessionConfig.value = undefined
-	sessionForm.value = { ...defaultForm }
-	telnetFormRef.value?.clearValidate()
-	visible.value = false
+const handleCancel = () => {
+	emits('cancel')
+}
+
+const showModal = (sessionId) => {
+	for (const key of Object.keys(formData.value)) {
+		delete formData.value[key]
+	}
+	Object.assign(formData.value, deepClone(defaultForm))
+	formLayoutRef.value?.showModal(sessionId)
 }
 
 defineExpose({ showModal })
 </script>
-
-<style lang="scss" scoped>
-:deep(.el-dialog__body) {
-	height: 400px;
-}
-
-.n-session-ssh-container {
-	display: flex;
-	justify-content: space-between;
-	column-gap: 10px;
-
-	&__left {
-		width: 30%;
-		padding-top: 12px;
-	}
-
-	&__right {
-		flex: 1;
-
-		.n-port-forward {
-			display: flex;
-			column-gap: 5px;
-			justify-content: space-between;
-			width: 100%;
-
-			&__source,
-			&__target {
-				flex: 1;
-				display: inline-flex;
-				column-gap: 5px;
-			}
-		}
-
-		.n-theme-form {
-			display: grid;
-			grid-template-columns: repeat(2, minmax(0, 1fr));
-			grid-gap: 10px;
-			padding-right: 10px;
-			max-height: 340px;
-			grid-template-areas: 'normal theme';
-
-			.theme {
-				grid-area: theme;
-				grid-column: 2 / span 1;
-				grid-row: 1 / span 5;
-				max-height: 255px;
-			}
-		}
-	}
-}
-</style>

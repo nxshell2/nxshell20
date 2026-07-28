@@ -35,7 +35,7 @@ import MouseWheel from '@better-scroll/mouse-wheel'
 import { storeToRefs } from 'pinia'
 import { useNxTabsStore } from '@/store'
 import mousetrap from 'mousetrap'
-import { getCurrentInstance, h, onBeforeUnmount, onMounted, onUpdated, reactive, ref, watchEffect } from 'vue'
+import { defineComponent, getCurrentInstance, h, onBeforeUnmount, onMounted, onUpdated, reactive, ref, watchEffect } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { ElCheckbox } from 'element-plus'
 
@@ -46,6 +46,23 @@ const scrollbar = ref()
 const nxTabsRef = ref()
 const dragIndex = ref()
 const { tabData, currentActive, editorChange, checkedTabType, noConfirm } = storeToRefs(nxTabStore)
+
+const CheckboxNoConfirm = defineComponent({
+	setup() {
+		const checked = ref(noConfirm.value)
+		return () => h(
+			ElCheckbox,
+			{
+				modelValue: checked.value,
+				'onUpdate:modelValue': (value) => {
+					checked.value = value
+					nxTabStore.updateNoConfirm(value)
+				}
+			},
+			{ default: () => '下次不再确认' }
+		)
+	}
+})
 const proxy = getCurrentInstance()?.proxy
 const sessionManager = proxy.$sessionManager
 const { t } = useI18n()
@@ -243,15 +260,7 @@ const handleSessionInstRemove = (index) => {
 						t(`home.session-instance.${ isEditor ? 'save-dialog.message' : 'delete-dialog.title' }`)
 					]
 				),
-				h(
-					ElCheckbox,
-					{
-						label: '下次不再确认',
-						modelValue: noConfirm.value,
-						'onUpdate:modelValue': (value) => nxTabStore.updateNoConfirm(value)
-					},
-					null
-				)
+				h(CheckboxNoConfirm)
 			]
 		),
 		showClose: false,

@@ -103,6 +103,7 @@ export default {
 				left: 0,
 				top: 0
 			},
+			pendingData: [],
 
 			logging: false,
 			searchWord: "",
@@ -123,7 +124,11 @@ export default {
 		this.$nextTick(() => {
 			this.$ptElementResizeDetector.listenTo(this.$el, this.nativeResizeHandler)
 			//this.resizeObserve.observe(this.$el);
-			const options = { wordSeparator: " /:?,;.", ...this.options }
+			// 过滤掉 undefined/null 选项，避免新会话把 xterm 默认值覆盖成 undefined 导致黑屏
+			const sanitizedOptions = Object.fromEntries(
+				Object.entries({ ...this.options }).filter(([_, value]) => value !== undefined && value !== null)
+			)
+			const options = { wordSeparator: " /:?,;.", ...sanitizedOptions }
 			// 优化xterm终端边距
 			if (Object.prototype.hasOwnProperty.call(options, "theme") && options.theme) {
 				const { background = "#000" } = options.theme
@@ -177,6 +182,7 @@ export default {
 				console.log("fit fail:", e)
 			}
 			this.fitAddon = fitAddon
+			this.flushPendingData()
 
 			// Load WebGL addon for better performance
 			const webgl = new WebglAddon()
@@ -278,11 +284,21 @@ export default {
 		},
 		write(text) {
 			if (!this.terminal) {
+				this.pendingData.push(text)
 				return
 			}
-
 			this.terminal?.write(text)
 			text = null
+		},
+
+		flushPendingData() {
+			if (!this.terminal || !this.pendingData.length) {
+				return
+			}
+			for (const data of this.pendingData) {
+				this.terminal.write(data)
+			}
+			this.pendingData = []
 		},
 		async contextmenuPast(event) {
 			const text = powertools.clipboardReadText()
@@ -342,7 +358,7 @@ export default {
 				// fit() can fail with "This API only accepts integers" when
 				// the container has zero or fractional dimensions
 			}
-			this.terminal?.refresh(0, 0)
+			this.terminal?.refresh(0, this.terminal.rows - 1)
 		},
 
 		onFocus() {

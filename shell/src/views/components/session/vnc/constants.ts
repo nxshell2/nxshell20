@@ -3,7 +3,6 @@ export const defaultForm = {
 	protocal: 'vnc',
 	hostName: '',
 	system: 'vnc',
-	group: '',
 	hostAddress: '',
 	hostVncPort: 5800
 }

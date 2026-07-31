@@ -10,7 +10,7 @@ export default function initDefaultThemeOptions() {
 			name: "fontFamily",
 			title: "home.profile.terminal.font-family.title",
 			description: "home.profile.terminal.font-family.description",
-			defaultValue: defaultSettings?.fontFamily,
+			defaultValue: defaultSettings?.fontFamily ?? "default",
 			type: "select",
 			options: fontList.value
 		},
@@ -18,7 +18,7 @@ export default function initDefaultThemeOptions() {
 			name: "xterm",
 			title: "home.profile.terminal.xterm.title",
 			description: "home.profile.terminal.xterm.description",
-			defaultValue: defaultSettings?.xterm,
+			defaultValue: defaultSettings?.xterm ?? "xterm",
 			type: "select",
 			options: [
 				{
@@ -43,7 +43,7 @@ export default function initDefaultThemeOptions() {
 			name: "fontSize",
 			title: "home.profile.terminal.font-size.title",
 			description: "home.profile.terminal.font-size.description",
-			defaultValue: defaultSettings?.fontSize,
+			defaultValue: defaultSettings?.fontSize ?? "14",
 			type: "select",
 			options: [
 				{
@@ -92,7 +92,7 @@ export default function initDefaultThemeOptions() {
 			name: "fontWeight",
 			title: "home.profile.terminal.font-weight.title",
 			description: "home.profile.terminal.font-weight.description",
-			defaultValue: defaultSettings?.fontWeight,
+			defaultValue: defaultSettings?.fontWeight ?? "normal",
 			type: "select",
 			options: [
 				{
@@ -149,7 +149,7 @@ export default function initDefaultThemeOptions() {
 			name: "charset",
 			title: "home.profile.terminal.charset.title",
 			description: "home.profile.terminal.charset.description",
-			defaultValue: defaultSettings?.charset,
+			defaultValue: defaultSettings?.charset ?? "UTF-8",
 			type: "select",
 			options: [
 				{
@@ -238,7 +238,7 @@ export default function initDefaultThemeOptions() {
 			name: "lineHeight",
 			title: "home.profile.terminal.lineHeight.title",
 			description: "home.profile.terminal.lineHeight.description",
-			defaultValue: defaultSettings?.lineHeight,
+			defaultValue: defaultSettings?.lineHeight ?? 1.2,
 			type: "number",
 			step: 0.1
 		},
@@ -246,7 +246,7 @@ export default function initDefaultThemeOptions() {
 			name: "letterSpacing",
 			title: "home.profile.terminal.letterSpacing.title",
 			description: "home.profile.terminal.letterSpacing.description",
-			defaultValue: defaultSettings?.letterSpacing,
+			defaultValue: defaultSettings?.letterSpacing ?? 1,
 			type: "number",
 			step: 1
 		},
@@ -254,14 +254,14 @@ export default function initDefaultThemeOptions() {
 			name: "cursorBlink",
 			title: "home.profile.terminal.cursorBlink.title",
 			description: "home.profile.terminal.cursorBlink.description",
-			defaultValue: defaultSettings?.cursorBlink,
+			defaultValue: defaultSettings?.cursorBlink ?? true,
 			type: "switch"
 		},
 		{
 			name: "cursorStyle",
 			title: "home.profile.terminal.cursorStyle.title",
 			description: "home.profile.terminal.cursorStyle.description",
-			defaultValue: defaultSettings?.cursorStyle,
+			defaultValue: defaultSettings?.cursorStyle ?? "block",
 			type: "radio-group",
 			options: [
 				{

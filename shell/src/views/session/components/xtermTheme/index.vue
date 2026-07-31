@@ -141,7 +141,9 @@ const handleSearch = (data) => {
 
 	.nx-theme-list {
 		width: 100%;
-		overflow: auto;
+		flex: 1;
+		min-height: 0;
+		overflow-y: auto;
 		scroll-snap-type: y mandatory;
 		scroll-snap-align: start;
 

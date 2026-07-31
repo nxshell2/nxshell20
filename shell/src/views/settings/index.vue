@@ -216,7 +216,7 @@ import { getProfile, setProfile } from "@/services/globalSetting"
 import { getAIConfig, saveAIConfig } from "@/services/ai/config"
 import xtermThemeList from "@/views/session/components/xtermTheme/index.vue"
 import { charset, cursorBlink, cursorStyle, fontFamily, fontSize, fontWeight, letterSpacing, lineHeight, termTheme } from "./constants"
-import { settingFormReset } from "./constants/default.js"
+import { settingFormReset } from "./constants/default.ts"
 import { onBeforeMount, onMounted, ref } from "vue"
 import { useI18n } from "vue-i18n"
 

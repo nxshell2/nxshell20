@@ -6,6 +6,13 @@ function resolve(dir = '') {
 }
 
 module.exports = {
+    pages: {
+        index: {
+            entry: 'src/main.ts',
+            template: 'public/index.html',
+            filename: 'index.html'
+        }
+    },
     configureWebpack: {
         resolve: {
             extensions: ['.vue', '.ts', '.tsx', '.js', '.mjs', '.json'],

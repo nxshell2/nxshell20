@@ -3,7 +3,6 @@ export const defaultForm = {
 	protocal: "telnet",
 	hostName: "",
 	system: "telnet",
-	group: "",
 	hostAddress: "",
 	hostTelnetPort: 23
 }

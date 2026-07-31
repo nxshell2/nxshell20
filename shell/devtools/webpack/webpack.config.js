@@ -4,7 +4,10 @@ module.exports = {
     mode: "production",
     target: "electron-main",
     entry: {
-        index: "./ptservices/index.js"
+        index: "./ptservices/index.ts"
+    },
+    resolve: {
+        extensions: [".ts", ".js", ".json"]
     },
     output: {
         filename: "[name].js",
@@ -16,15 +19,24 @@ module.exports = {
     module: {
         rules: [
             {
+                test: /\.ts$/,
+                use: {
+                    loader: "ts-loader",
+                    options: {
+                        transpileOnly: true
+                    }
+                }
+            },
+            {
                 test: /\.js$/,
                 use: {
                     loader: "babel-loader"
                 }
             },
-	    {
-        	test: /\.node$/,
-        	loader: "node-loader",
-      	    }
+            {
+                test: /\.node$/,
+                loader: "node-loader"
+            }
         ]
     },
     optimization: {

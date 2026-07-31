@@ -51,8 +51,20 @@
             }
         },
         "session": {
+            "modal-title-add": "新增{protocol}会话",
+            "modal-title-edit": "编辑{protocol}会话",
+            "protocol-names": {
+                "SSH": "SSH",
+                "FTP": "FTP",
+                "Telnet": "Telnet",
+                "Serial": "串口",
+                "VNC": "VNC",
+                "LocalShell": "本地终端"
+            },
             "base": {
                 "label": "通用",
+                "system-icon": "系统/图标",
+                "system-icon-placeholder": "请选择系统图标",
                 "link-type": {
                     "label": "链接类型",
                     "placeholder": "请选择链接类型",
@@ -63,7 +75,8 @@
                 }
             },
             "port": {
-                "label": "端口"
+                "label": "端口",
+                "add": "添加"
             },
             "advanced": {
                 "label": "高级"
@@ -71,7 +84,8 @@
             "theme": {
                 "label": "主题"
             },
-            "ssh": {
+            "serial": {
+                "portRequired": "请选择串口"
             }
         }
     },
@@ -160,6 +174,7 @@
                 "host-name": {
                     "title": "主机名称",
                     "placeholder": "请输入主机名称",
+                    "required": "请输入会话名称",
                     "description": "主机名称可以使用字符或者数字，此处为必填项。"
                 },
                 "host-group": {
@@ -189,6 +204,16 @@
                     "ftpdescription": "主机端口，默认为：21(FTP默认端口);",
                     "telnetdescription": "主机端口，默认：23(Telnet默认端口);",
                     "vncdescription": "主机端口，默认：5800"
+                },
+                "shell-type": {
+                    "title": "Shell 类型",
+                    "description": "选择本地 Shell 类型",
+                    "options": {
+                        "powershell": "PowerShell",
+                        "cmd": "CMD",
+                        "bash": "Bash",
+                        "zsh": "Zsh"
+                    }
                 }
             },
             "system": {
@@ -382,11 +407,13 @@
                     "title": "socksv5代理设置",
                     "host": {
                         "title": "代理IP",
-                        "description": "配置代理IP地址信息"
+                        "description": "配置代理IP地址信息",
+                        "placeholder": "请输入代理主机地址"
                     },
                     "port": {
                         "title": "代理端口",
-                        "description": "配置端口信息"
+                        "description": "配置端口信息",
+                        "placeholder": "请输入代理主机端口"
                     }
                 },
                 "username": {

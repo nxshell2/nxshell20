@@ -50,6 +50,7 @@
 			<pt-auth-dialog ref="dialog" @authOk="handleAuthOk" />
 			<ai-assistant-panel ref="aiAssistantPanel" @insert-command="handleInsertCommand" />
 			<sys-monitor ref="sysMonitor" :sessionInstance="sessionInstance" />
+			<component ref="sessionModalRef" :is="sessionModalComponent" />
 		</div>
 	</div>
 </template>
@@ -63,12 +64,14 @@ import SysMonitor from "./components/SysMonitor.vue"
 import { getProfile } from "@/services/globalSetting"
 import * as EventBus from "../../services/eventbus"
 import { PtXterm } from "@/components"
-import { xzmodem } from "./xzmodem.js"
-import { create_iconv } from "./iconv.js"
+import { xzmodem } from "./xzmodem.ts"
+import { create_iconv } from "./iconv.ts"
 import { createLogger } from "@/services/nxsys/logger"
 import mousetrap from "mousetrap"
 import { mapState, mapStores } from "pinia"
 import { useSessionStore } from "@/store"
+import { markRaw } from "vue"
+import { shellModalInstance } from "@/views/components/session"
 
 export default {
 	name: "XtermInstance",
@@ -88,6 +91,7 @@ export default {
 	data() {
 		return {
 			mousetrap: null,
+			sessionModalComponent: null,
 			tunnelMapTitle: {},
 			backgroundColor: "#000",
 			sessionInstance: null,
@@ -616,7 +620,14 @@ export default {
 				return
 			}
 			let sessionCfg = this.$sessionManager.getSessionConfigByInstanceId(sessionId)
-			this.$sessionManager.createShellSettingSessionInstance(sessionCfg)
+			if (!sessionCfg || !sessionCfg.config) {
+				return
+			}
+			let protocol = sessionCfg.config.protocal
+			this.sessionModalComponent = markRaw(shellModalInstance(protocol))
+			this.$nextTick(() => {
+				this.$refs.sessionModalRef?.showModal(sessionCfg._id)
+			})
 		},
 		handleLock() {
 			this.$router.push({

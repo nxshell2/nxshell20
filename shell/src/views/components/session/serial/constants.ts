@@ -3,7 +3,6 @@ export const defaultForm = {
 	protocal: "serialport",
 	hostName: "",
 	system: "serial",
-	group: "",
 	baudRate: 115200,
 	dataBits: 8,
 	stopBits: 1,

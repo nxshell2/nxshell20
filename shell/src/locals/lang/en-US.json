@@ -38,7 +38,9 @@
             },
             "publickey": {
                 "title": "Priavte Key",
-                "placeholder": "Please select private key"
+                "placeholder": "Please select private key",
+                "ppk-not-supported": "PuTTY (.ppk) format is not supported. Please convert to OpenSSH format using ssh-keygen",
+                "unsupported-format": "Unsupported key format. Please select an OpenSSH/PEM/PKCS#8 private key file"
             },
             "keyboard": {
                 "title": "keyboard Interactive"
@@ -427,7 +429,9 @@
                 "publickey": {
                     "title": "Private key",
                     "description": "Select or drag the private key here, which is paired with the host.",
-                    "placeholder": "Please select private key"
+                    "placeholder": "Please select private key",
+                    "ppk-not-supported": "PuTTY (.ppk) format is not supported. Please convert to OpenSSH format using ssh-keygen",
+                    "unsupported-format": "Unsupported key format. Please select an OpenSSH/PEM/PKCS#8 private key file"
                 },
                 "passphrase": {
                     "title": "Passphrase",

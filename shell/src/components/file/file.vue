@@ -33,6 +33,14 @@ export default {
 		}
 	},
 
+	watch: {
+		modelValue(newVal) {
+			if (!newVal || (Array.isArray(newVal) && newVal.length === 0)) {
+				this.fileNames = ''
+			}
+		}
+	},
+
 	methods: {
 		openFile() {
 			this.$refs.file.click()

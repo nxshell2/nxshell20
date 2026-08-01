@@ -40,7 +40,9 @@
             },
             "publickey": {
                 "title": "秘钥",
-                "placeholder": "请选择秘钥"
+                "placeholder": "请选择秘钥",
+                "ppk-not-supported": "不支持 PuTTY (.ppk) 格式密钥，请使用 ssh-keygen 转换为 OpenSSH 格式",
+                "unsupported-format": "不支持的密钥格式，请选择 OpenSSH/PEM/PKCS#8 格式的私钥文件"
             },
             "keyboard": {
                 "title": "键盘交互"
@@ -429,7 +431,9 @@
                 "publickey": {
                     "title": "私钥",
                     "description": "请选择与主机配对的私钥，可以选择私钥或者拖放私钥文件到下方区域中。",
-                    "placeholder": "请选择与主机配对的私钥"
+                    "placeholder": "请选择与主机配对的私钥",
+                    "ppk-not-supported": "不支持 PuTTY (.ppk) 格式密钥，请使用 ssh-keygen 转换为 OpenSSH 格式",
+                    "unsupported-format": "不支持的密钥格式，请选择 OpenSSH/PEM/PKCS#8 格式的私钥文件"
                 },
                 "passphrase": {
                     "title": "私有钥密码",

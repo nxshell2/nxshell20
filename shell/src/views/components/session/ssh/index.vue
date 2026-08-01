@@ -157,8 +157,9 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
+import { ElMessage } from 'element-plus'
 import { publish } from '@/services/eventbus'
 import { SESSION_CONFIG_TYPE, SessionConfig } from '@/services/sessionMgr'
 import sessionManager from '@/services/sessionMgr'
@@ -170,6 +171,14 @@ const { t } = useI18n()
 const emits = defineEmits(['ok', 'cancel'])
 const sessionStore = useSessionStore()
 const formLayoutRef = ref()
+
+const SUPPORTED_KEY_HEADERS = [
+	'-----BEGIN OPENSSH PRIVATE KEY-----',
+	'-----BEGIN RSA PRIVATE KEY-----',
+	'-----BEGIN DSA PRIVATE KEY-----',
+	'-----BEGIN EC PRIVATE KEY-----',
+	'-----BEGIN PRIVATE KEY-----',
+]
 
 const forwardDefault = {
 	localHost: '127.0.0.1',
@@ -203,6 +212,36 @@ const defaultForm = {
 const deepClone = (obj) => JSON.parse(JSON.stringify(obj || {}))
 const formData = ref(deepClone(defaultForm))
 const portForwardForm = ref({ ...forwardDefault })
+
+watch(() => formData.value.cert, async (newVal) => {
+	if (!newVal || newVal === '') return
+	try {
+		let content = ''
+		if (Array.isArray(newVal)) {
+			const fileObj = newVal[0]
+			if (fileObj?.data instanceof File) {
+				content = await fileObj.data.text()
+			} else if (typeof fileObj?.data === 'string') {
+				content = fileObj.data
+			}
+		} else if (typeof newVal === 'string') {
+			content = newVal
+		}
+		if (!content) return
+		const trimmed = content.trim()
+		const isSupported = SUPPORTED_KEY_HEADERS.some(h => trimmed.startsWith(h))
+		const isPPK = trimmed.startsWith('PuTTY-User-Key-File-')
+		if (isPPK) {
+			ElMessage.warning(t('home.profile.auth.publickey.ppk-not-supported'))
+			formData.value.cert = ''
+		} else if (!isSupported) {
+			ElMessage.warning(t('home.profile.auth.publickey.unsupported-format'))
+			formData.value.cert = ''
+		}
+	} catch (e) {
+		// ignore read errors
+	}
+})
 
 const rules = {
 	hostName: [{ required: true, message: t('home.profile.base.host-name.required'), trigger: 'blur' }],

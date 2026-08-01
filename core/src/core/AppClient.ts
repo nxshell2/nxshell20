@@ -1,5 +1,5 @@
 import * as os from "os";
-import { ipcRenderer, clipboard, shell, desktopCapturer } from "electron";
+import { ipcRenderer, clipboard, shell, desktopCapturer, webUtils } from "electron";
 import { RPCClient, ChannelClient, dispatch } from "./AppRPC";
 import { version, portable, weblink } from '../version';
 import { createConnect } from './HSpeedIPC';
@@ -259,6 +259,14 @@ const powertools = {
 
     getostype() {
         return os.type();
+    },
+
+    getPathForFile(file: File) {
+        try {
+            return webUtils.getPathForFile(file);
+        } catch {
+            return (file as any).path || '';
+        }
     }
 };
 

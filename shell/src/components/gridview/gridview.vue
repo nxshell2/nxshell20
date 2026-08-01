@@ -604,19 +604,21 @@ export default {
 				return
 			}
 
+			const powertools = window.powertools
 			const files = []
 			for (let i = 0; i < evt.dataTransfer.items.length; i++) {
 				let item = evt.dataTransfer.items[i]
 				let entry = item.webkitGetAsEntry()
 				let file = evt.dataTransfer.files[i]
+				let filePath = powertools ? powertools.getPathForFile(file) : file.path
 				if (entry.isDirectory) {
 					files.push({
-						path: file.path,
+						path: filePath,
 						isDir: true
 					})
 				} else {
 					files.push({
-						path: file.path,
+						path: filePath,
 						isDir: false
 					})
 				}

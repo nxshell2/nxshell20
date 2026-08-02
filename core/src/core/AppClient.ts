@@ -292,6 +292,26 @@ const powertools = {
             ipcRenderer.removeListener("pt:file-changed", handlers[watchId]);
             delete handlers[watchId];
         }
+    },
+
+    generateSshKey(opts: { type: string; name: string; passphrase?: string; bits?: number }): Promise<any> {
+        return ipcRenderer.invoke("pt:ssh-generate-key", opts);
+    },
+
+    listSshKeys(): Promise<any[]> {
+        return ipcRenderer.invoke("pt:ssh-list-keys");
+    },
+
+    deleteSshKey(keyName: string): Promise<boolean> {
+        return ipcRenderer.invoke("pt:ssh-delete-key", keyName);
+    },
+
+    readSshPublicKey(keyName: string): Promise<string> {
+        return ipcRenderer.invoke("pt:ssh-read-public-key", keyName);
+    },
+
+    readSshPrivateKey(keyName: string): Promise<string> {
+        return ipcRenderer.invoke("pt:ssh-read-private-key", keyName);
     }
 };
 

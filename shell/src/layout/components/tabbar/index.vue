@@ -103,13 +103,6 @@ async function handleCloseOther() {
 	await Promise.all(sessions.map(session => session?.close()))
 }
 
-async function handleProp() {
-	const sessTabItem = tabData.value[currentActive.value]
-	if (!sessTabItem) return
-	const sessionConfig = sessionManager.getSessionConfigByInstanceId(sessTabItem.id)
-	await sessionManager.createShellSettingSessionInstance(sessionConfig)
-}
-
 const sessionTabContextMenu = reactive({
 	shell: [
 		{
@@ -137,14 +130,6 @@ const sessionTabContextMenu = reactive({
 			type: 'normal',
 			handler: handleCloseLeft
 		},
-		{
-			type: 'separator'
-		},
-		{
-			label: 'home.sessions-context-menu.prop',
-			type: 'normal',
-			handler: handleProp
-		}
 	],
 	welcome: [
 		{
@@ -152,13 +137,6 @@ const sessionTabContextMenu = reactive({
 			type: 'normal',
 			icon: '',
 			handler: handleCloseOther
-		}
-	],
-	setting: [
-		{
-			label: 'home.sessions-context-menu.close',
-			type: 'normal',
-			handler: handleClose
 		}
 	],
 	login: [

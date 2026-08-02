@@ -34,11 +34,6 @@ const routes = [
                 component: () => import('../views/xterm/xtermSession.vue')
             },
             {
-                path: 'setting/:id',
-                name: 'XTermProfile',
-                component: () => import('../views/xterm/profile.vue')
-            },
-            {
                 path: 'login/:id',
                 name: 'Login',
                 component: () => import('../views/Login.vue')

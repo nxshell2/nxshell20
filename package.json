@@ -1,6 +1,6 @@
 {
     "name": "nxshell",
-    "version": "1.9.6",
+    "version": "2.0.0",
     "private": true,
     "description": "NxShell monorepo: Electron main core + Vue renderer shell + packaging",
     "author": "NxShell Team",

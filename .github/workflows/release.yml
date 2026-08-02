@@ -9,7 +9,7 @@ permissions:
   contents: write
 
 jobs:
-  build-macos:
+  build-macos-arm:
     runs-on: macos-latest
     timeout-minutes: 90
     defaults:
@@ -37,7 +37,40 @@ jobs:
       - run: make dist VERSION=${{ steps.version.outputs.version }}
       - uses: actions/upload-artifact@v4
         with:
-          name: dist-macos
+          name: dist-macos-arm
+          path: dist/apppackage/
+          retention-days: 1
+          if-no-files-found: ignore
+
+  build-macos-intel:
+    runs-on: macos-15-intel
+    timeout-minutes: 90
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - name: Cache node_modules
+        uses: actions/cache@v4
+        with:
+          path: |
+            node_modules
+            core/node_modules
+            shell/node_modules
+          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-
+      - name: Extract version from tag
+        id: version
+        run: echo "version=${GITHUB_REF_NAME#release/v}" >> "$GITHUB_OUTPUT"
+      - run: make dist VERSION=${{ steps.version.outputs.version }}
+      - uses: actions/upload-artifact@v4
+        with:
+          name: dist-macos-intel
           path: dist/apppackage/
           retention-days: 1
           if-no-files-found: ignore
@@ -108,8 +141,41 @@ jobs:
           retention-days: 1
           if-no-files-found: ignore
 
+  build-linux-arm:
+    runs-on: ubuntu-24.04-arm
+    timeout-minutes: 90
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - name: Cache node_modules
+        uses: actions/cache@v4
+        with:
+          path: |
+            node_modules
+            core/node_modules
+            shell/node_modules
+          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-
+      - name: Extract version from tag
+        id: version
+        run: echo "version=${GITHUB_REF_NAME#release/v}" >> "$GITHUB_OUTPUT"
+      - run: make dist VERSION=${{ steps.version.outputs.version }}
+      - uses: actions/upload-artifact@v4
+        with:
+          name: dist-linux-arm
+          path: dist/apppackage/
+          retention-days: 1
+          if-no-files-found: ignore
+
   release:
-    needs: [build-macos, build-windows, build-linux]
+    needs: [build-macos-arm, build-macos-intel, build-windows, build-linux, build-linux-arm]
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
@@ -124,7 +190,7 @@ jobs:
       - name: Collect release assets
         run: |
           mkdir -p release-assets
-          find artifacts -type f \( -name '*.dmg' -o -name '*.exe' -o -name '*.appx' -o -name '*.zip' -o -name '*.AppImage' -o -name '*.deb' \) -exec cp {} release-assets/ \;
+          find artifacts -type f -name 'NxShell*' \( -name '*.dmg' -o -name '*.exe' -o -name '*.appx' -o -name '*.zip' -o -name '*.AppImage' -o -name '*.deb' -o -name '*.snap' -o -name '*.rpm' -o -name '*.pacman' \) -exec cp {} release-assets/ \;
           ls -la release-assets/
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2

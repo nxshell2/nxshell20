@@ -17,13 +17,17 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest, windows-latest, macos-latest]
+        os: [ubuntu-latest, ubuntu-24.04-arm, windows-latest, macos-latest, macos-15-intel]
         include:
           - os: ubuntu-latest
+            timeout: 60
+          - os: ubuntu-24.04-arm
             timeout: 60
           - os: windows-latest
             timeout: 90
           - os: macos-latest
+            timeout: 90
+          - os: macos-15-intel
             timeout: 90
 
     steps:

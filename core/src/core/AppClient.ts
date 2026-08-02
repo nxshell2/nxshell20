@@ -1,5 +1,5 @@
 import * as os from "os";
-import { ipcRenderer, clipboard, shell, desktopCapturer } from "electron";
+import { ipcRenderer, clipboard, shell, desktopCapturer, webUtils } from "electron";
 import { RPCClient, ChannelClient, dispatch } from "./AppRPC";
 import { version, portable, weblink } from '../version';
 import { createConnect } from './HSpeedIPC';
@@ -259,6 +259,59 @@ const powertools = {
 
     getostype() {
         return os.type();
+    },
+
+    getPathForFile(file: File) {
+        try {
+            return webUtils.getPathForFile(file);
+        } catch {
+            return (file as any).path || '';
+        }
+    },
+
+    getTempPath() {
+        return ipcRenderer.sendSync("pt:get-temp-path-sync");
+    },
+
+    watchFile(watchId: string, filePath: string, callback: (watchId: string) => void) {
+        ipcRenderer.send("pt:watch-file", watchId, filePath);
+        const handler = (_e: any, changedWatchId: string) => {
+            if (changedWatchId === watchId) {
+                callback(changedWatchId);
+            }
+        };
+        ipcRenderer.on("pt:file-changed", handler);
+        (this as any)._watchFileHandlers = (this as any)._watchFileHandlers || {};
+        (this as any)._watchFileHandlers[watchId] = handler;
+    },
+
+    stopWatchFile(watchId: string) {
+        ipcRenderer.send("pt:stop-watch-file", watchId);
+        const handlers = (this as any)._watchFileHandlers;
+        if (handlers && handlers[watchId]) {
+            ipcRenderer.removeListener("pt:file-changed", handlers[watchId]);
+            delete handlers[watchId];
+        }
+    },
+
+    generateSshKey(opts: { type: string; name: string; passphrase?: string; bits?: number }): Promise<any> {
+        return ipcRenderer.invoke("pt:ssh-generate-key", opts);
+    },
+
+    listSshKeys(): Promise<any[]> {
+        return ipcRenderer.invoke("pt:ssh-list-keys");
+    },
+
+    deleteSshKey(keyName: string): Promise<boolean> {
+        return ipcRenderer.invoke("pt:ssh-delete-key", keyName);
+    },
+
+    readSshPublicKey(keyName: string): Promise<string> {
+        return ipcRenderer.invoke("pt:ssh-read-public-key", keyName);
+    },
+
+    readSshPrivateKey(keyName: string): Promise<string> {
+        return ipcRenderer.invoke("pt:ssh-read-private-key", keyName);
     }
 };
 

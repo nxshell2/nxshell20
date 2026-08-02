@@ -1,24 +1,12 @@
-import { NxDataTransfer, NxTransferDataDesc, NxTransferAnswers, NxTransferMessage } from "../common/nxsys/dataTransfer";
+import { NxDataTransfer, NxTransferDataDesc, NxTransferMessage } from "../common/nxsys/dataTransfer";
 import { getNodeSessionInstanceByUUID } from "./nodes";
 import { createObjectHandle, getObject } from "./nxobjs";
-import WaitObject from "../common/utils/waitObject";
-
 declare const powertools: any;
 
 class NxDataTransferServer extends NxDataTransfer {
     from: NxTransferDataDesc | null = null;
     to: NxTransferDataDesc | null = null;
-    lastWaitObject: WaitObject | null = null;
-    answers: NxTransferAnswers | null = null;
     channel: any = null;
-
-    constructor() {
-        super();
-        this.answers = {
-            overwrite: { action: "ask", keep: false },
-            merge: { action: "ask", keep: false }
-        };
-    }
 
     _setFrom(from: NxTransferDataDesc) {
         this.from = from;
@@ -74,35 +62,15 @@ class NxDataTransferServer extends NxDataTransfer {
         return { files, totalFileSize, totalFileCount };
     }
 
-    async askIfNeed(sourcePathLib: any, sourceFS: any, destFS: any, sourcePath: string, destPath: string): Promise<any> {
-        const exist = await destFS.exists(destPath);
-        if (!exist) {
-            return null;
-        }
-        const sourceStat = await sourceFS.stat(sourcePath);
-        const destStat = await destFS.stat(destPath);
-
-        if ((sourceStat.isDirectory() && (!destStat.isDirectory())) ||
-            ((!sourceStat.isDirectory()) && (destStat.isDirectory()))
-        ) {
-            this._emit({ event: "error", args: { message: "", type: "exsits" } });
-            throw new Error("file or directory exsits");
-        }
-
-        let question = sourceStat.isDirectory() ? "merge" : "overwrite";
-        const basename = sourcePathLib.basename(sourcePath);
-
-        const { action, keep } = await this._ask(question, {
-            name: basename,
-            dest: { lastModify: destStat.mtime, size: destStat.size },
-            src: { lastModify: sourceStat.mtime, size: sourceStat.size }
-        });
-
-        return action;
-    }
-
     async copyFile(sourceFS: any, destFS: any, sourcePath: string, destPath: string, sourceSize: number = 0, emitProgress: boolean = false) {
-        const BUFF_SIZE = 65536;
+        if (sourceFS.sftp && !destFS.sftp) {
+            return await this._fastGetFile(sourceFS, destPath, sourcePath, sourceSize, emitProgress);
+        }
+        if (destFS.sftp && !sourceFS.sftp) {
+            return await this._fastPutFile(sourceFS, destFS, destPath, sourcePath, sourceSize, emitProgress);
+        }
+
+        const BUFF_SIZE = 262144;
         const rwBuffer = Buffer.allocUnsafe(BUFF_SIZE);
         let totalWrite = 0;
         let srcFileHandle: any;
@@ -143,6 +111,60 @@ class NxDataTransferServer extends NxDataTransfer {
         }
     }
 
+    async _fastGetFile(sourceFS: any, destPath: string, sourcePath: string, sourceSize: number, emitProgress: boolean) {
+        const that = this;
+        const startDate = new Date();
+        let lastEmitProgress = -1;
+
+        return new Promise<void>((resolve, reject) => {
+            const options: any = {
+                step: (totalTransferred: number, chunk: number, total: number) => {
+                    if (!emitProgress) return;
+                    const progress = Math.round(totalTransferred / (sourceSize || total) * 100);
+                    if (progress === lastEmitProgress) return;
+                    lastEmitProgress = progress;
+                    const endDate: any = new Date();
+                    const _seconds = (endDate - startDate) / 1000;
+                    const speed = (that as any)._speedHuman(totalTransferred * 8 / _seconds, 2);
+                    that._emit({ event: "transferring", args: { progress, speed } });
+                }
+            };
+            sourceFS.sftp.fastGet(sourcePath, destPath, options, (err: any) => {
+                if (emitProgress && !err) {
+                    that._emit({ event: "transferring", args: { progress: 100, speed: '' } });
+                }
+                if (err) { reject(err); } else { resolve(); }
+            });
+        });
+    }
+
+    async _fastPutFile(sourceFS: any, destFS: any, destPath: string, sourcePath: string, sourceSize: number, emitProgress: boolean) {
+        const that = this;
+        const startDate = new Date();
+        let lastEmitProgress = -1;
+
+        return new Promise<void>((resolve, reject) => {
+            const options: any = {
+                step: (totalTransferred: number, chunk: number, total: number) => {
+                    if (!emitProgress) return;
+                    const progress = Math.round(totalTransferred / (sourceSize || total) * 100);
+                    if (progress === lastEmitProgress) return;
+                    lastEmitProgress = progress;
+                    const endDate: any = new Date();
+                    const _seconds = (endDate - startDate) / 1000;
+                    const speed = (that as any)._speedHuman(totalTransferred * 8 / _seconds, 2);
+                    that._emit({ event: "transferring", args: { progress, speed } });
+                }
+            };
+            destFS.sftp.fastPut(sourcePath, destPath, options, (err: any) => {
+                if (emitProgress && !err) {
+                    that._emit({ event: "transferring", args: { progress: 100, speed: '' } });
+                }
+                if (err) { reject(err); } else { resolve(); }
+            });
+        });
+    }
+
     async copyFolder(sourcePathLib: any, destPathLib: any, sourceFS: any, destFS: any, sourcePath: string, destPath: string) {
         const copyInfo = await this.walkFolder(sourcePathLib, sourceFS, sourcePath);
         let { files, totalFileCount, totalFileSize } = copyInfo;
@@ -157,20 +179,12 @@ class NxDataTransferServer extends NxDataTransfer {
             const destRelPath = fileInfo.path.replace(replaceReg, destPathLib.sep);
             let destFilePath = destPathLib.resolve(destPath, destRelPath);
             if (fileInfo.type === "dir") {
-                let action = await this.askIfNeed(sourcePathLib, sourceFS, destFS, sourcePath, destFilePath);
-                if (action === "cancel") { return; }
                 if (destFilePath === destPathLib.normalize(destPath)) { continue; }
-                if (action !== "skip" && action !== "merge") {
-                    await destFS.mkdir(destFilePath);
-                }
+                try { await destFS.mkdir(destFilePath); } catch {}
             } else {
                 let sourceDirPath = sourcePathLib.resolve(sourcePath, fileInfo.path);
-                let action = await this.askIfNeed(sourcePathLib, sourceFS, destFS, sourceDirPath, destFilePath);
-                if (action === "cancel") { return; }
-                if (action !== "skip") {
-                    await this.copyFile(sourceFS, destFS, sourceDirPath, destFilePath, fileInfo.size, false);
-                    copySize += fileInfo.size;
-                }
+                await this.copyFile(sourceFS, destFS, sourceDirPath, destFilePath, fileInfo.size, false);
+                copySize += fileInfo.size;
             }
             remainder--;
             let end_time = new Date().getTime();
@@ -192,22 +206,6 @@ class NxDataTransferServer extends NxDataTransfer {
         const num = Math.floor(Math.log(speed) / Math.log(1000));
         const value = (speed / Math.pow(1000, Math.floor(num))).toFixed(precision);
         return `${value} ${units[num]}`;
-    }
-
-    async _ask(question: string, args: any): Promise<any> {
-        const answer = (this.answers as any)[question];
-        if (answer.action === "ask" || (!answer.keep)) {
-            this._emit({ event: "ask", args: { question, args } });
-            this.lastWaitObject = new WaitObject();
-            const userAnswer = await this.lastWaitObject.wait();
-            answer.action = userAnswer.action;
-            answer.keep = userAnswer.keep;
-        }
-        return answer;
-    }
-
-    answer(action: any, keep: boolean) {
-        this.lastWaitObject!.resolve({ action, keep });
     }
 
     startTransferring() {
@@ -248,8 +246,6 @@ class NxDataTransferServer extends NxDataTransfer {
                             this._emit({ event: "error", args: { message: "", type: "exsits" } });
                             return;
                         }
-                        const action = await this.askIfNeed(fromNode.getPathLib(), sourceFS, destFS, fromPath, toPath);
-                        if (action === "cancel" || action === "skip") { return; }
                     }
                 }
 
@@ -263,8 +259,6 @@ class NxDataTransferServer extends NxDataTransfer {
                         const basename = fromNode.getPathLib().basename(fromPath);
                         fileName = toNode.getPathLib().resolve(toPath, basename);
                     }
-                    const action = await this.askIfNeed(fromNode.getPathLib(), sourceFS, destFS, fromPath, fileName);
-                    if (action == "cancel" || action == "skip") { return; }
                     await this.copyFile(sourceFS, destFS, fromPath, fileName, stat.size, true);
                 }
             } catch (err: any) {

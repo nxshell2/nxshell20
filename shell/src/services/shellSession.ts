@@ -196,25 +196,3 @@ async function createShellSession(params: any) {
 registerSessionFactory(SESSION_TYPES.SHELL, createShellSession);
 registerSessionFactory(SESSION_TYPES.SSH, createShellSession);
 
-class ShellSettingSession extends SessionInterface {
-    sessionCfg: any = null;
-    constructor(sessionConfig: any) {
-        super(sessionConfig.config.name || 'ShellSetting', SESSION_TYPES.SETTING)
-        this.sessionCfg = sessionConfig;
-        // FIXME: 实例销毁时需要将监听移除掉
-        // this.sessionCfg.config.on("update", () => {
-        //     this.name = this.sessionCfg.config.name;
-        //     this.emit("update-name");
-        // });
-    }
-    async getSerialPorts() {
-        const service = powertools.getService();
-        return await service.getSerialPorts();
-    }
-}
-
-async function createShellSettingSession(sessionConfig: any) {
-    return new ShellSettingSession(sessionConfig);
-}
-
-registerSessionFactory(SESSION_TYPES.SETTING, createShellSettingSession);

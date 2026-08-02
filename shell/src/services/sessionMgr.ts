@@ -1240,21 +1240,6 @@ class SessionManager extends EventEmitter {
         return this.createSessionInstance(new SessionConfig("Login", SESSION_CONFIG_TYPE.NODE, { sessType: SESSION_TYPES.LOGIN }));
     }
 
-    /**
-     * 创建Shell配置会话实例
-     *
-     * @param {Object|Null} setting 配置
-     */
-    createShellSettingSessionInstance(setting: any) {
-        const settingObj = setting && typeof setting.toJSONObject === 'function'
-            ? setting.toJSONObject(false, true)
-            : setting;
-        return this.createSessionInstance(new SessionConfig("ShellSetting", SESSION_CONFIG_TYPE.NODE, {
-            sessType: SESSION_TYPES.SETTING,
-            config: settingObj
-        }));
-    }
-
     createGlobalSettingSessionInstance() {
         return this.createSessionInstance(new SessionConfig("GlobalSetting", SESSION_CONFIG_TYPE.NODE, { sessType: SESSION_TYPES.GLOBALSETTING }));
     }

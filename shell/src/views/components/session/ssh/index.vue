@@ -78,7 +78,30 @@
 						<el-input v-model="formData.password" :placeholder="t('home.profile.auth.password.placeholder')" show-password />
 					</el-form-item>
 					<el-form-item v-if="formData.authType === 'cert'" :label="t('home.profile.auth.publickey.title')">
-						<pt-file v-model="formData.cert" :placeholder="t('home.profile.auth.publickey.placeholder')" />
+						<div style="display: flex; gap: 8px; width: 100%;">
+							<el-select
+								v-model="selectedKeyName"
+								:placeholder="t('home.settings.ssh-keys.select-placeholder')"
+								clearable
+								style="flex: 1;"
+								@change="handleKeySelect"
+							>
+								<el-option
+									v-for="key in sshKeys"
+									:key="key.name"
+									:label="`${key.name} (${key.type})`"
+									:value="key.name"
+								/>
+								<el-option
+									v-if="customFileLabel"
+									:label="customFileLabel"
+									:value="customFileLabel"
+								/>
+								<el-option :label="t('home.settings.ssh-keys.browse-file')" value="__browse__" />
+							</el-select>
+							<input type="file" ref="keyFileInput" style="display: none" @change="handleKeyFileChange" />
+							<el-button size="small" @click="sshKeyManagerRef?.show()">{{ t('home.settings.ssh-keys.manage') }}</el-button>
+						</div>
 					</el-form-item>
 				</el-col>
 			</el-row>
@@ -154,22 +177,76 @@
 			</n-space>
 		</template>
 	</SessionFormLayout>
+	<SshKeyManager ref="sshKeyManagerRef" @refresh="loadSshKeys" />
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
+import { ElMessage } from 'element-plus'
 import { publish } from '@/services/eventbus'
 import { SESSION_CONFIG_TYPE, SessionConfig } from '@/services/sessionMgr'
 import sessionManager from '@/services/sessionMgr'
 import { useSessionStore } from '@/store'
 import SessionFormLayout from '../SessionFormLayout.vue'
+import SshKeyManager from '@/views/settings/SshKeyManager.vue'
 import { Right } from '@element-plus/icons-vue'
 
 const { t } = useI18n()
 const emits = defineEmits(['ok', 'cancel'])
 const sessionStore = useSessionStore()
 const formLayoutRef = ref()
+const sshKeyManagerRef = ref()
+const sshKeys = ref([])
+const selectedKeyName = ref('')
+const customFileLabel = ref('')
+const keyFileInput = ref()
+const powertools = window.powertools
+
+const loadSshKeys = async () => {
+	try {
+		sshKeys.value = await powertools.listSshKeys()
+	} catch {}
+}
+
+const handleKeySelect = async (keyName) => {
+	if (!keyName) return
+	if (keyName === '__browse__') {
+		selectedKeyName.value = customFileLabel.value || ''
+		keyFileInput.value?.click()
+		return
+	}
+	if (keyName === customFileLabel.value) return
+	try {
+		const content = await powertools.readSshPrivateKey(keyName)
+		formData.value.cert = content
+		customFileLabel.value = ''
+	} catch (err) {
+		ElMessage.error(err.message || String(err))
+	}
+}
+
+const handleKeyFileChange = async (e) => {
+	const file = e.target.files?.[0]
+	if (!file) return
+	try {
+		const content = await file.text()
+		formData.value.cert = content
+		customFileLabel.value = file.name
+		selectedKeyName.value = file.name
+	} catch (err) {
+		ElMessage.error(err.message || String(err))
+	}
+	e.target.value = ''
+}
+
+const SUPPORTED_KEY_HEADERS = [
+	'-----BEGIN OPENSSH PRIVATE KEY-----',
+	'-----BEGIN RSA PRIVATE KEY-----',
+	'-----BEGIN DSA PRIVATE KEY-----',
+	'-----BEGIN EC PRIVATE KEY-----',
+	'-----BEGIN PRIVATE KEY-----',
+]
 
 const forwardDefault = {
 	localHost: '127.0.0.1',
@@ -203,6 +280,36 @@ const defaultForm = {
 const deepClone = (obj) => JSON.parse(JSON.stringify(obj || {}))
 const formData = ref(deepClone(defaultForm))
 const portForwardForm = ref({ ...forwardDefault })
+
+watch(() => formData.value.cert, async (newVal) => {
+	if (!newVal || newVal === '') return
+	try {
+		let content = ''
+		if (Array.isArray(newVal)) {
+			const fileObj = newVal[0]
+			if (fileObj?.data instanceof File) {
+				content = await fileObj.data.text()
+			} else if (typeof fileObj?.data === 'string') {
+				content = fileObj.data
+			}
+		} else if (typeof newVal === 'string') {
+			content = newVal
+		}
+		if (!content) return
+		const trimmed = content.trim()
+		const isSupported = SUPPORTED_KEY_HEADERS.some(h => trimmed.startsWith(h))
+		const isPPK = trimmed.startsWith('PuTTY-User-Key-File-')
+		if (isPPK) {
+			ElMessage.warning(t('home.profile.auth.publickey.ppk-not-supported'))
+			formData.value.cert = ''
+		} else if (!isSupported) {
+			ElMessage.warning(t('home.profile.auth.publickey.unsupported-format'))
+			formData.value.cert = ''
+		}
+	} catch (e) {
+		// ignore read errors
+	}
+})
 
 const rules = {
 	hostName: [{ required: true, message: t('home.profile.base.host-name.required'), trigger: 'blur' }],
@@ -269,6 +376,9 @@ const showModal = (sessionId) => {
 	}
 	Object.assign(formData.value, deepClone(defaultForm))
 	portForwardForm.value = deepClone(forwardDefault)
+	selectedKeyName.value = ''
+	customFileLabel.value = ''
+	loadSshKeys()
 
 	if (sessionId) {
 		// Handle legacy forwardInRemoteHost migration before SessionFormLayout loads config

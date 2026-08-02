@@ -56,6 +56,8 @@
 			</template>
 		</pt-toolbar>
 		<pt-grid-view
+			v-loading="openingWithSystem"
+			:element-loading-text="$t('home.fileview.mainview.progress.prepare-download')"
 			:mode='layout'
 			:columns='columns'
 			:data='fileList'
@@ -217,152 +219,13 @@
 				<el-button type='primary' @click='handleMoveConfirm'>{{ $t('components.OK') }}</el-button>
 			</div></template>
 		</el-dialog>
-		<el-dialog :title='askDialog.title' v-model='askDialog.show' :close-on-click-modal='false'>
-			<!-- 合并目录 -->
-			<template v-if="askDialog.questionType === 'merge'">
-				<el-descriptions
-					:title="$t('home.fileview.ask-dialogs.merge.message', [askDialog.args.name])"
-					:colon='false'
-					:column='2'
-				>
-					<el-descriptions-item>
-						<template #label >
-							<n-icon size='32' :name='askDialog.icon' />
-						</template>
-						<div class='n-description'>
-							<n-space vertical>
-								<p>{{ $t('home.fileview.ask-dialogs.merge.dir-info-name', [askDialog.args.name]) }}</p>
-								<p>
-									{{
-										$t(
-											'home.fileview.ask-dialogs.merge.dir-info-lastmodify',
-											askDialog.args.src.lastModify
-										)
-									}}
-								</p>
-							</n-space>
-						</div>
-					</el-descriptions-item>
-					<el-descriptions-item>
-						<template #label >
-							<n-icon size='32' :name='askDialog.icon' />
-						</template>
-						<div class='n-description'>
-							<n-space vertical>
-								<p>{{ $t('home.fileview.ask-dialogs.merge.dir-info-name', [askDialog.args.name]) }}</p>
-								<p>
-									{{
-										$t(
-											'home.fileview.ask-dialogs.merge.dir-info-lastmodify',
-											askDialog.args.src.lastModify
-										)
-									}}
-								</p>
-							</n-space>
-						</div>
-					</el-descriptions-item>
-					<el-descriptions-item labelStyle='margin-right: 0;'>
-						<el-checkbox v-model='askDialog.keep'>
-							{{ $t('home.fileview.ask-dialogs.merge.keep') }}
-						</el-checkbox>
-					</el-descriptions-item>
-				</el-descriptions>
-			</template>
-			<!-- 覆盖文件 -->
-			<template v-if="askDialog.questionType === 'overwrite'">
-				<el-descriptions
-					:title="$t('home.fileview.ask-dialogs.overwrite.message', [askDialog.args.name])"
-					:colon='false'
-					:column='2'
-				>
-					<el-descriptions-item>
-						<template #label >
-							<n-icon size='32' :name='askDialog.icon' />
-						</template>
-						<div class='n-description'>
-							<n-space vertical>
-								<p>
-									{{
-										$t('home.fileview.ask-dialogs.overwrite.file-info-name', [askDialog.args.name])
-									}}
-								</p>
-								<p>
-									{{
-										$t('home.fileview.ask-dialogs.overwrite.file-info-size', [
-											askDialog.args.src.size
-										])
-									}}
-								</p>
-								<p>
-									{{
-										$t(
-											'home.fileview.ask-dialogs.overwrite.file-info-lastmodify',
-											askDialog.args.src.lastModify
-										)
-									}}
-								</p>
-							</n-space>
-						</div>
-					</el-descriptions-item>
-					<el-descriptions-item>
-						<template #label >
-							<n-icon size='32' :name='askDialog.icon' />
-						</template>
-						<div class='n-description'>
-							<n-space vertical>
-								<p>
-									{{
-										$t('home.fileview.ask-dialogs.overwrite.file-info-name', [askDialog.args.name])
-									}}
-								</p>
-								<p>
-									{{
-										$t(
-											'home.fileview.ask-dialogs.overwrite.file-info-size',
-											askDialog.args.dest.size
-										)
-									}}
-								</p>
-								<p>
-									{{
-										$t(
-											'home.fileview.ask-dialogs.overwrite.file-info-lastmodify',
-											askDialog.args.dest.lastModify
-										)
-									}}
-								</p>
-							</n-space>
-						</div>
-					</el-descriptions-item>
-					<el-descriptions-item labelStyle='margin-right: 0;'>
-						<el-checkbox v-model='askDialog.keep'>
-							{{ $t('home.fileview.ask-dialogs.overwrite.keep') }}
-						</el-checkbox>
-					</el-descriptions-item>
-				</el-descriptions>
-			</template>
-			<template #footer>
-				<el-button v-if="askDialog.questionType === 'merge'" type='primary' @click='handleMergeFolder'>
-					{{ $t('home.fileview.ask-dialogs.common-buttons.btn-merge') }}
-				</el-button>
-				<el-button v-if="askDialog.questionType === 'overwrite'" type='danger' @click='handleOverwrite'>
-					{{ $t('home.fileview.ask-dialogs.common-buttons.btn-overwrite') }}
-				</el-button>
-				<el-button type='warning' @click='handleSkip'>
-					{{ $t('home.fileview.ask-dialogs.common-buttons.btn-skip') }}
-				</el-button>
-				<el-button @click='handleTransCancel'>
-					{{ $t('home.fileview.ask-dialogs.common-buttons.btn-cancel') }}
-				</el-button>
-			</template>
-		</el-dialog>
 	</div>
 </template>
 
 <script>
 import path from 'path'
 import PtFileViewAddress from './address'
-import { getFolderIcon, getFileIcon, getIcon } from '@/icons/system-icon'
+import { getIcon } from '@/icons/system-icon'
 import { Dirent } from '../../../../common/filesystem/dirent'
 import { createDataTransfer } from '@/services/nxsys/dataTransfer'
 import FileStatusBar from '@/views/components/fileview/components/file-status-bar'
@@ -426,6 +289,7 @@ export default {
 	},
 	data() {
 		return {
+			openingWithSystem: false,
 			layout: 'detail',
 			columns: [
 				{
@@ -507,16 +371,6 @@ export default {
 				dirnameList: []
 			},
 
-			askDialog: {
-				title: '',
-				show: false,
-				questionType: '',
-				keep: false,
-				args: null,
-				icon: '',
-				transfer: null
-			},
-
 			progressStatus: {
 				timer: null,
 				currentProgress: 0,
@@ -569,6 +423,11 @@ export default {
 							label: 'home.fileview.context-menu.download-file',
 							type: 'normal',
 							handler: this.handleContextMenu_DownloadFile.bind(this)
+						},
+						{
+							label: 'home.fileview.context-menu.open-with-system',
+							type: 'normal',
+							handler: this.handleContextMenu_OpenWithSystem.bind(this)
 						},
 						{
 							type: 'separator'
@@ -790,6 +649,13 @@ export default {
 		if (this.progressStatus.timer != null) {
 			clearInterval(this.progressStatus.timer)
 			this.progressStatus.timer = null
+		}
+		if (this._openWithSystemWatch && this._openWithSystemWatch.watchId) {
+			const powertools = window.powertools
+			if (powertools && powertools.stopWatchFile) {
+				powertools.stopWatchFile(this._openWithSystemWatch.watchId)
+			}
+			this._openWithSystemWatch = null
 		}
 	},
 
@@ -1051,55 +917,6 @@ export default {
 				this.progressStatus.currentProgress = 0
 			}
 		},
-
-		showAskDialog(transfer, question, args) {
-			if (question === 'merge') {
-				this.askDialog.title = this.$t('home.fileview.ask-dialogs.merge.title')
-				this.askDialog.icon = getFolderIcon(args.name)
-			} else if (question === 'overwrite') {
-				this.askDialog.title = this.$t('home.fileview.ask-dialogs.overwrite.title')
-				this.askDialog.icon = getFileIcon(args.name)
-			}
-			this.askDialog.show = true
-			this.askDialog.questionType = question
-			this.askDialog.keep = false
-			this.askDialog.args = args
-			this.askDialog.transfer = transfer
-		},
-
-		closeAskDialog() {
-			this.askDialog.title = ''
-			this.askDialog.message = ''
-			this.askDialog.keep = false
-			this.askDialog.args = {
-				basename: '',
-				dest: {},
-				src: {}
-			}
-			this.askDialog.show = false
-			this.askDialog.transfer = null
-		},
-
-		async handleMergeFolder() {
-			await this.askDialog.transfer.answer('merge', this.askDialog.keep)
-			this.closeAskDialog()
-		},
-
-		async handleOverwrite() {
-			await this.askDialog.transfer.answer('overwrite', this.askDialog.keep)
-			this.closeAskDialog()
-		},
-
-		async handleSkip() {
-			await this.askDialog.transfer.answer('skip', this.askDialog.keep)
-			this.closeAskDialog()
-		},
-
-		async handleTransCancel() {
-			await this.askDialog.transfer.answer('cancel', this.askDialog.keep)
-			this.closeAskDialog()
-		},
-
 		async upload(filePath, type, progressId, createFolder = false) {
 			const transfer = await createDataTransfer()
 			const connId = await this.getconn()
@@ -1119,10 +936,6 @@ export default {
 			return new Promise((resolve, reject) => {
 				transfer.on('prepare', () => {
 					this.updateProgress(progressId, 0, this.$t('home.fileview.mainview.progress.prepare-upload'))
-				})
-
-				transfer.on('ask', ({ question, args }) => {
-					this.showAskDialog(transfer, question, args)
 				})
 
 				transfer.on('transferring', (args) => {
@@ -1169,10 +982,6 @@ export default {
 			return new Promise((resolve, reject) => {
 				transfer.on('prepare', () => {
 					this.updateProgress(progressId, 0, this.$t('home.fileview.mainview.progress.prepare-download'))
-				})
-
-				transfer.on('ask', ({ question, args }) => {
-					this.showAskDialog(transfer, question, args)
 				})
 
 				transfer.on('transferring', (args) => {
@@ -1463,6 +1272,106 @@ export default {
 				this.progressFinished(progressId)
 				this.refresh()
 			}
+		},
+
+		async handleContextMenu_OpenWithSystem() {
+			const fileItem = this.fileList[this.contextMenu.fileItemIdx]
+			if (!fileItem || !fileItem.dirent) {
+				return
+			}
+			const dirent = fileItem.dirent
+			if (dirent.isDirectory()) {
+				return
+			}
+
+			const powertools = window.powertools
+			if (!powertools || !powertools.getTempPath || !powertools.openPath) {
+				return
+			}
+
+			if (this._openWithSystemWatch && this._openWithSystemWatch.watchId) {
+				powertools.stopWatchFile(this._openWithSystemWatch.watchId)
+				this._openWithSystemWatch = null
+			}
+
+			this.openingWithSystem = true
+			const tempDir = powertools.getTempPath()
+			const tempFile = path.join(tempDir, 'nxshell-open-' + Date.now() + '-' + dirent.name)
+			const remotePath = path.resolve(this.currentPath, dirent.name)
+
+			try {
+				await this.download(remotePath, tempFile, 'file', null)
+				this.openingWithSystem = false
+
+				const watchId = dirent.name + '-' + Date.now()
+				this._openWithSystemWatch = { watchId, tempFile, remotePath, lastUpload: 0 }
+				powertools.watchFile(watchId, tempFile, (changedWatchId) => {
+					this._onOpenWithSystemFileChanged(changedWatchId, tempFile, remotePath)
+				})
+
+				powertools.openPath(tempFile)
+			} catch (err) {
+				const message = err.message
+				this.$confirm(
+					this.$t('home.fileview.confirm-dialogs.errors.download-error', [message]),
+					this.$t('home.fileview.confirm-dialogs.errors.title'),
+					{
+						type: 'error'
+					}
+				)
+			} finally {
+				this.openingWithSystem = false
+			}
+		},
+
+		_onOpenWithSystemFileChanged(watchId, tempFile, remotePath) {
+			if (!this._openWithSystemWatch || this._openWithSystemWatch.watchId !== watchId) return
+			const now = Date.now()
+			if (this._openWithSystemWatch.lastUpload && now - this._openWithSystemWatch.lastUpload < 3000) return
+			this._openWithSystemWatch.lastUpload = now
+
+			const progressId = this.createProgress(this.$t('home.fileview.mainview.progress.auto-saving'))
+			this._uploadToRemote(tempFile, remotePath, progressId).then(() => {
+				this.progressFinished(progressId)
+			}).catch(() => {
+				this.progressFinished(progressId)
+			})
+		},
+
+		async _uploadToRemote(localPath, remotePath, progressId) {
+			const transfer = await createDataTransfer()
+			const connId = await this.getconn()
+			transfer._setFrom({
+				nodeUUID: '',
+				path: localPath,
+				type: 'file'
+			})
+			transfer._setTo({
+				connId: connId,
+				nodeUUID: this.hostInfo.uuid,
+				path: remotePath,
+				type: 'file'
+			})
+
+			return new Promise((resolve, reject) => {
+				transfer.on('prepare', () => {
+					this.updateProgress(progressId, 0, this.$t('home.fileview.mainview.progress.auto-saving'))
+				})
+				transfer.on('transferring', (args) => {
+					const { progress, speed } = args
+					this.updateProgress(progressId, progress, this.$t('home.fileview.mainview.progress.auto-saving'), speed)
+				})
+				transfer.on('filecreated', () => {
+					this.refresh()
+				})
+				transfer.on('finished', () => {
+					resolve()
+				})
+				transfer.on('error', (err) => {
+					reject(err)
+				})
+				transfer.startTransferring()
+			})
 		},
 
 		async handleContextMenu_DownloadFile() {
@@ -1903,25 +1812,6 @@ export default {
 
   .move-dir-select {
     width: 300px;
-  }
-}
-
-.ask-dialog {
-  margin: {
-    top: 30px;
-    bottom: 40px;
-  }
-
-  .message {
-    margin-bottom: 20px;
-  }
-
-  .file-summary {
-    margin: {
-      left: 20px;
-      right: 20px;
-      bottom: 20px;
-    }
   }
 }
 </style>

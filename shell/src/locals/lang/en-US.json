@@ -602,6 +602,7 @@
                 "upload-folder": "Directory upload",
                 "download-file": "File download",
                 "download-folder": "Directory download",
+                "open-with-system": "Open with system app",
                 "createdir": "Create directory",
                 "createfile": "Create file",
                 "viewtype": "View type",
@@ -717,7 +718,8 @@
                     "prepare-download": "Prepare to download...",
                     "prepare-upload": "Prepare to upload...",
                     "donwload-finished": "All files have been downloaded.",
-                    "upload-finished": "All files have been upladed."
+                    "upload-finished": "All files have been upladed.",
+                    "auto-saving": "Auto saving..."
                 },
                 "columns": {
                     "name": "File name",

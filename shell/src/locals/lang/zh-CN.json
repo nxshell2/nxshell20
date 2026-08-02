@@ -604,6 +604,7 @@
                 "upload-folder": "上传文件夹",
                 "download-file": "下载文件",
                 "download-folder": "下载目录",
+                "open-with-system": "用系统应用打开",
                 "createdir": "创建文件夹",
                 "createfile": "创建文件",
                 "viewtype": "显示方式",
@@ -719,7 +720,8 @@
                     "prepare-download": "准备下载...",
                     "prepare-upload": "准备上传...",
                     "donwload-finished": "下载完成。",
-                    "upload-finished": "上传完成。"
+                    "upload-finished": "上传完成。",
+                    "auto-saving": "正在自动保存..."
                 },
                 "columns": {
                     "name": "文件名",

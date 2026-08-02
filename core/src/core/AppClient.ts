@@ -267,6 +267,31 @@ const powertools = {
         } catch {
             return (file as any).path || '';
         }
+    },
+
+    getTempPath() {
+        return ipcRenderer.sendSync("pt:get-temp-path-sync");
+    },
+
+    watchFile(watchId: string, filePath: string, callback: (watchId: string) => void) {
+        ipcRenderer.send("pt:watch-file", watchId, filePath);
+        const handler = (_e: any, changedWatchId: string) => {
+            if (changedWatchId === watchId) {
+                callback(changedWatchId);
+            }
+        };
+        ipcRenderer.on("pt:file-changed", handler);
+        (this as any)._watchFileHandlers = (this as any)._watchFileHandlers || {};
+        (this as any)._watchFileHandlers[watchId] = handler;
+    },
+
+    stopWatchFile(watchId: string) {
+        ipcRenderer.send("pt:stop-watch-file", watchId);
+        const handlers = (this as any)._watchFileHandlers;
+        if (handlers && handlers[watchId]) {
+            ipcRenderer.removeListener("pt:file-changed", handlers[watchId]);
+            delete handlers[watchId];
+        }
     }
 };
 

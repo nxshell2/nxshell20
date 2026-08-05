@@ -93,7 +93,10 @@ export default {
         const ipAddr = await this.execCmd('ip -o link show 2>/dev/null; ip -o addr show 2>/dev/null || ifconfig -a 2>/dev/null')
         const netDev = await this.execCmd('cat /proc/net/dev 2>/dev/null')
         const processes = await this.execCmd('ps -eo pid,ppid,user,pcpu,pmem,etime,comm,args --sort=-pcpu 2>/dev/null | head -51')
-        const services = await this.execCmd('systemctl list-units --type=service --no-pager --no-legend 2>/dev/null | head -51 || service --status-all 2>/dev/null | head -51')
+        const services = await this.execCmd(
+          'systemctl list-units --type=service --no-pager --no-legend 2>/dev/null | head -51'
+          + ' || service --status-all 2>/dev/null | head -51'
+        )
 
         const os = parseOsRelease(osRelease)
         const un = parseUname(uname)

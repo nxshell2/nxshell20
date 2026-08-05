@@ -4,7 +4,7 @@ import { storeToRefs } from 'pinia'
 import semver from 'semver'
 import { getCurrentInstance, onMounted, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { getProfile, updateProfile } from '@/services/globalSetting'
+import { updateProfile } from '@/services/globalSetting'
 import { createLocalFs } from '@/services/nxsys/localfs'
 import { SESSION_TYPES } from '@/services/session'
 import { useSettingStore } from '@/store'
@@ -25,7 +25,6 @@ const themeIconConstants = {
   pink: 'Cherry',
   hazy: 'Sunny'
 }
-console.log('设置', locale.value, getProfile('xterm')?.language)
 async function doCapture(_e) {
   capture.value = !capture.value
   captureIcon.value = capture.value ? 'VideoPlay' : 'VideoPause'
@@ -67,7 +66,7 @@ function goLogin() {
   // const { $sessionManager: sessionManager } = instance?.proxy
   // const loginInstances = sessionManager.matchSessionInstanceBySessionType(SESSION_TYPES.LOGIN)
   // if (loginInstances.length) {
-  // 	return
+  //   return
   // }
   // sessionManager.createLoginSessionInstance()
 }
@@ -80,7 +79,6 @@ function gotoGlobalSetting() {
     return
   }
   const proxy = instance?.proxy
-  // @ts-ignore
   const sessionManager = proxy && proxy.$sessionManager
   if (!sessionManager) {
     return

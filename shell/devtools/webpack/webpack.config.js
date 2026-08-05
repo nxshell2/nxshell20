@@ -39,6 +39,7 @@ module.exports = {
   externals: {
     'serialport': 'serialport',
     'node-pty': 'node-pty',
-    'cpu-features': 'cpu-features'
+    'cpu-features': 'cpu-features',
+    'font-list': 'font-list'
   }
 }

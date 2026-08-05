@@ -9,6 +9,7 @@
         "./src/*"
       ]
     },
+    "types": ["node"],
     "allowJs": true,
     "strict": true,
     "strictNullChecks": true,

@@ -10,10 +10,22 @@ import { settingFormReset } from './constants/default.ts'
 const settingsForm = ref({
   ...settingFormReset
 })
+
+// 数字字段规范化：兼容旧版本以字符串持久化的历史数据
+function toNumber(value, fallback) {
+  const num = Number(value)
+  return Number.isFinite(num) ? num : fallback
+}
+
+function normalizeNumericFields(form) {
+  form[lineHeight.name] = toNumber(form[lineHeight.name], lineHeight.defaultValue)
+  form[letterSpacing.name] = toNumber(form[letterSpacing.name], letterSpacing.defaultValue)
+}
 const fontFamilyList = ref({ ...fontFamily })
 const { t } = useI18n()
 const aiConfig = ref(getAIConfig())
 async function handleAIConfigChange() {
+  aiConfig.value.maxContextLines = toNumber(aiConfig.value.maxContextLines, 50)
   await saveAIConfig(aiConfig.value)
 }
 async function handlerSettingChange() {
@@ -48,6 +60,7 @@ onBeforeMount(async() => {
 onMounted(() => {
   const storeSetting = getProfile('xterm')
   settingsForm.value = { ...settingFormReset, ...storeSetting }
+  normalizeNumericFields(settingsForm.value)
 })
 </script>
 
@@ -86,13 +99,13 @@ onMounted(() => {
               </el-col>
               <el-col :span="16">
                 <el-radio-group v-model="settingsForm[cursorStyle.name]" @change="handlerSettingChange">
-                  <el-radio-button label="block">
+                  <el-radio-button value="block">
                     █
                   </el-radio-button>
-                  <el-radio-button label="bar">
+                  <el-radio-button value="bar">
                     |
                   </el-radio-button>
-                  <el-radio-button label="underline">
+                  <el-radio-button value="underline">
                     ▁
                   </el-radio-button>
                 </el-radio-group>

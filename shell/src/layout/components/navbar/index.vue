@@ -54,12 +54,12 @@ async function checkAppUpdate() {
   try {
     const {
       data: { version: remoteVersion = '' }
-    } = await axios.get(versionUrl, { timeout: 60 * 1000 })
+    } = await axios.get(versionUrl, { timeout: 10 * 1000 })
     if (remoteVersion !== '' && remoteVersion !== version.value) {
       needUpdate.value = semver.gt(remoteVersion, version.value)
     }
-  } catch(e) {
-    console.error('App版本检测异常', e)
+  } catch {
+    // 版本检测失败（如网络不可达）时静默降级，不影响正常使用
   }
 }
 

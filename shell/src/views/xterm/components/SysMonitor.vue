@@ -368,13 +368,13 @@ export default {
         >
           <div v-loading="loading" class="sys-monitor__content">
             <el-radio-group v-model="serviceFilter" size="small" style="margin-bottom: 8px">
-              <el-radio-button label="all">
+              <el-radio-button value="all">
                 {{ $t('home.session-instance.sys-monitor.all') }}
               </el-radio-button>
-              <el-radio-button label="running">
+              <el-radio-button value="running">
                 {{ $t('home.session-instance.sys-monitor.running') }}
               </el-radio-button>
-              <el-radio-button label="failed">
+              <el-radio-button value="failed">
                 {{ $t('home.session-instance.sys-monitor.failed') }}
               </el-radio-button>
             </el-radio-group>

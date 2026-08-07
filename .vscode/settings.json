@@ -96,5 +96,8 @@
     "scss",
     "pcss",
     "postcss"
-  ]
+  ],
+  "reasonix.model": "glm-coding-plan-cn/glm-5.2",
+  "reasonix.autoStart": true,
+  "reasonix.trace": true
 }

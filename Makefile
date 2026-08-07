@@ -10,6 +10,9 @@
 # Note: NODE_OPTIONS=--openssl-legacy-provider is injected per-target below.
 # It cannot be exported globally because Electron rejects this flag in NODE_OPTIONS.
 
+# Package manager: prefer pnpm, fall back to npm. Override with: make install PM=npm
+PM ?= $(shell command -v pnpm >/dev/null 2>&1 && echo pnpm || echo npm)
+
 export buildTimes := $(shell date -u +%Y%m%d%H%M)
 VERSION ?= $(shell node -p "require('./package.json').version")
 ELECTRON_VERSION := 43.2.0
@@ -22,25 +25,25 @@ all: dist
 install: core/node_modules shell/node_modules node_modules
 
 core/node_modules: core/package.json
-	cd core && pnpm install
+	cd core && $(PM) install
 	touch $@
 
 shell/node_modules: shell/package.json
-	cd shell && pnpm install
+	cd shell && $(PM) install
 	touch $@
 
 node_modules: package.json
-	pnpm install
+	$(PM) install
 	touch $@
 
 # -----------------------------------------------------------------------------
 # Lint
 # -----------------------------------------------------------------------------
 lint: shell/node_modules
-	cd shell && pnpm lint
+	cd shell && $(PM) lint
 
 lint-fix: shell/node_modules
-	cd shell && pnpm lint:fix
+	cd shell && $(PM) lint:fix
 
 # -----------------------------------------------------------------------------
 # Local development
@@ -53,13 +56,13 @@ dev: install core
 # -----------------------------------------------------------------------------
 core: core/node_modules
 	node scripts/write-version.js $(VERSION)
-	cd core && NODE_OPTIONS="--openssl-legacy-provider" pnpm build
+	cd core && NODE_OPTIONS="--openssl-legacy-provider" $(PM) build
 
 # -----------------------------------------------------------------------------
 # Build shell (Vue renderer + ptservices)
 # -----------------------------------------------------------------------------
 shell: shell/node_modules
-	cd shell && NODE_OPTIONS="--openssl-legacy-provider" pnpm build
+	cd shell && NODE_OPTIONS="--openssl-legacy-provider" $(PM) build
 	cd shell && node devtools/buildservice.js
 
 # -----------------------------------------------------------------------------
@@ -68,8 +71,8 @@ shell: shell/node_modules
 native: pack
 	mkdir -p pack/native
 	cp build/native-package.json pack/native/package.json
-	cd pack/native && pnpm install
-	cd pack/native && pnpm exec electron-rebuild -f -v $(ELECTRON_VERSION) -w serialport,node-pty
+	cd pack/native && $(PM) install
+	cd pack/native && $(PM) exec electron-rebuild -f -v $(ELECTRON_VERSION) -w serialport,node-pty
 
 # -----------------------------------------------------------------------------
 # Stage application for electron-builder

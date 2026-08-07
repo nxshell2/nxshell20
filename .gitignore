@@ -7,3 +7,6 @@ shell/devtools/webpack/dist/
 electron-builder.env
 .DS_Store
 *.log
+.reasonix
+reasonix.toml
+website/

@@ -1,42 +1,47 @@
-# NxShell 2.0
+<p align="center">
+  <img src="https://img.shields.io/badge/NxShell-2.0.0-6366f1?style=for-the-badge&logo=terminal" alt="NxShell" width="220" />
+</p>
 
-<div align="center">
+<h1 align="center">NxShell</h1>
 
-![NxShell Logo](https://img.shields.io/badge/NxShell-2.0.0-6366f1?style=for-the-badge&logo=terminal)
+<p align="center"><strong>A cross-platform desktop terminal client.</strong></p>
+<p align="center"><sub>跨平台桌面终端客户端 —— 一套工具管理 SSH / VNC / Telnet / FTP / SFTP / Serial。</sub></p>
 
-[![GitHub Stars](https://img.shields.io/github/stars/nxshell/nxshell?style=for-the-badge&color=ffcb36)](https://github.com/nxshell/nxshell)
-[![GitHub Forks](https://img.shields.io/github/forks/nxshell/nxshell?style=for-the-badge&color=388bfd)](https://github.com/nxshell/nxshell/forks)
-[![GitHub Issues](https://img.shields.io/github/issues/nxshell/nxshell?style=for-the-badge&color=ff7471)](https://github.com/nxshell/nxshell/issues)
-[![GitHub Pull Requests](https://img.shields.io/github/issues-pr/nxshell/nxshell?style=for-the-badge&color=58a6ff)](https://github.com/nxshell/nxshell/pulls)
+<p align="center">
+  <a href="https://github.com/nxshell/nxshell/releases">
+    <img src="https://img.shields.io/github/v/release/nxshell/nxshell?style=flat-square&color=6366f1" alt="Release" />
+  </a>
+  <img src="https://img.shields.io/badge/platform-Windows%20%7C%20macOS%20%7C%20Linux-blue?style=flat-square" alt="Platform" />
+  <img src="https://img.shields.io/badge/built%20with-Electron%20%2B%20Vue-47848f?style=flat-square" alt="Electron + Vue" />
+  <img src="https://img.shields.io/github/license/nxshell/nxshell?style=flat-square" alt="ISC License" />
+</p>
 
-[![Views](https://custom-icon-badges.demolab.com/badge/README_views-58a6ff?style=for-the-badge&logo=eye&logoColor=white)](README.md)
-[![Downloads](https://img.shields.io/github/downloads/nxshell/nxshell/total?style=for-the-badge&color=fa8216&logo=download)](https://github.com/nxshell/nxshell/releases)
+<p align="center">
+  <a href="https://github.com/nxshell/nxshell/releases/latest">Download</a> ·
+  <a href="https://github.com/nxshell/nxshell/issues">Issues</a> ·
+  <a href="README.md">🌐 中文</a>
+</p>
 
-[![License](https://img.shields.io/badge/license-ISC-blue?style=for-the-badge)](./LICENSE)
-[![Node.js](https://img.shields.io/badge/Node.js-%E2%89%A520-339933?style=for-the-badge&logo=node.js)](https://nodejs.org/)
-[![pnpm](https://img.shields.io/badge/pnpm-%E2%89%A59-orange?style=for-the-badge&logo=pnpm)](https://pnpm.io/)
-[![Electron](https://img.shields.io/badge/Electron-43.2.0-47848f?style=for-the-badge&logo=electron)](https://www.electronjs.org/)
-[![Vue](https://img.shields.io/badge/Vue.js-3.5-42d392?style=for-the-badge&logo=vue.js)](https://vuejs.org/)
-
-**A cross-platform desktop terminal client** for SSH, VNC, Telnet, FTP/SFTP, Serial, and SOCKS5 connections
-
-[Features](#features) · [Tech Stack](#tech-stack) · [Project Structure](#project-structure) · [Getting Started](#getting-started) · [Architecture](#architecture) · [Language / 语言选择](#-language)
-
-</div>
+> **Note** —— This repository is the source and issue-tracking channel for NxShell. For release packages, visit [Releases](https://github.com/nxshell/nxshell/releases).
 
 ---
 
-## Features
+## What is NxShell?
 
-| Feature | Description |
-|:---|:---|
-| 🔌 **Multi-protocol** | SSH, VNC, Telnet, FTP/SFTP, Serial, SOCKS5 |
-| 📑 **Tabbed Terminal** | Manage multiple sessions in one window with drag-to-group |
-| 🌳 **Session Tree** | Organize connections with folders and bookmarks |
-| 📂 **File Manager** | Built-in SFTP file browser with upload/download |
-| ✏️ **Code Editor** | Syntax highlighting for 10+ languages via CodeMirror 6 |
-| 🌍 **i18n** | Built-in Chinese/English switching, expanding |
-| 🖥️ **Cross-platform** | Windows (NSIS/APPX), macOS (DMG), Linux (AppImage/deb) |
+NxShell is a feature-rich, cross-platform desktop client that unifies **SSH, VNC, Telnet, FTP/SFTP, Serial** and **SOCKS5** into a single window — so you can manage remote hosts as neatly as flipping through a notebook.
+
+---
+
+## Highlights
+
+- 🔌 **Multi-protocol** — One client for SSH, VNC, Telnet, FTP/SFTP, Serial and SOCKS5 proxy.
+- 📑 **Tabbed terminal** — Manage multiple sessions in a single window; drag to group, switch in a flash.
+- 🌳 **Session tree** — Organize connections with folders and bookmarks; hundreds of hosts stay tidy.
+- 📂 **File manager** — Built-in SFTP browser with visual upload/download and ZMODEM transfer.
+- ✏️ **Code editor** — CodeMirror 6 with syntax highlighting for 10+ languages (edit remote configs in place).
+- 🌍 **i18n** — Switch between Chinese / English UI on the fly.
+- 🖥️ **Cross-platform** — Windows (NSIS / APPX), macOS (DMG), Linux (AppImage / deb).
+- ⚡ **Native performance** — Protocols run on Node.js native addons (`ptservices`) for stable, fast connections.
 
 ---
 
@@ -47,17 +52,113 @@
 | **Runtime** | Electron 43.2.0 |
 | **UI Framework** | Vue 3.5 · Vue Router 4 · Pinia · Vue I18n |
 | **UI Components** | Element Plus 2.14 · Element Plus Icons |
-| **Terminal Emulator** | xterm.js 6.0 (fit / search / web-links / WebGL addons) |
-| **Code Editor** | CodeMirror 6 (C++, CSS, HTML, Java, JS, JSON, Markdown, PHP, Python, XML) |
-| **Language Toolchain** | TypeScript 5.9 · Babel · Webpack · Vue CLI Service |
+| **Terminal** | xterm.js 6.0 (fit / search / web-links / WebGL addons) |
+| **Editor** | CodeMirror 6 (C++, CSS, HTML, Java, JS, JSON, Markdown, PHP, Python, XML) |
+| **Toolchain** | TypeScript 5.9 · Babel · Webpack · Vue CLI Service |
 | **Protocol Addons** | `nxshell-ssh2` · `nxshell-vnc` · `nxshell-ftp` · `nxshell-socksv5` · `nxshell-zmodem.js` |
-| **Serial Port** | `serialport` 13.x |
+| **Serial** | `serialport` 13.x |
 | **PTY** | `node-pty` 1.1 (patched) |
 | **Networking** | `axios` · `telnet-client` · `webdav` |
-| **Package Manager** | pnpm (Workspace + shamefully-hoist + patched deps) |
+| **Package Manager** | pnpm (Workspace + patched deps) |
 | **Packaging** | electron-builder |
 | **Linting** | ESLint 10 (@antfu/eslint-config) |
 | **China Mirror** | npmmirror |
+
+---
+
+## Install
+
+### Download a package
+
+Grab the latest asset from [Releases](https://github.com/nxshell/nxshell/releases):
+
+| Platform | Asset |
+|:---|:---|
+| Windows | `NxShell-x64-win-nsis-setup.exe` / `NxShell-x64-win.appx` |
+| macOS | `NxShell-arm64-mac.dmg` |
+| Linux | `NxShell-x64-linux.AppImage` / `NxShell-x64-linux.deb` |
+
+### Or build from source
+
+Requires **Node.js ≥ 20** and **pnpm ≥ 9**.
+
+```sh
+git clone https://github.com/nxshell/nxshell.git
+cd nxshell
+make install
+make dev
+```
+
+---
+
+## Usage
+
+### Prerequisites
+
+- Node.js ≥ 20
+- pnpm ≥ 9
+- Git
+
+### Install dependencies
+
+```sh
+make install
+# or: pnpm install
+```
+
+### Development
+
+```sh
+make dev
+# or: npm run dev
+```
+
+Starts the Electron app with hot-reload for both the main process and the Vue renderer.
+
+### Lint
+
+```sh
+make lint
+npm run lint:fix   # auto-fix
+```
+
+### Build & package
+
+```sh
+make all       # build main + renderer
+make dist      # package for distribution
+make dist_cn   # package via China mirror (GFW-friendly)
+```
+
+Artifacts are output to `dist/apppackage/`.
+
+### Clean
+
+```sh
+make clean      # remove build artifacts
+make clean-all  # remove artifacts and node_modules
+```
+
+### Typical workflow
+
+1. Open NxShell and create an **SSH session** in the **session tree** (host / port / credentials).
+2. Double-click the session to connect in a **tabbed terminal**; group multiple hosts by dragging tabs.
+3. Switch to the **file manager** to drag-drop upload files, or use ZMODEM inside the terminal.
+4. Edit a remote config file in-place with the built-in **code editor** — saving writes it back.
+
+---
+
+## Configuration
+
+NxShell keeps connection and UI config in two places — no need to hand-edit low-level files.
+
+- **Sessions** — All SSH / VNC / Telnet / FTP / Serial connections are managed by the session tree, with folder grouping and bookmarks. See `docs/design/` for the design spec.
+- **UI & Language** — Switch Chinese / English UI, theme, and terminal appearance (font, color scheme, cursor) in Settings.
+- **Proxy** — Configure a SOCKS5 jump host per session via the SOCKS5 addon.
+- **Native addons** — Protocols are served by `shell/ptservices/`; `node-pty@1.1.0` is already patched via pnpm — no manual steps.
+- **China environment** — `.npmrc` pre-sets the npmmirror registry; use `make dist_cn` to package via China mirrors.
+
+> 💡 Configure once, use everywhere: the same host can be reused across SSH / SFTP / Serial protocols.
 
 ---
 
@@ -97,66 +198,9 @@ nxshell20/
         └── package.json
 ```
 
----
+### Architecture
 
-## Getting Started
-
-### Prerequisites
-
-- Node.js ≥ 20
-- pnpm ≥ 9
-- Git
-
-### Install
-
-```bash
-make install
-# or: pnpm install
-```
-
-### Development
-
-```bash
-make dev
-# or: npm run dev
-```
-
-Starts the Electron app with hot-reload for both the main process and the Vue renderer.
-
-### Linting
-
-```bash
-make lint
-npm run lint:fix   # auto-fix where possible
-```
-
-### Build & Package
-
-```bash
-# Build main process and renderer
-make all
-
-# Package for distribution
-make dist
-
-# Package using China mirrors (for users behind GFW)
-make dist_cn
-```
-
-Build artifacts are output to `dist/apppackage/`.
-
-### Clean
-
-```bash
-make clean      # remove build artifacts
-make clean-all  # remove artifacts and node_modules
-```
-
----
-
-## Architecture
-
-This project is a pnpm monorepo with two core packages:
+This is a pnpm monorepo with two core packages:
 
 - **`powertools-core`** — The Electron main process. Handles app lifecycle, IPC, session management, and packaging.
 - **`powertools-shell`** — The Electron renderer (Vue 3 SPA). Provides the UI: tabbed terminal, session tree, file manager, settings. Also bundles native Node.js addons under `ptservices/` for protocol support.
@@ -189,15 +233,26 @@ This project is a pnpm monorepo with two core packages:
 
 ---
 
-## 🌐 Language
+## Contributing
 
-| Language | Doc |
-|:---:|:---:|
-| 🇨🇳 中文 | [README.md](README.md) |
-| 🇬🇧 English | [README-en.md](README-en.md)（当前） |
+Contributions are welcome!
+
+1. **Fork** the repo and create a feature branch: `git checkout -b feat/your-feature`.
+2. Commit your changes: `git commit -m "feat: your feature"`.
+3. Push and open a **Pull Request**.
+4. Report bugs or suggest features in [Issues](https://github.com/nxshell/nxshell/issues).
+
+> Run `make lint` (or `npm run lint:fix`) before submitting to keep the code style consistent.
 
 ---
 
 ## License
 
-[ISC](./LICENSE)
+Code is licensed under the [ISC License](./LICENSE).
+
+---
+
+<p align="center">
+  Made with 💚 by NxShell Team<br>
+  <sub>⭐ <a href="https://github.com/nxshell/nxshell">Star on GitHub</a> · <a href="README.md">🌐 中文</a></sub>
+</p>

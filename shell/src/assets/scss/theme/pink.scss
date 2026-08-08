@@ -1,18 +1,18 @@
-[nx-theme="pink"]:root {
-  --n-disabled-color: #B8B8B8;
-  --pink-color-100: #F8BBD0;
-  --pink-color-200: #F48FB1;
-  --pink-color-300: #F06292;
-  --pink-color-400: #EC407A;
-  --pink-color-500: #E91E63;
-  --pink-color-600: #D81B60;
-  --pink-color-700: #C2185B;
-  --pink-color-800: #AD1457;
-  --pink-color-900: #880E4F;
-  --pink-color-A100: #FF80AB;
-  --pink-color-A200: #FF4081;
-  --pink-color-A400: #F50057;
-  --pink-color-A700: #C51162;
+[nx-theme='pink']:root {
+  --n-disabled-color: #b8b8b8;
+  --pink-color-100: #f8bbd0;
+  --pink-color-200: #f48fb1;
+  --pink-color-300: #f06292;
+  --pink-color-400: #ec407a;
+  --pink-color-500: #e91e63;
+  --pink-color-600: #d81b60;
+  --pink-color-700: #c2185b;
+  --pink-color-800: #ad1457;
+  --pink-color-900: #880e4f;
+  --pink-color-A100: #ff80ab;
+  --pink-color-A200: #ff4081;
+  --pink-color-A400: #f50057;
+  --pink-color-A700: #c51162;
 
   --n-bg-color-base: var(--pink-color-700);
   --n-bg-color-light: var(--pink-color-600);
@@ -26,12 +26,12 @@
   --n-button-primary: var(--pink-color-600);
   --n-button-primary-hover: var(--pink-color-800);
   --n-button-default-text: #000;
-  --n-button-default: #F2F3F5;
-  --n-button-default-hover: #E5E6EB;
-  --n-button-danger: #FF1744;
-  --n-button-danger-hover: #EF5350;
-  --n-button-warning: #FF3D00;
-  --n-button-warning-hover: #FF7043;
+  --n-button-default: #f2f3f5;
+  --n-button-default-hover: #e5e6eb;
+  --n-button-danger: #ff1744;
+  --n-button-danger-hover: #ef5350;
+  --n-button-warning: #ff3d00;
+  --n-button-warning-hover: #ff7043;
 
   --n-input-bg-color: var(--pink-color-800);
   --n-border-color: var(--pink-color-700);
@@ -41,7 +41,7 @@
   --n-color-modal: var(--pink-color-A700);
 
   //--n-progress-bar-color: var(--pink-color-A200);
-  --n-progress-bar-color: #C51162;
+  --n-progress-bar-color: #c51162;
   /* Tabs */
   --n-tabs-bg-color: var(--n-bg-color-light);
   --n-tabs-item-bg-color: var(--pink-color-A700);
@@ -54,7 +54,6 @@
 
   --n-switch-active: var(--pink-color-800);
   --n-jump-box-shadow: rgb(0 0 0 / 20%);
-
 
   //--primaryColor: var(--pink-color-600);
   //--primaryTextColor: #ECEFF1;
@@ -121,5 +120,4 @@
   //--fileViewAddressHostBorderColor: var(--pink-color-300);
   //--fileViewAddressHostBackgroundColor: var(--pink-color-300);
   //--processBarColor: #047aa6;
-
 }

@@ -4,20 +4,20 @@
  */
 
 const clipboardStore = {
-    text: {
-        value: "",
-        action: ""
-    },
-    object: {
-        value: null,
-        action: ""
-    }
-};
+  text: {
+  value: '',
+  action: ''
+  },
+  object: {
+  value: null,
+  action: ''
+  }
+}
 
 export function writeText(text: any) {
-    clipboardStore.text = text;
+  clipboardStore.text = text
 }
 
 export function readText() {
-    return clipboardStore.text;
+  return clipboardStore.text
 }

@@ -1,28 +1,10 @@
-<template>
-	<div class="pt-xterm-session">
-		<div ref="xtermContainerRef" class="xterm-container">
-			<xterm-instance
-				v-for="(sessionId, idx) in sessions"
-				:key="sessionId"
-				v-show="visible(sessionId)"
-				:sessionInstanceId="sessionId"
-				:style="xtermStyle"
-				class="xterm-wrapper"
-				@split_screen="(type) => settingStore.updateLayoutMode(type)"
-				@titleChange="handleTitleChange"
-				@remove-session="handleRemoveSession(idx)"
-			/>
-		</div>
-	</div>
-</template>
-
 <script setup>
-import XtermInstance from './xtermInstance'
-import { useSettingStore } from '@/store'
-import { computed, getCurrentInstance, nextTick, onActivated, onMounted, ref } from 'vue'
 import { storeToRefs } from 'pinia'
-import { onBeforeRouteUpdate, useRoute } from 'vue-router'
+import { computed, getCurrentInstance, nextTick, onActivated, onMounted, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
+import { onBeforeRouteUpdate, useRoute } from 'vue-router'
+import { useSettingStore } from '@/store'
+import XtermInstance from './xtermInstance'
 
 const { t } = useI18n()
 const xtermContainerRef = ref()
@@ -34,105 +16,123 @@ const settingStore = useSettingStore()
 const { layoutMode } = storeToRefs(settingStore)
 const _proxy = getCurrentInstance()?._proxy
 const initWidth = ref(0)
-const visible = (sessionId) => (layoutMode.value === 'normal' ? currentSessionId.value === sessionId : true)
+const visible = sessionId => (layoutMode.value === 'normal' ? currentSessionId.value === sessionId : true)
 const xtermStyle = computed(() => {
-	let width = '100%'
-	let height = '100%'
-	let min_width = 200
-	let t_len = sessions.value.length
-	let f_len = Math.floor((t_len + 1) / 2)
+  let width = '100%'
+  let height = '100%'
+  let min_width = 200
+  const t_len = sessions.value.length
+  const f_len = Math.floor((t_len + 1) / 2)
 
-	if (layoutMode.value === 'grid') {
-		if (t_len < 3) {
-			height = '100%'
-			width = Math.floor(100 / t_len)
-			width = width + '%'
-		} else {
-			height = '50%'
-			width = Math.floor(100 / f_len)
-			width = width + '%'
-			min_width = Math.floor(initWidth.value / f_len)
-		}
-	} else if (layoutMode.value === 'col') {
-		height = '100%'
-		width = Math.floor(100 / t_len)
-		width = width + '%'
-		min_width = Math.floor(initWidth.value / t_len)
-	} else if (layoutMode.value === 'row') {
-		width = '100%'
-		height = Math.floor(100 / t_len)
-		height = height + '%'
-	}
+  if (layoutMode.value === 'grid') {
+    if (t_len < 3) {
+      height = '100%'
+      width = Math.floor(100 / t_len)
+      width = `${width}%`
+    } else {
+      height = '50%'
+      width = Math.floor(100 / f_len)
+      width = `${width}%`
+      min_width = Math.floor(initWidth.value / f_len)
+    }
+  } else if (layoutMode.value === 'col') {
+    height = '100%'
+    width = Math.floor(100 / t_len)
+    width = `${width}%`
+    min_width = Math.floor(initWidth.value / t_len)
+  } else if (layoutMode.value === 'row') {
+    width = '100%'
+    height = Math.floor(100 / t_len)
+    height = `${height}%`
+  }
 
-	return {
-		width,
-		height,
-		'min-width': `${min_width}px`
-	}
+  return {
+    width,
+    height,
+    'min-width': `${min_width}px`
+  }
 })
 
 const handleTitleChange = ({ sessionId, title }) => (sessionIdMapSftpDir.value[sessionId] = title)
-const handleRemoveSession = (idx) => sessions.value.splice(idx, 1)
-const addSession = (sessionId) => {
-	if (Number.isNaN(sessionId) || sessions.value.findIndex((v) => v === sessionId) > -1) {
-		return
-	}
-	sessions.value.push(sessionId)
+const handleRemoveSession = idx => sessions.value.splice(idx, 1)
+function addSession(sessionId) {
+  if (Number.isNaN(sessionId) || sessions.value.findIndex(v => v === sessionId) > -1) {
+    return
+  }
+  sessions.value.push(sessionId)
 }
 onBeforeRouteUpdate((to, from, next) => {
-	if (to.path !== from.path) {
-		currentSessionId.value = parseInt(to.params.sessionId) || 0
-		addSession(currentSessionId.value)
-		if (!tunnelMapTitle.value[currentSessionId.value]) {
-			tunnelMapTitle.value[currentSessionId.value] = t('home.session-instance.tunnel')
-		}
-	}
-	next()
+  if (to.path !== from.path) {
+    currentSessionId.value = parseInt(to.params.sessionId) || 0
+    addSession(currentSessionId.value)
+    if (!tunnelMapTitle.value[currentSessionId.value]) {
+      tunnelMapTitle.value[currentSessionId.value] = t('home.session-instance.tunnel')
+    }
+  }
+  next()
 })
 
 const route = useRoute()
 onActivated(() => {
-	currentSessionId.value = parseInt(route.params.sessionId) || 0
-	addSession(currentSessionId.value)
-	if (!tunnelMapTitle.value[currentSessionId.value]) {
-		tunnelMapTitle.value[currentSessionId.value] = t('home.session-instance.tunnel')
-	}
+  currentSessionId.value = parseInt(route.params.sessionId) || 0
+  addSession(currentSessionId.value)
+  if (!tunnelMapTitle.value[currentSessionId.value]) {
+    tunnelMapTitle.value[currentSessionId.value] = t('home.session-instance.tunnel')
+  }
 })
 
 onMounted(() => {
-	nextTick(() => (initWidth.value = xtermContainerRef.value?.clientWidth || 0))
+  nextTick(() => (initWidth.value = xtermContainerRef.value?.clientWidth || 0))
 })
 </script>
 
+<template>
+  <div class="pt-xterm-session">
+    <div ref="xtermContainerRef" class="xterm-container">
+      <XtermInstance
+        v-for="(sessionId, idx) in sessions"
+        v-show="visible(sessionId)"
+        :key="sessionId"
+        :session-instance-id="sessionId"
+        :style="xtermStyle"
+        class="xterm-wrapper"
+        @split_screen="(type) => settingStore.updateLayoutMode(type)"
+        @title-change="handleTitleChange"
+        @remove-session="handleRemoveSession(idx)"
+      />
+    </div>
+  </div>
+</template>
+
 <style lang="scss" scoped>
 .pt-xterm-session {
-	position: relative;
+  position: relative;
 
-	width: 100%;
-	height: 100%;
+  width: 100%;
+  height: 100%;
 
-	.pt-icon {
-		// margin-left: 5px;
-		// margin-right: 5px;
-		color: var(--secondaryTextColor);
-		transition: color 0.2s;
+  .pt-icon {
+    // margin-left: 5px;
+    // margin-right: 5px;
+    color: var(--secondaryTextColor);
+    transition: color 0.2s;
 
-		&:hover {
-			color: var(--n-text-color-base);
-			transition: color 0.2s;
-		}
-	}
+    &:hover {
+      color: var(--n-text-color-base);
+      transition: color 0.2s;
+    }
+  }
 
-	.xterm-container {
-		display: flex;
-		flex-wrap: wrap;
-		width: 100%;
-		height: 100%;
-		overflow: hidden;
+  .xterm-container {
+    display: flex;
+    flex-wrap: wrap;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
 
-		.xterm-wrapper {
-			flex-grow: 1;
-		}
-	}
+    .xterm-wrapper {
+      flex-grow: 1;
+    }
+  }
 }
 </style>

@@ -1,14 +1,13 @@
-import { SESSION_TYPES, SessionInterface, registerSessionFactory } from "./session";
+import { registerSessionFactory, SESSION_TYPES, SessionInterface } from './session'
 
 class GlobalSettingSession extends SessionInterface {
-    constructor() {
-        super("GlobalSetting", SESSION_TYPES.GLOBALSETTING)
-    }
+  constructor() {
+  super('GlobalSetting', SESSION_TYPES.GLOBALSETTING)
+  }
 }
 
 function createGlobalSettingSession() {
-    return new GlobalSettingSession();
+  return new GlobalSettingSession()
 }
 
-
-registerSessionFactory(SESSION_TYPES.GLOBALSETTING, createGlobalSettingSession);
+registerSessionFactory(SESSION_TYPES.GLOBALSETTING, createGlobalSettingSession)

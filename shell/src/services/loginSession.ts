@@ -1,14 +1,13 @@
-import { SESSION_TYPES, SessionInterface, registerSessionFactory } from "./session";
+import { registerSessionFactory, SESSION_TYPES, SessionInterface } from './session'
 
 class LoginSession extends SessionInterface {
-    constructor() {
-        super("Login", SESSION_TYPES.LOGIN)
-    }
+  constructor() {
+  super('Login', SESSION_TYPES.LOGIN)
+  }
 }
 
 function createLoginSession() {
-    return new LoginSession();
+  return new LoginSession()
 }
 
-
-registerSessionFactory(SESSION_TYPES.LOGIN, createLoginSession);
+registerSessionFactory(SESSION_TYPES.LOGIN, createLoginSession)

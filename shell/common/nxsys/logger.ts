@@ -1,14 +1,14 @@
-import { EventEmitter } from "events";
+import { EventEmitter } from 'node:events'
 
 class NxLogger extends EventEmitter {
-    file: string;
-    constructor(file: string) {
-        super();
-        this.file = file;
-    }
+  file: string
+  constructor(file: string) {
+    super()
+    this.file = file
+  }
 
-    info() {
-    }
+  info() {
+  }
 }
 
-export { NxLogger };
+export { NxLogger }

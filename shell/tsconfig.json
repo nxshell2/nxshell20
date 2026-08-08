@@ -1,35 +1,36 @@
 {
-    "compilerOptions": {
-        "target": "ESNext",
-        "module": "ESNext",
-        "moduleResolution": "node",
-        "strict": true,
-        "noImplicitThis": true,
-        "allowJs": true,
-        "strictNullChecks": true,
-        "esModuleInterop": true,
-        "experimentalDecorators": true,
-        "skipLibCheck": true,
-        "noEmit": true,
-        "baseUrl": ".",
-        "paths": {
-            "@/*": [
-                "src/*"
-            ]
-        }
+  "compilerOptions": {
+    "target": "ESNext",
+    "experimentalDecorators": true,
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "paths": {
+      "@/*": [
+        "./src/*"
+      ]
     },
-    "include": [
-        "src/**/*.js",
-        "src/**/*.ts",
-        "src/**/*.tsx",
-        "src/**/*.vue",
-        "src/types/**/*.d.ts",
-        "common/**/*.js"
-    ],
-    "vueCompilerOptions": {
-        "target": 3,
-        "extensions": [
-            ".vue"
-        ]
-    }
+    "allowJs": true,
+    "strict": true,
+    "strictNullChecks": true,
+    "noImplicitThis": true,
+    "noEmit": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true
+  },
+  "include": [
+    "src/**/*.js",
+    "src/**/*.ts",
+    "src/**/*.tsx",
+    "src/**/*.vue",
+    "src/types/**/*.d.ts",
+    "common/**/*.ts",
+    "ptservices/**/*.ts",
+    "ptservices/**/*.js"
+  ],
+  "vueCompilerOptions": {
+    "target": 3,
+    "extensions": [
+      ".vue"
+    ]
+  }
 }

@@ -297,16 +297,16 @@
 ```ts
 interface StorageProviderInterface {
   // 兼容旧的 key-value 接口
-  save(name: string, object: any): Promise<void>;
-  read(name: string): Promise<any>;
+  save: (name: string, object: any) => Promise<void>
+  read: (name: string) => Promise<any>
 
   // 新增文件接口
-  listDir(path: string): Promise<DirItem[]>;
-  readFile(path: string): Promise<string>;
-  writeFile(path: string, content: string): Promise<void>;
-  createDir(path: string): Promise<void>;
-  deleteFile(path: string): Promise<void>;
-  move(from: string, to: string): Promise<void>;
+  listDir: (path: string) => Promise<DirItem[]>
+  readFile: (path: string) => Promise<string>
+  writeFile: (path: string, content: string) => Promise<void>
+  createDir: (path: string) => Promise<void>
+  deleteFile: (path: string) => Promise<void>
+  move: (from: string, to: string) => Promise<void>
 }
 ```
 
@@ -318,32 +318,33 @@ interface StorageProviderInterface {
 
 ```ts
 class SessionConfig {
-  id: string;                 // uuid
-  name: string;
-  type: "node" | "folder";
-  protocol?: string;          // ssh / localshell / telnet / ...
-  description?: string;
-  order: number;
-  system?: string;            // 图标/系统类型
+  id: string // uuid
+  name: string
+  type: 'node' | 'folder'
+  protocol?: string // ssh / localshell / telnet / ...
+  description?: string
+  order: number
+  system?: string // 图标/系统类型
 
   // 分层配置（推荐方案）
-  connection?: ConnectionConfig;
-  authentication?: AuthConfig;
-  sshOptions?: SSHOptions;
-  serialOptions?: SerialOptions;
-  terminal?: TerminalConfig;
+  connection?: ConnectionConfig
+  authentication?: AuthConfig
+  sshOptions?: SSHOptions
+  serialOptions?: SerialOptions
+  terminal?: TerminalConfig
 
   // 运行时树结构
-  parent?: SessionConfig;
-  subSessions: SessionConfig[]; // folder 才有
+  parent?: SessionConfig
+  subSessions: SessionConfig[] // folder 才有
 
   // runtime only，不持久化
-  _id?: number;               // UI 用自增 id
-  mountId?: string;           // 运行时由 repository 注入
+  _id?: number // UI 用自增 id
+  mountId?: string // 运行时由 repository 注入
 }
 ```
 
 持久化时只写入：
+
 - session 文件：`id/name/type/protocol/order/system/description` + 各分层配置（`connection`/`authentication`/`sshOptions`/`serialOptions`/`terminal`）
 - folder 文件：`id/name/icon/order`
 - 不再持久化 `subSessions`、`parent`、`mountId`、`_id` 等运行时字段
@@ -516,6 +517,7 @@ class SessionConfig {
 ```
 
 这样调整后：
+
 - 公共元数据只保留 `id/name/type/protocol/description/order`
 - 连接、认证、SSH 专有、终端配置各自分组
 - 其他协议（telnet、ftp、serial、vnc）按同样模式放入 `connection` 和各自的专有分组

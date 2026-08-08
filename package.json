@@ -1,21 +1,26 @@
 {
-    "name": "nxshell",
-    "version": "2.0.0",
-    "private": true,
-    "description": "NxShell monorepo: Electron main core + Vue renderer shell + packaging",
-    "author": "NxShell Team",
-    "license": "ISC",
-    "engines": {
-        "node": ">=20.0.0"
-    },
-    "scripts": {
-        "dev": "make dev",
-        "build": "make all",
-        "pack": "make dist",
-        "clean": "make clean",
-        "clean-all": "make clean-all"
-    },
-    "devDependencies": {
-        "electron-builder": "^26.15.3"
-    }
+  "name": "nxshell",
+  "version": "2.0.0",
+  "private": true,
+  "description": "NxShell monorepo: Electron main core + Vue renderer shell + packaging",
+  "author": "NxShell Team",
+  "license": "ISC",
+  "engines": {
+    "node": ">=20.0.0"
+  },
+  "scripts": {
+    "dev": "make dev",
+    "build": "make all",
+    "pack": "make dist",
+    "clean": "make clean",
+    "clean-all": "make clean-all",
+    "lint": "eslint",
+    "lint:fix": "eslint --fix"
+  },
+  "devDependencies": {
+    "@antfu/eslint-config": "^9.2.0",
+    "electron-builder": "^26.15.3",
+    "eslint": "^10.7.0",
+    "eslint-plugin-format": "^2.0.1"
+  }
 }

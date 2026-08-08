@@ -1,13 +1,13 @@
 {
-    "name": "powertools-shell",
-    "main": "index.js",
-    "resources": {
-        "icon": "",
-        "path": "./",
-        "index": "index.html"
-    },
-    "start": {
-        "view": "mainWindow",
-        "viewFlags": ["frameless", "hidden"]
-    }
+  "name": "powertools-shell",
+  "main": "index.js",
+  "resources": {
+    "icon": "",
+    "path": "./",
+    "index": "index.html"
+  },
+  "start": {
+    "view": "mainWindow",
+    "viewFlags": ["frameless", "hidden"]
+  }
 }

@@ -1,36 +1,39 @@
-import * as fs from 'fs';
-import * as path from 'path';
+import { lstatSync, opendirSync } from 'node:fs'
+import { extname, join } from 'node:path'
 
 export function isDirExists(dirPath: string): boolean {
-    try {
-        let stat = fs.lstatSync(dirPath);
-        return stat.isDirectory();
-    } catch (e) {
-        return false;
-    }
+  try {
+  const stat = lstatSync(dirPath)
+  return stat.isDirectory()
+  } catch(e) {
+  console.error(e)
+  return false
+  }
 }
 
 export function walkDir(root: string, filters?: string[]): string[] {
-    if (!isDirExists(root)) {
-        return [];
-    }
-    let dir = fs.opendirSync(root);
-    let dirList: string[] = [];
-    let dirent: fs.Dirent | null;
-    while ((dirent = dir.readSync())) {
-        if (dirent.isDirectory()) {
-            let files = walkDir(path.join(root, dirent.name), filters);
-            dirList = dirList.concat(files);
-        }
-        if (!dirent.isFile()) {
-            continue;
-        }
-        let ext = path.extname(dirent.name);
-        if (!filters || filters.includes(ext)) {
-            dirList.push(path.join(root, dirent.name));
-        }
-    }
-    dir.closeSync();
+  if (!isDirExists(root)) {
+  return []
+  }
+  const dir = opendirSync(root)
+  const dirList: string[] = []
+  let dirent = dir.readSync()
+  while (dirent) {
+  if (dirent.isDirectory()) {
+    const files = walkDir(join(root, dirent.name), filters)
+    dirList.push(...files)
+  }
+  if (!dirent.isFile()) {
+    dirent = dir.readSync()
+    continue
+  }
+  const ext = extname(dirent.name)
+  if (!filters || filters.includes(ext)) {
+    dirList.push(join(root, dirent.name))
+  }
+  dirent = dir.readSync()
+  }
+  dir.closeSync()
 
-    return dirList;
+  return dirList
 }

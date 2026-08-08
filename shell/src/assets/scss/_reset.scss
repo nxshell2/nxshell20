@@ -1,4 +1,4 @@
-@use "const" as *;
+@use 'const' as *;
 
 %reset-margin-padding {
   margin: 0;
@@ -7,7 +7,7 @@
 
 html,
 body {
-  font-family: "DejaVu Mono", Avenir, Helvetica, Arial, sans-serif, "PingFang SC", "微软雅黑";
+  font-family: 'DejaVu Mono', Avenir, Helvetica, Arial, sans-serif, 'PingFang SC', '微软雅黑';
   font-size: $fontSize;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -63,7 +63,6 @@ a {
 ::-webkit-scrollbar-track {
   border-radius: 4px;
 }
-
 
 .el-dialog {
   background-color: var(--n-color-bg-dialog) !important;
@@ -173,7 +172,6 @@ a {
     }
   }
 
-
   &--warning {
     background-color: var(--n-button-warning) !important;
     border-color: var(--n-button-warning) !important;
@@ -233,9 +231,9 @@ a {
 
 .el-input {
   &-number.is-controls-right {
-      .el-input__inner {
-        padding-right: 32px !important;
-      }
+    .el-input__inner {
+      padding-right: 32px !important;
+    }
     .el-input-number__increase,
     .el-input-number__decrease {
       color: var(--n-text-color-base) !important;
@@ -407,7 +405,7 @@ a {
   border: 0 !important;
   padding: 0 !important;
 
-  &[x-placement^=right] .popper__arrow {
+  &[x-placement^='right'] .popper__arrow {
     border-right-color: var(--n-color-modal) !important;
 
     &::after {
@@ -415,14 +413,13 @@ a {
     }
   }
 
-  &[x-placement^=bottom] .popper__arrow {
+  &[x-placement^='bottom'] .popper__arrow {
     border-bottom-color: var(--n-color-modal) !important;
 
     &::after {
       border-bottom-color: var(--n-color-modal) !important;
     }
   }
-
 }
 
 .el-tabs {
@@ -447,6 +444,5 @@ a {
         }
       }
     }
-
   }
 }

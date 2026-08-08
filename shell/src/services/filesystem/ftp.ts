@@ -1,142 +1,143 @@
-import { PtSFTPFileSystemClient } from "../../../common/filesystem/filesystem";
-import { FStats } from "../../../common/filesystem/fstat";
-import WaitObject from "../../../common/utils/waitObject";
+import { PtSFTPFileSystemClient } from '../../../common/filesystem/filesystem'
+import { FStats } from '../../../common/filesystem/fstat'
+import WaitObject from '../../../common/utils/waitObject'
 
 class Dirent extends FStats {
-    name = ""
-    stat: any = null;
-    
-    constructor(name: string, stat: any) {
-        super(stat);
-        this.name = name;
-        this.stat = stat;
-    }
+  name = ''
+  stat: any = null
 
-    isBlockDevice() {
-        return false;
-    }
+  constructor(name: string, stat: any) {
+  super(stat)
+  this.name = name
+  this.stat = stat
+  }
 
-    isCharacterDevice() {
-        return false;
-    }
+  isBlockDevice() {
+  return false
+  }
 
-    isDirectory() {
-        return (this.stats as any).type === 'd';
-    }
+  isCharacterDevice() {
+  return false
+  }
 
-    isFIFO() {
-        return false;
-    }
+  isDirectory() {
+  return (this.stats as any).type === 'd'
+  }
 
-    isFile() {
-        return (this.stats as any).type === '-';
-    }
+  isFIFO() {
+  return false
+  }
 
-    isSocket() {
-        return false;
-    }
+  isFile() {
+  return (this.stats as any).type === '-'
+  }
 
-    isSymbolicLink() {
-        return (this.stats as any).type === 'l';
-    }
+  isSocket() {
+  return false
+  }
 
-    getUid() {
-        return (this.stats as any).owner;
-    }
+  isSymbolicLink() {
+  return (this.stats as any).type === 'l'
+  }
 
-    getGid() {
-        return (this.stats as any).group;
-    }
+  getUid() {
+  return (this.stats as any).owner
+  }
 
-    getSize() {
-        return this.stats.size;
-    }
+  getGid() {
+  return (this.stats as any).group
+  }
 
-    getATime(): any {
-        return new Date((this.stats as any).date);
-    }
+  getSize() {
+  return this.stats.size
+  }
 
-    getMTime(): any {
-        console.log('时间',new Date((this.stats as any).date))
-        return new Date((this.stats as any).date);
-    }
+  getATime(): any {
+  return new Date((this.stats as any).date)
+  }
 
-    getPermsString() {
-        return (this.stats as any).rights.user + (this.stats as any).rights.group + (this.stats as any).rights.other;
-    }
+  getMTime(): any {
+  console.log('时间', new Date((this.stats as any).date))
+  return new Date((this.stats as any).date)
+  }
+
+  getPermsString() {
+  return (this.stats as any).rights.user + (this.stats as any).rights.group + (this.stats as any).rights.other
+  }
 }
 
 export class FTPFileSystem extends PtSFTPFileSystemClient {
-    serviceProxy: any = null;
-    service: any = null;
-    initialized: any = null;
-    constructor(handle: any) {
-        super(handle);
-        this.service = powertools.getService();
-    }
+  serviceProxy: any = null
+  service: any = null
+  initialized: any = null
+  constructor(handle: any) {
+  super(handle)
+  this.service = powertools.getService()
+  }
 
-    async init() {
-        if (this.initialized) {
-            await this.initialized.wait();
-            return;
-        }
-        this.initialized = new WaitObject();
-        try {
-            await this.service.callObject(this.handle, 'init');
-            this.initialized.resolve()
-        } catch (err) {
-            this.initialized.reject(err);
-        }
-    }
-    async getconn() {
-        return await this.service.callObject(this.handle, 'getconn');
-    }
+  async init() {
+  if (this.initialized) {
+    await this.initialized.wait()
+    return
+  }
+  this.initialized = new WaitObject()
+  try {
+    await this.service.callObject(this.handle, 'init')
+    this.initialized.resolve()
+  } catch(err) {
+    this.initialized.reject(err)
+  }
+  }
 
-    async open(fileName: any, flags: any) {
-        return await this.service.callObject(this.handle, 'open', ...[fileName, flags]);
-    }
+  async getconn() {
+  return await this.service.callObject(this.handle, 'getconn')
+  }
 
-    async readdir(location: any) {
-        const dirList = await this.service.callObject(this.handle, 'readdir', location);
-        return dirList.map((dirent: any) => {
-            return new Dirent(dirent.name, dirent)
-        });
-    }
+  async open(fileName: any, flags: any) {
+  return await this.service.callObject(this.handle, 'open', ...[fileName, flags])
+  }
 
-    async lstat(path: any) {
-        const stat = await this.service.callObject(this.handle, "lstat", path);
-        return stat;
-    }
+  async readdir(location: any) {
+  const dirList = await this.service.callObject(this.handle, 'readdir', location)
+  return dirList.map((dirent: any) => {
+    return new Dirent(dirent.name, dirent)
+  })
+  }
 
-    async mkdir(path: any, attrs?: any) {
-        return await this.service.callObject(this.handle, "mkdir", path, attrs);
-    }
+  async lstat(path: any) {
+  const stat = await this.service.callObject(this.handle, 'lstat', path)
+  return stat
+  }
 
-    async rmdir(path: any) {
-        return await this.service.callObject(this.handle, "rmdir", path);
-    }
+  async mkdir(path: any, attrs?: any) {
+  return await this.service.callObject(this.handle, 'mkdir', path, attrs)
+  }
 
-    async unlink(path: any) {
-        return await this.service.callObject(this.handle, "unlink", path);
-    }
+  async rmdir(path: any) {
+  return await this.service.callObject(this.handle, 'rmdir', path)
+  }
 
-    async readFileContent(local_file: any) {
-        return await this.service.callObject(this.handle, "syncGetLocalFileContent", local_file);
-    }
+  async unlink(path: any) {
+  return await this.service.callObject(this.handle, 'unlink', path)
+  }
 
-    async writeFileContent(local_file: any, v: any) {
-        return await this.service.callObject(this.handle, "syncWriteLocalFileContent", local_file, v);
-    }
+  async readFileContent(local_file: any) {
+  return await this.service.callObject(this.handle, 'syncGetLocalFileContent', local_file)
+  }
 
-    async syncLocalToRemote(remote: any, local: any) {
-        return await this.service.callObject(this.handle, "syncLocalToRemote", remote, local);
-    }
+  async writeFileContent(local_file: any, v: any) {
+  return await this.service.callObject(this.handle, 'syncWriteLocalFileContent', local_file, v)
+  }
 
-    async syncRemoteToLocal(remote: any, local: any) {
-        return await this.service.callObject(this.handle, "syncRemoteToLocal", remote, local);
-    } 
+  async syncLocalToRemote(remote: any, local: any) {
+  return await this.service.callObject(this.handle, 'syncLocalToRemote', remote, local)
+  }
 
-    async dispose() {
-        this.service.closeObject(this.handle);
-    }
+  async syncRemoteToLocal(remote: any, local: any) {
+  return await this.service.callObject(this.handle, 'syncRemoteToLocal', remote, local)
+  }
+
+  async dispose() {
+  this.service.closeObject(this.handle)
+  }
 }

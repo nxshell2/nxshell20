@@ -1,0 +1,19 @@
+shellEmulator: true
+
+packages:
+  - core
+  - shell
+
+allowBuilds:
+  '@parcel/watcher': true
+  '@serialport/bindings-cpp': true
+  core-js: true
+  cpu-features: false
+  cssnano: true
+  electron-winstaller: true
+  node-pty: true
+  nxshell-ssh2: true
+  vscode-material-icon-theme-js: true
+
+patchedDependencies:
+  node-pty@1.1.0: patches/node-pty@1.1.0.patch

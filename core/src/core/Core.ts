@@ -15,92 +15,92 @@ let rpcServer: RPCServer | null = null;
 let channelServer: ChannelServer | null = null;
 
 async function startShell(...args: any[]): Promise<AppInstance> {
-    let shellAppStartInfo = await AppPackageManager.getShellAppStartInfo();
-    return await startApp(shellAppStartInfo.package.name, ...args);
+  let shellAppStartInfo = await AppPackageManager.getShellAppStartInfo();
+  return await startApp(shellAppStartInfo.package.name, ...args);
 }
 
 async function startApp(appName: string, ...args: any[]): Promise<AppInstance> {
-    let appStartInfo = await AppPackageManager.getAppStartInfo(appName);
+  let appStartInfo = await AppPackageManager.getAppStartInfo(appName);
 
-    let appInstance = new AppInstance(appStartInfo, lastAppInstanceId, args);
+  let appInstance = new AppInstance(appStartInfo, lastAppInstanceId, args);
 
-    appInstances[lastAppInstanceId] = appInstance;
-    lastAppInstanceId++;
+  appInstances[lastAppInstanceId] = appInstance;
+  lastAppInstanceId++;
 
-    return appInstance;
+  return appInstance;
 }
 
 const CoreServiceHandler = {
-    async startApp(app: string, ...args: any[]) {
-        let ret;
-        try {
-            ret = await startApp(app, ...args);
-        } catch (e) {
-            throw e;
-        }
+  async startApp(app: string, ...args: any[]) {
+    let ret;
+    try {
+      ret = await startApp(app, ...args);
+    } catch (e) {
+      throw e;
+    }
 
-        return ret;
-    },
+    return ret;
+  },
 
-    async registerWindowProvider(windowProviderChannelId: number) {
-        let channel = channelServer!.bindChannelByPeerId(windowProviderChannelId);
-        registerWindowProvider(channel);
-    },
+  async registerWindowProvider(windowProviderChannelId: number) {
+    let channel = channelServer!.bindChannelByPeerId(windowProviderChannelId);
+    registerWindowProvider(channel);
+  },
 
-    preloadScriptIsLoaded: false,
+  preloadScriptIsLoaded: false,
 
-    getAppPreloadScript() {
-        if (CoreServiceHandler.preloadScriptIsLoaded) {
-            throw new Error("preload script can only be get once.");
-        }
-        let preloadPath = path.join(__dirname, "./AppClient.js");
-        if (process.platform === "win32") {
-            preloadPath = `/${preloadPath.replace(/\\/g, "/")}`;
-        }
+  getAppPreloadScript() {
+    if (CoreServiceHandler.preloadScriptIsLoaded) {
+      throw new Error("preload script can only be get once.");
+    }
+    let preloadPath = path.join(__dirname, "./AppClient.js");
+    if (process.platform === "win32") {
+      preloadPath = `/${preloadPath.replace(/\\/g, "/")}`;
+    }
 
-        return `file://${preloadPath}`;
-    },
+    return `file://${preloadPath}`;
+  },
 
-    ...CoreUI
+  ...CoreUI
 };
 
 async function initialize() {
-    if (initialized) {
-        return;
-    }
-    let IPCExchange = AppIPC.getGlobalExchange();
+  if (initialized) {
+    return;
+  }
+  let IPCExchange = AppIPC.getGlobalExchange();
 
-    let ipcSend = (data: any, { dest, src }: { dest?: string; src?: string }) => {
-        IPCExchange.sendTo(dest!, src!, data);
-    };
+  let ipcSend = (data: any, { dest, src }: { dest?: string; src?: string }) => {
+    IPCExchange.sendTo(dest!, src!, data);
+  };
 
-    rpcServer = new RPCServer();
-    rpcServer.registerService(CoreServiceHandler);
+  rpcServer = new RPCServer();
+  rpcServer.registerService(CoreServiceHandler);
 
-    channelServer = new ChannelServer(ipcSend);
+  channelServer = new ChannelServer(ipcSend);
 
-    IPCExchange.onRecv("powertools-core", ({ dest, src, body }) => {
-        let routerInfo = { src: dest, dest: src };
-        dispatch(body,
-            () => {},
-            async (callReq: any) => {
-                let retResponse = await rpcServer!.dispatchCall(callReq);
-                ipcSend(retResponse, routerInfo);
-            },
-            (channelPacket: any) => {
-                channelServer!.dispatchChannelData(channelPacket, routerInfo);
-            }
-        );
-    });
+  IPCExchange.onRecv("powertools-core", ({ dest, src, body }) => {
+    let routerInfo = { src: dest, dest: src };
+    dispatch(body,
+      () => {},
+      async (callReq: any) => {
+        let retResponse = await rpcServer!.dispatchCall(callReq);
+        ipcSend(retResponse, routerInfo);
+      },
+      (channelPacket: any) => {
+        channelServer!.dispatchChannelData(channelPacket, routerInfo);
+      }
+    );
+  });
 
-    await AppPackageManager.scanInstalledApp();
-    AppPackageManager.setupAppProtocol();
+  await AppPackageManager.scanInstalledApp();
+  AppPackageManager.setupAppProtocol();
 
-    initialized = true;
+  initialized = true;
 }
 
 export {
-    initialize,
-    startShell,
-    startApp
+  initialize,
+  startShell,
+  startApp
 };

@@ -9,7 +9,7 @@ extraResources:
   - from: build/resources/nxshell.png
     to: nxshell.png
 files:
-  - filter: "!native"
+  - filter: '!native'
 directories:
   buildResources: build/resources
   output: dist/apppackage

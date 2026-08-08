@@ -1,146 +1,142 @@
-
-let mouseDragId = 0;
+let mouseDragId = 0
 
 function getMouseDragId() {
-    return mouseDragId++;
+  return mouseDragId++
 }
 
-const registerDragElement = Object.create(null);
-let currentElement = null;
+const registerDragElement = Object.create(null)
+let currentElement = null
 
 function addDragElement(id, el, handlers) {
-    registerDragElement[id] = {
-        el,
-        handlers,
-        mouseInfo: {
-            drag: false,
-            x: 0,
-            y: 0,
-            oldX: 0,
-            oldY: 0
-        }
-    };
+  registerDragElement[id] = {
+  el,
+  handlers,
+  mouseInfo: {
+    drag: false,
+    x: 0,
+    y: 0,
+    oldX: 0,
+    oldY: 0
+  }
+  }
 }
 
 function removeDragElement(id) {
-    delete registerDragElement[id];
+  delete registerDragElement[id]
 }
 
 function getDragElement(id) {
-    return registerDragElement[id];
+  return registerDragElement[id]
 }
 
 function getEventInfo(el) {
-    if (!el.dataset) {
-        return;
-    }
-    const dragId = el.dataset.dragId;
-    if (!dragId) {
-        return null;
-    }
-    const dragEleInfo = getDragElement(dragId);
-    if (!dragEleInfo) {
-        return null;
-    }
-    return dragEleInfo;
+  if (!el.dataset) {
+  return
+  }
+  const dragId = el.dataset.dragId
+  if (!dragId) {
+  return null
+  }
+  const dragEleInfo = getDragElement(dragId)
+  if (!dragEleInfo) {
+  return null
+  }
+  return dragEleInfo
 }
 
 function traceback(evt, cb) {
-    let el = currentElement || evt.target;
-    while (el) {
-        let info = getEventInfo(el);
-        if (info) {
-            let ret = cb(info);
-            if (ret) {           
-                break;
-            }
-        }
-        el = el.parentNode;
+  let el = currentElement || evt.target
+  while (el) {
+  const info = getEventInfo(el)
+  if (info) {
+    const ret = cb(info)
+    if (ret) {
+    break
     }
+  }
+  el = el.parentNode
+  }
 }
 
-document.addEventListener("mousedown", (evt) => {
-    if (evt.button !== 0 ) {
-        return;
-    }
-    if (currentElement == null) {
-        currentElement = evt.target;
-    }
+document.addEventListener('mousedown', (evt) => {
+  if (evt.button !== 0) {
+  return
+  }
+  currentElement ??= evt.target
 
-    traceback(evt, (evtInfo) => {
-        const handlers = evtInfo.handlers;
-        const mouseInfo = evtInfo.mouseInfo;
-        
-        mouseInfo.drag = true;
+  traceback(evt, (evtInfo) => {
+  const handlers = evtInfo.handlers
+  const mouseInfo = evtInfo.mouseInfo
 
-        mouseInfo.x = evt.clientX;
-        mouseInfo.y = evt.clientY;
-        mouseInfo.oldX = evt.clientX;
-        mouseInfo.oldY = evt.clientY;
-        if (handlers.dragStart) {
-            return handlers.dragStart({x: mouseInfo.x, y: mouseInfo.y});
-        }
-    })
-    
-});
+  mouseInfo.drag = true
 
-document.addEventListener("mousemove", (evt) => {
-    traceback(evt, (evtInfo) => {
-        const handlers = evtInfo.handlers;
-        const mouseInfo = evtInfo.mouseInfo;
+  mouseInfo.x = evt.clientX
+  mouseInfo.y = evt.clientY
+  mouseInfo.oldX = evt.clientX
+  mouseInfo.oldY = evt.clientY
+  if (handlers.dragStart) {
+    return handlers.dragStart({ x: mouseInfo.x, y: mouseInfo.y })
+  }
+  })
+})
 
-        if (!mouseInfo.drag) {
-            return;
-        }
+document.addEventListener('mousemove', (evt) => {
+  traceback(evt, (evtInfo) => {
+  const handlers = evtInfo.handlers
+  const mouseInfo = evtInfo.mouseInfo
 
-        mouseInfo.x = evt.clientX;
-        mouseInfo.y = evt.clientY;
-        const movementX = mouseInfo.x - mouseInfo.oldX;
-        const movementY = mouseInfo.y - mouseInfo.oldY;
-        mouseInfo.oldX = evt.clientX;
-        mouseInfo.oldY = evt.clientY;
-        if (handlers.dragMove) {
-            return handlers.dragMove({x: mouseInfo.x, y: mouseInfo.y, movementX, movementY});
-        }
-    })
-});
+  if (!mouseInfo.drag) {
+    return
+  }
 
-document.addEventListener("mouseup", (evt) => {
-    const curInfo = getEventInfo(currentElement || evt.target);
-    if (curInfo) {
-        if (curInfo.handlers.dragEnd) {
-            curInfo.handlers.dragEnd({x: evt.clientX, y: evt.clientY})
-        }
-        curInfo.mouseInfo.drag = false;
-    }
-    currentElement = null;
-    traceback(evt, (evtInfo) => {
-        const handlers = evtInfo.handlers;
-        const mouseInfo = evtInfo.mouseInfo;
+  mouseInfo.x = evt.clientX
+  mouseInfo.y = evt.clientY
+  const movementX = mouseInfo.x - mouseInfo.oldX
+  const movementY = mouseInfo.y - mouseInfo.oldY
+  mouseInfo.oldX = evt.clientX
+  mouseInfo.oldY = evt.clientY
+  if (handlers.dragMove) {
+    return handlers.dragMove({ x: mouseInfo.x, y: mouseInfo.y, movementX, movementY })
+  }
+  })
+})
 
-        mouseInfo.drag = false;
+document.addEventListener('mouseup', (evt) => {
+  const curInfo = getEventInfo(currentElement || evt.target)
+  if (curInfo) {
+  if (curInfo.handlers.dragEnd) {
+    curInfo.handlers.dragEnd({ x: evt.clientX, y: evt.clientY })
+  }
+  curInfo.mouseInfo.drag = false
+  }
+  currentElement = null
+  traceback(evt, (evtInfo) => {
+  const handlers = evtInfo.handlers
+  const mouseInfo = evtInfo.mouseInfo
 
-        if (handlers.dragEnd) {
-            return handlers.dragEnd({x: evt.clientX, y: evt.clientY});
-        }
-    });
-});
+  mouseInfo.drag = false
+
+  if (handlers.dragEnd) {
+    return handlers.dragEnd({ x: evt.clientX, y: evt.clientY })
+  }
+  })
+})
 
 const mouseDirective = {
-    mounted(el, binding) {
-        const dragId = getMouseDragId();
-        addDragElement(dragId, el, binding.value);
-        el.dataset.dragId = dragId;
-    },
+  mounted(el, binding) {
+  const dragId = getMouseDragId()
+  addDragElement(dragId, el, binding.value)
+  el.dataset.dragId = dragId
+  },
 
-    unmounted(el) {
-        const dragId = el.dataset.dragId;
-        removeDragElement(dragId);
-    }
+  unmounted(el) {
+  const dragId = el.dataset.dragId
+  removeDragElement(dragId)
+  }
 }
 
 export default {
-    install(app) {
-        app.directive("mouse-drag", mouseDirective);
-    }
+  install(app) {
+  app.directive('mouse-drag', mouseDirective)
+  }
 }

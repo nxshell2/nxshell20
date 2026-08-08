@@ -1,708 +1,722 @@
-<template>
-	<div class="pt-xterm" :style="{ 'background-color': backgroundColor }" @dragover.prevent @drop="handleFileDrop">
-		<div class="xterm-search" v-if="searchShow">
-			<div class="search-input">
-				<el-input
-					ref="searchInputRef"
-					v-model="searchWord"
-					:placeholder="$t('components.pt-xterm.search-placeholder')"
-					@keydown.enter="searchDown"
-				/>
-			</div>
-			<div class="search-icons">
-				<n-space size="5">
-					<el-tooltip class="item" effect="dark" :content="$t('components.pt-xterm.search-up')" placement="top-start">
-						<n-icon name="direction-up" @click="searchUp" />
-					</el-tooltip>
-					<el-tooltip class="item" effect="dark" :content="$t('components.pt-xterm.search-down')" placement="top-start">
-						<n-icon name="direction-down" @click="searchDown" />
-					</el-tooltip>
-					<el-tooltip class="item" effect="dark" :content="$t('components.pt-xterm.search-close')" placement="top-start">
-						<n-icon name="close" @click="searchClose" />
-					</el-tooltip>
-				</n-space>
-			</div>
-		</div>
-		<div class="keyboard-input" v-show="sendToAllTerm">
-			<div>{{ $t("components.pt-xterm.keyboard-input-note") }}</div>
-			<el-switch v-model="showOn" @change="keyboardInputAllow" />
-		</div>
-		<div ref="xtermContainer" class="xterm-container" @click="onXtermFocus"></div>
-		<div v-if="urlTip" class="xterm-link-tip" :style="{ left: urlTipPosition.left + 'px', top: urlTipPosition.top + 'px' }">
-			{{ $t("components.pt-xterm.open-url") }}
-		</div>
-		<div v-if="aiTip.show" class="xterm-ai-tip" :style="{ left: aiTip.left + 'px', top: aiTip.top + 'px' }" @click="handleAskAIClick">
-			{{ $t('home.session-instance.context-menu.ask-ai') }}
-		</div>
-	</div>
-</template>
-
 <script>
-import mousetrap from "mousetrap"
-import debounce from "lodash/debounce"
-import "@xterm/xterm/css/xterm.css"
-import { Terminal } from "@xterm/xterm"
-import { WebLinksAddon } from "@xterm/addon-web-links"
-import { FitAddon } from "@xterm/addon-fit"
-import { WebglAddon } from "@xterm/addon-webgl"
-import { SearchAddon } from "@xterm/addon-search"
-import { getProfile } from "@/services/globalSetting"
+import { FitAddon } from '@xterm/addon-fit'
+import { SearchAddon } from '@xterm/addon-search'
+import { WebLinksAddon } from '@xterm/addon-web-links'
+import { WebglAddon } from '@xterm/addon-webgl'
+import { Terminal } from '@xterm/xterm'
+import debounce from 'lodash/debounce'
+import mousetrap from 'mousetrap'
+import { getProfile } from '@/services/globalSetting'
+import '@xterm/xterm/css/xterm.css'
 
 // Workaround for xterm.js WebGL addon: it may call getImageData with
 // zero/negative/float/undefined dimensions causing crashes.
 function patchGetImageData(proto) {
-	if (!proto || !proto.getImageData) return
-	const original = proto.getImageData
-	proto.getImageData = function (sx, sy, sw, sh) {
-		// Convert to valid integers, fallback to 1 if invalid
-		const isx = Number.isFinite(sx) ? Math.floor(sx) : 0
-		const isy = Number.isFinite(sy) ? Math.floor(sy) : 0
-		let isw = Number.isFinite(sw) ? Math.floor(sw) : 1
-		let ish = Number.isFinite(sh) ? Math.floor(sh) : 1
-		if (isw < 1) isw = 1
-		if (ish < 1) ish = 1
-		return original.call(this, isx, isy, isw, ish)
-	}
+  if (!proto || !proto.getImageData) {
+    return
+  }
+  const original = proto.getImageData
+  proto.getImageData = function(sx, sy, sw, sh) {
+    // Convert to valid integers, fallback to 1 if invalid
+    const isx = Number.isFinite(sx) ? Math.floor(sx) : 0
+    const isy = Number.isFinite(sy) ? Math.floor(sy) : 0
+    let isw = Number.isFinite(sw) ? Math.floor(sw) : 1
+    let ish = Number.isFinite(sh) ? Math.floor(sh) : 1
+    if (isw < 1) {
+      isw = 1
+    }
+    if (ish < 1) {
+      ish = 1
+    }
+    return original.call(this, isx, isy, isw, ish)
+  }
 }
 
-if (typeof window !== "undefined" && !window.__nxGetImageDataPatched) {
-	patchGetImageData(CanvasRenderingContext2D.prototype)
-	if (typeof OffscreenCanvasRenderingContext2D !== "undefined") {
-		patchGetImageData(OffscreenCanvasRenderingContext2D.prototype)
-	}
-	window.__nxGetImageDataPatched = true
+if (typeof window !== 'undefined' && !window.__nxGetImageDataPatched) {
+  patchGetImageData(CanvasRenderingContext2D.prototype)
+  if (typeof OffscreenCanvasRenderingContext2D !== 'undefined') {
+    patchGetImageData(OffscreenCanvasRenderingContext2D.prototype)
+  }
+  window.__nxGetImageDataPatched = true
 }
 
 export default {
-	name: "PtXterm",
-	props: {
-		options: {
-			type: Object,
-			default: () => ({})
-		},
-		sendToAllTerm: {
-			type: Boolean,
-			default: false
-		}
-	},
-	data() {
-		return {
-			showOn: false,
-			terminal: null,
-			fitAddon: null,
-			nativeResizeHandler: null,
-			ptViewResizeHandler: null,
-			urlTip: "",
-			urlTipPosition: {
-				left: 0,
-				top: 0
-			},
-			aiTip: {
-				show: false,
-				text: "",
-				left: 0,
-				top: 0
-			},
-			pendingData: [],
+  name: 'PtXterm',
+  props: {
+    options: {
+      type: Object,
+      default: () => ({})
+    },
+    sendToAllTerm: {
+      type: Boolean,
+      default: false
+    }
+  },
+  data() {
+    return {
+      showOn: false,
+      terminal: null,
+      fitAddon: null,
+      nativeResizeHandler: null,
+      ptViewResizeHandler: null,
+      urlTip: '',
+      urlTipPosition: {
+        left: 0,
+        top: 0
+      },
+      aiTip: {
+        show: false,
+        text: '',
+        left: 0,
+        top: 0
+      },
+      pendingData: [],
 
-			logging: false,
-			searchWord: "",
-			searchShow: false,
-			zoom: 0,
-			backgroundColor: "#000"
-		}
-	},
+      logging: false,
+      searchWord: '',
+      searchShow: false,
+      zoom: 0,
+      backgroundColor: '#000'
+    }
+  },
 
-	mounted() {
-		const resizeHandler = debounce(() => {
-			this.onResizeHandler()
-		}, 100)
-		this.nativeResizeHandler = () => {
-			resizeHandler()
-		}
+  mounted() {
+    const resizeHandler = debounce(() => {
+      this.onResizeHandler()
+    }, 100)
+    this.nativeResizeHandler = () => {
+      resizeHandler()
+    }
 
-		this.$nextTick(() => {
-			this.$ptElementResizeDetector.listenTo(this.$el, this.nativeResizeHandler)
-			//this.resizeObserve.observe(this.$el);
-			// 过滤掉 undefined/null 选项，避免新会话把 xterm 默认值覆盖成 undefined 导致黑屏
-			const sanitizedOptions = Object.fromEntries(
-				Object.entries({ ...this.options }).filter(([_, value]) => value !== undefined && value !== null)
-			)
-			const options = { wordSeparator: " /:?,;.", ...sanitizedOptions }
-			// 优化xterm终端边距
-			if (Object.prototype.hasOwnProperty.call(options, "theme") && options.theme) {
-				const { background = "#000" } = options.theme
-				this.backgroundColor = background
-			}
+    this.$nextTick(() => {
+      this.$ptElementResizeDetector.listenTo(this.$el, this.nativeResizeHandler)
+      // this.resizeObserve.observe(this.$el);
+      // 过滤掉 undefined/null 选项，避免新会话把 xterm 默认值覆盖成 undefined 导致黑屏
+      const sanitizedOptions = Object.fromEntries(
+        Object.entries({ ...this.options }).filter(([_, value]) => value !== undefined && value !== null)
+      )
+      const options = { wordSeparator: ' /:?,;.', ...sanitizedOptions }
+      // 优化xterm终端边距
+      if (Object.hasOwn(options, 'theme') && options.theme) {
+        const { background = '#000' } = options.theme
+        this.backgroundColor = background
+      }
 
-			this.terminal = new Terminal(options)
-			this.terminal.loadAddon(
-				new WebLinksAddon(
-					(event, uri) => {
-						if (!event.ctrlKey) {
-							return
-						}
-						this.$emit("link", uri)
-					},
-					{
-						tooltipCallback: (evt, uri, location) => {
-							const renderDimensions = this.terminal?._core?._renderService?.dimensions
-							if (!renderDimensions) {
-								return
-							}
-							const actualCellWidth = renderDimensions.css.cell.width
-							const actualCellHeight = renderDimensions.css.cell.height
+      this.terminal = new Terminal(options)
+      this.terminal.loadAddon(
+        new WebLinksAddon(
+          (event, uri) => {
+            if (!event.ctrlKey) {
+              return
+            }
+            this.$emit('link', uri)
+          },
+          {
+            tooltipCallback: (evt, uri, location) => {
+              const renderDimensions = this.terminal?._core?._renderService?.dimensions
+              if (!renderDimensions) {
+                return
+              }
+              const actualCellWidth = renderDimensions.css.cell.width
+              const actualCellHeight = renderDimensions.css.cell.height
 
-							// show tip
-							this.urlTip = uri
-							this.urlTipPosition.left = location.start.x * actualCellWidth
-							let top = location.start.y * actualCellHeight - 30
-							if (top < 0) {
-								top = location.start.y * actualCellHeight + 30
-							}
-							this.urlTipPosition.top = top
-						},
-						leaveCallback: () => {
-							// hide tip
-							this.urlTip = ""
-						},
-						willLinkActivate(evt, _uri) {
-							return evt.ctrlKey
-						}
-					}
-				)
-			)
-			const fitAddon = new FitAddon()
-			this.terminal.loadAddon(fitAddon)
+              // show tip
+              this.urlTip = uri
+              this.urlTipPosition.left = location.start.x * actualCellWidth
+              let top = location.start.y * actualCellHeight - 30
+              if (top < 0) {
+                top = location.start.y * actualCellHeight + 30
+              }
+              this.urlTipPosition.top = top
+            },
+            leaveCallback: () => {
+              // hide tip
+              this.urlTip = ''
+            },
+            willLinkActivate(evt, _uri) {
+              return evt.ctrlKey
+            }
+          }
+        )
+      )
+      const fitAddon = new FitAddon()
+      this.terminal.loadAddon(fitAddon)
 
-			this.terminal.open(this.$refs.xtermContainer)
-			try {
-				fitAddon.fit()
-			} catch (e) {
-				console.log("fit fail:", e)
-			}
-			this.fitAddon = fitAddon
-			this.flushPendingData()
+      this.terminal.open(this.$refs.xtermContainer)
+      try {
+        fitAddon.fit()
+      } catch(e) {
+        console.log('fit fail:', e)
+      }
+      this.fitAddon = fitAddon
+      this.flushPendingData()
 
-			// Load WebGL addon for better performance
-			const webgl = new WebglAddon()
-			try {
-				webgl.onContextLoss((_e) => webgl.dispose())
-				this.terminal.loadAddon(webgl)
-			} catch (e) {
-				console.log("WebGL init fail, fallback to canvas:", e)
-			}
+      // Load WebGL addon for better performance
+      const webgl = new WebglAddon()
+      try {
+        webgl.onContextLoss(_e => webgl.dispose())
+        this.terminal.loadAddon(webgl)
+      } catch(e) {
+        console.log('WebGL init fail, fallback to canvas:', e)
+      }
 
-			this.searchAddon = new SearchAddon()
-			this.terminal.loadAddon(this.searchAddon)
+      this.searchAddon = new SearchAddon()
+      this.terminal.loadAddon(this.searchAddon)
 
-			this.terminal.onKey((e) => {
-				this.$emit("key", e)
-			})
+      this.terminal.onKey((e) => {
+        this.$emit('key', e)
+      })
 
-			this.terminal.onData((data) => {
-				this.$emit("termdata", data)
-			})
+      this.terminal.onData((data) => {
+        this.$emit('termdata', data)
+      })
 
-			this.terminal.onResize(({ cols, rows }) => {
-				this.$emit("resize", cols, rows)
-			})
+      this.terminal.onResize(({ cols, rows }) => {
+        this.$emit('resize', cols, rows)
+      })
 
-			this.terminal.onTitleChange((title) => {
-				this.$emit("titleChange", title)
-			})
+      this.terminal.onTitleChange((title) => {
+        this.$emit('titleChange', title)
+      })
 
-			this.terminal.onLineFeed((_e) => {
-				if (this.logging) {
-					this.$emit("line-data", this.getLineString())
-				}
-			})
-			// 绑定选中复制
-			const { selectedCopy = false } = getProfile("xterm")
-			if (selectedCopy) {
-				this.terminal.onSelectionChange((_e) => {
-					function copyTextToClipboard(text) {
-						try {
-							powertools.clipboardWriteText(text)
-						} catch (err) {
-							console.log("鼠标选中复制失败:", err)
-						}
-					}
+      this.terminal.onLineFeed((_e) => {
+        if (this.logging) {
+          this.$emit('line-data', this.getLineString())
+        }
+      })
+      // 绑定选中复制
+      const { selectedCopy = false } = getProfile('xterm')
+      if (selectedCopy) {
+        this.terminal.onSelectionChange((_e) => {
+          function copyTextToClipboard(text) {
+            try {
+              powertools.clipboardWriteText(text)
+            } catch(err) {
+              console.log('鼠标选中复制失败:', err)
+            }
+          }
 
-					const select = this.terminal.getSelection()
-					select && copyTextToClipboard(select)
-				})
-			}
+          const select = this.terminal.getSelection()
+          select && copyTextToClipboard(select)
+        })
+      }
 
-			// 绑定选中文本显示 Ask AI 浮动按钮
-			this.updateAiTipDebounced = debounce(() => {
-				this.updateAiTip()
-			}, 150)
-			this.terminal.onSelectionChange(() => {
-				this.$nextTick(() => {
-					this.updateAiTipDebounced()
-				})
-			})
-			this.hideAiTipHandler = () => {
-				this.aiTip.show = false
-			}
-			this.$refs.xtermContainer.addEventListener("mousedown", this.hideAiTipHandler)
-			// 绑定右键粘贴功能1
-			// document.addEventListener("contextmenu", this.contextmenuPast)
-			this.$refs.xtermContainer.addEventListener("contextmenu", this.contextmenuPast)
-			this.terminal.attachCustomKeyEventHandler((ev) => {
-				if (ev.altKey) {
-					// emit shortcut to process in home page
-					const { key, type } = ev
-					if (type !== "keydown") {
-						return false
-					}
-					if (["1", "2", "3", "4", "5", "6", "7", "8", "9"].includes(key)) {
-						// trigger to global process
-						mousetrap.trigger(`alt+${key}`)
-					} else {
-						this.$emit("shortcut", `alt+${key}`)
-					}
-					return false
-				} else {
-					return true
-				}
-			})
+      // 绑定选中文本显示 Ask AI 浮动按钮
+      this.updateAiTipDebounced = debounce(() => {
+        this.updateAiTip()
+      }, 150)
+      this.terminal.onSelectionChange(() => {
+        this.$nextTick(() => {
+          this.updateAiTipDebounced()
+        })
+      })
+      this.hideAiTipHandler = () => {
+        this.aiTip.show = false
+      }
+      this.$refs.xtermContainer.addEventListener('mousedown', this.hideAiTipHandler)
+      // 绑定右键粘贴功能1
+      // document.addEventListener("contextmenu", this.contextmenuPast)
+      this.$refs.xtermContainer.addEventListener('contextmenu', this.contextmenuPast)
+      this.terminal.attachCustomKeyEventHandler((ev) => {
+        if (ev.altKey) {
+          // emit shortcut to process in home page
+          const { key, type } = ev
+          if (type !== 'keydown') {
+            return false
+          }
+          if (['1', '2', '3', '4', '5', '6', '7', '8', '9'].includes(key)) {
+            // trigger to global process
+            mousetrap.trigger(`alt+${key}`)
+          } else {
+            this.$emit('shortcut', `alt+${key}`)
+          }
+          return false
+        } else {
+          return true
+        }
+      })
 
-			// first notify current terminal size
-			this.$emit("resize", this.terminal.cols, this.terminal.rows)
-			this.onFocus()
-		})
-	},
+      // first notify current terminal size
+      this.$emit('resize', this.terminal.cols, this.terminal.rows)
+      this.onFocus()
+    })
+  },
 
-	methods: {
-		feedData(data) {
-			this.onDataHandler(data)
-		},
-		onXtermFocus() {
-			this.$emit("xterm-focus")
-		},
-		write(text) {
-			if (!this.terminal) {
-				this.pendingData.push(text)
-				return
-			}
-			this.terminal?.write(text)
-			text = null
-		},
+  beforeUnmount() {
+    try {
+      this.terminal?.dispose()
+    } catch(e) {
+      // ignore addon dispose errors during unmount
+    }
+    this.terminal = null
+    if (this.nativeResizeHandler) {
+      // window.removeEventListener("resize", this.nativeResizeHandler);
+      this.$ptElementResizeDetector.removeListener(this.$el, this.nativeResizeHandler)
+      // this.resizeObserve.unobserve(this.$el);
+      this.nativeResizeHandler = null
+      // this.resizeObserve = null;
+    }
+    // if (this.ptViewResizeHandler) {
+    //     window.removeEventListener("pt-view-resize", this.ptViewResizeHandler);
+    //     this.ptViewResizeHandler = null;
+    // }
+    this.$refs.xtermContainer?.removeEventListener('contextmenu', this.contextmenuPast)
+    if (this.hideAiTipHandler) {
+      this.$refs.xtermContainer?.removeEventListener('mousedown', this.hideAiTipHandler)
+      this.hideAiTipHandler = null
+    }
+    if (this.updateAiTipDebounced) {
+      this.updateAiTipDebounced.cancel()
+      this.updateAiTipDebounced = null
+    }
+    // document.removeEventListener("contextmenu", this.contextmenuPast)
+  },
 
-		flushPendingData() {
-			if (!this.terminal || !this.pendingData.length) {
-				return
-			}
-			for (const data of this.pendingData) {
-				this.terminal.write(data)
-			}
-			this.pendingData = []
-		},
-		async contextmenuPast(event) {
-			const text = powertools.clipboardReadText()
-			console.log(text)
-			if (text !== "") {
-				event.preventDefault()
-				event.stopPropagation()
-				this.pasteText(text)
-				powertools.clipboardWriteText("")
-			}
-		},
-		getLineString() {
-			const terminal = this.terminal
-			if (!terminal) return ""
-			let lineIndex = 0
-			if (terminal.buffer.active.cursorY < terminal.rows - 1) {
-				// clear to first line
-				lineIndex = terminal.buffer.active.cursorY - 1
-			} else {
-				lineIndex = terminal.buffer.active.length - 2
-			}
+  methods: {
+    feedData(data) {
+      this.onDataHandler(data)
+    },
+    onXtermFocus() {
+      this.$emit('xterm-focus')
+    },
+    write(text) {
+      if (!this.terminal) {
+        this.pendingData.push(text)
+        return
+      }
+      this.terminal?.write(text)
+      text = null
+    },
 
-			let lineString = ""
-			let lineWrapsToNext
-			do {
-				const nextLine = terminal.buffer.active.getLine(lineIndex + 1)
-				lineWrapsToNext = nextLine ? nextLine.isWrapped : false
-				const line = terminal.buffer.active.getLine(lineIndex)
-				if (!line) {
-					break
-				}
-				lineString += line.translateToString(!lineWrapsToNext).substring(0, terminal.cols)
-				lineIndex++
-			} while (lineWrapsToNext)
-			return lineString
-		},
+    flushPendingData() {
+      if (!this.terminal || !this.pendingData.length) {
+        return
+      }
+      for (const data of this.pendingData) {
+        this.terminal.write(data)
+      }
+      this.pendingData = []
+    },
+    async contextmenuPast(event) {
+      const text = powertools.clipboardReadText()
+      console.log(text)
+      if (text !== '') {
+        event.preventDefault()
+        event.stopPropagation()
+        this.pasteText(text)
+        powertools.clipboardWriteText('')
+      }
+    },
+    getLineString() {
+      const terminal = this.terminal
+      if (!terminal) {
+        return ''
+      }
+      let lineIndex = 0
+      if (terminal.buffer.active.cursorY < terminal.rows - 1) {
+        // clear to first line
+        lineIndex = terminal.buffer.active.cursorY - 1
+      } else {
+        lineIndex = terminal.buffer.active.length - 2
+      }
 
-		openLog() {
-			this.logging = true
-		},
+      let lineString = ''
+      let lineWrapsToNext
+      do {
+        const nextLine = terminal.buffer.active.getLine(lineIndex + 1)
+        lineWrapsToNext = nextLine ? nextLine.isWrapped : false
+        const line = terminal.buffer.active.getLine(lineIndex)
+        if (!line) {
+          break
+        }
+        lineString += line.translateToString(!lineWrapsToNext).substring(0, terminal.cols)
+        lineIndex++
+      } while (lineWrapsToNext)
+      return lineString
+    },
 
-		closeLog() {
-			this.logging = false
-		},
+    openLog() {
+      this.logging = true
+    },
 
-		onDataHandler(data) {
-			this.write(data)
-		},
+    closeLog() {
+      this.logging = false
+    },
 
-		onResizeHandler() {
-			if (!this.fitAddon || !this.terminal) {
-				return
-			}
-			try {
-				this.fitAddon.fit()
-			} catch (e) {
-				// fit() can fail with "This API only accepts integers" when
-				// the container has zero or fractional dimensions
-			}
-			this.terminal?.refresh(0, this.terminal.rows - 1)
-		},
+    onDataHandler(data) {
+      this.write(data)
+    },
 
-		onFocus() {
-			if (!this.terminal) {
-				return
-			}
+    onResizeHandler() {
+      if (!this.fitAddon || !this.terminal) {
+        return
+      }
+      try {
+        this.fitAddon.fit()
+      } catch(e) {
+        // fit() can fail with "This API only accepts integers" when
+        // the container has zero or fractional dimensions
+      }
+      this.terminal?.refresh(0, this.terminal.rows - 1)
+    },
 
-			this.terminal?.focus()
-		},
-		_zoom() {
-			const scale = Math.pow(1.1, this.zoom)
-			if (this.terminal) { this.terminal.options.fontSize = this.options.fontSize * scale }
-			this.onResizeHandler()
-		},
+    onFocus() {
+      if (!this.terminal) {
+        return
+      }
 
-		zoom_in() {
-			if (this.zoom >= 1) {
-				this.zoom -= 1
-				this._zoom()
-			}
-		},
+      this.terminal?.focus()
+    },
+    _zoom() {
+      const scale = 1.1 ** this.zoom
+      if (this.terminal) {
+        this.terminal.options.fontSize = this.options.fontSize * scale
+      }
+      this.onResizeHandler()
+    },
 
-		zoom_out() {
-			this.zoom += 1
-			this._zoom()
-		},
+    zoom_in() {
+      if (this.zoom >= 1) {
+        this.zoom -= 1
+        this._zoom()
+      }
+    },
 
-		zoom_over() {
-			this.zoom = 0
-			this._zoom()
-		},
+    zoom_out() {
+      this.zoom += 1
+      this._zoom()
+    },
 
-		getSelection() {
-			if (!this.terminal?.hasSelection()) {
-				return null
-			}
-			return this.terminal?.getSelection()
-		},
+    zoom_over() {
+      this.zoom = 0
+      this._zoom()
+    },
 
-		getRecentOutput(maxLines = 50) {
-			const terminal = this.terminal
-			if (!terminal) return ""
-			const buffer = terminal.buffer.active
-			const totalLines = buffer.length
-			const startLine = Math.max(0, totalLines - maxLines)
-			const lines = []
-			for (let i = startLine; i < totalLines; i++) {
-				const line = buffer.getLine(i)
-				if (line) {
-					lines.push(line.translateToString(true).trimEnd())
-				}
-			}
-			return lines.join("\n")
-		},
+    getSelection() {
+      if (!this.terminal?.hasSelection()) {
+        return null
+      }
+      return this.terminal?.getSelection()
+    },
 
-		pasteText(s) {
-			console.log("粘贴")
-			this.terminal?.paste(s)
-			this.onFocus()
-		},
+    getRecentOutput(maxLines = 50) {
+      const terminal = this.terminal
+      if (!terminal) {
+        return ''
+      }
+      const buffer = terminal.buffer.active
+      const totalLines = buffer.length
+      const startLine = Math.max(0, totalLines - maxLines)
+      const lines = []
+      for (let i = startLine; i < totalLines; i++) {
+        const line = buffer.getLine(i)
+        if (line) {
+          lines.push(line.translateToString(true).trimEnd())
+        }
+      }
+      return lines.join('\n')
+    },
 
-		currentSize() {
-			this.$emit("resize", this.terminal?.cols, this.terminal?.rows)
-		},
+    pasteText(s) {
+      console.log('粘贴')
+      this.terminal?.paste(s)
+      this.onFocus()
+    },
 
-		setTheme(theme = {}) {
-			// 优化xterm终端边距
-			this.backgroundColor = theme.background
-			if (this.terminal) {
-				this.terminal.options.theme = theme
-			}
-		},
+    currentSize() {
+      this.$emit('resize', this.terminal?.cols, this.terminal?.rows)
+    },
 
-		setOption(name, value) {
-			if (this.terminal) {
-				this.terminal.options[name] = value
-			}
-		},
+    setTheme(theme = {}) {
+      // 优化xterm终端边距
+      this.backgroundColor = theme.background
+      if (this.terminal) {
+        this.terminal.options.theme = theme
+      }
+    },
 
-		getOption(name) {
-			return this.terminal?.options[name]
-		},
+    setOption(name, value) {
+      if (this.terminal) {
+        this.terminal.options[name] = value
+      }
+    },
 
-		focus() {
-			setTimeout(() => {
-				this.terminal?.focus()
-			}, 100)
-		},
-		updateAiTip() {
-			if (!this.terminal) return
-			const selection = this.terminal.getSelection()
-			if (!selection || selection.length === 0) {
-				this.aiTip.show = false
-				return
-			}
+    getOption(name) {
+      return this.terminal?.options[name]
+    },
 
-			const position = this.terminal.getSelectionPosition()
-			if (!position) {
-				this.aiTip.show = false
-				return
-			}
+    focus() {
+      setTimeout(() => {
+        this.terminal?.focus()
+      }, 100)
+    },
+    updateAiTip() {
+      if (!this.terminal) {
+        return
+      }
+      const selection = this.terminal.getSelection()
+      if (!selection || selection.length === 0) {
+        this.aiTip.show = false
+        return
+      }
 
-			// xterm getSelectionPosition may return {start, end} or {startColumn, startRow, endColumn, endRow}
-			let startX, startY, endX, endY
-			if (position.start && position.end) {
-				startX = position.start.x
-				startY = position.start.y
-				endX = position.end.x
-				endY = position.end.y
-			} else {
-				startX = position.startColumn
-				startY = position.startRow
-				endX = position.endColumn
-				endY = position.endRow
-			}
-			if ([startX, startY, endX, endY].some(v => v === undefined || v === null)) {
-				this.aiTip.show = false
-				return
-			}
+      const position = this.terminal.getSelectionPosition()
+      if (!position) {
+        this.aiTip.show = false
+        return
+      }
 
-			const renderDimensions = this.terminal?._core?._renderService?.dimensions
-			if (!renderDimensions) {
-				this.aiTip.show = false
-				return
-			}
-			const actualCellWidth = renderDimensions.css.cell.width
-			const actualCellHeight = renderDimensions.css.cell.height
+      // xterm getSelectionPosition may return {start, end} or {startColumn, startRow, endColumn, endRow}
+      let startX, startY, endX, endY
+      if (position.start && position.end) {
+        startX = position.start.x
+        startY = position.start.y
+        endX = position.end.x
+        endY = position.end.y
+      } else {
+        startX = position.startColumn
+        startY = position.startRow
+        endX = position.endColumn
+        endY = position.endRow
+      }
+      if ([startX, startY, endX, endY].some(v => v === undefined || v === null)) {
+        this.aiTip.show = false
+        return
+      }
 
-			// v6 getSelectionPosition returns buffer coordinates; convert to viewport coordinates
-			const viewportY = this.terminal.buffer.active.viewportY
-			const startRow = startY - viewportY
-			const endRow = endY - viewportY
-			const viewportEndRow = Math.max(startRow, endRow)
-			const endCol = endY > startY ? endX : Math.max(startX, endX)
+      const renderDimensions = this.terminal?._core?._renderService?.dimensions
+      if (!renderDimensions) {
+        this.aiTip.show = false
+        return
+      }
+      const actualCellWidth = renderDimensions.css.cell.width
+      const actualCellHeight = renderDimensions.css.cell.height
 
-			this.aiTip.text = selection
-			this.aiTip.left = endCol * actualCellWidth
-			this.aiTip.top = (viewportEndRow + 1) * actualCellHeight + 4
-			this.aiTip.show = true
-		},
-		handleAskAIClick() {
-			this.$emit("ask-ai", this.aiTip.text)
-			this.aiTip.show = false
-		},
+      // v6 getSelectionPosition returns buffer coordinates; convert to viewport coordinates
+      const viewportY = this.terminal.buffer.active.viewportY
+      const startRow = startY - viewportY
+      const endRow = endY - viewportY
+      const viewportEndRow = Math.max(startRow, endRow)
+      const endCol = endY > startY ? endX : Math.max(startX, endX)
 
-		fit() {
-			this.fitAddon?.fit()
-		},
+      this.aiTip.text = selection
+      this.aiTip.left = endCol * actualCellWidth
+      this.aiTip.top = (viewportEndRow + 1) * actualCellHeight + 4
+      this.aiTip.show = true
+    },
+    handleAskAIClick() {
+      this.$emit('ask-ai', this.aiTip.text)
+      this.aiTip.show = false
+    },
 
-		handleFileDrop(evt) {
-			evt.preventDefault()
-			if (evt.dataTransfer.items.length === 0) {
-				return
-			}
+    fit() {
+      this.fitAddon?.fit()
+    },
 
-			const powertools = window.powertools
-			const files = []
-			for (let i = 0; i < evt.dataTransfer.items.length; i++) {
-				let item = evt.dataTransfer.items[i]
-				let entry = item.webkitGetAsEntry()
-				let file = evt.dataTransfer.files[i]
-				let filePath = powertools ? powertools.getPathForFile(file) : file.path
+    handleFileDrop(evt) {
+      evt.preventDefault()
+      if (evt.dataTransfer.items.length === 0) {
+        return
+      }
 
-				if (entry.isDirectory) {
-					files.push({
-						path: filePath,
-						isDir: true
-					})
-				} else {
-					files.push({
-						path: filePath,
-						isDir: false
-					})
-				}
-			}
+      const powertools = window.powertools
+      const files = []
+      for (let i = 0; i < evt.dataTransfer.items.length; i++) {
+        const item = evt.dataTransfer.items[i]
+        const entry = item.webkitGetAsEntry()
+        const file = evt.dataTransfer.files[i]
+        const filePath = powertools ? powertools.getPathForFile(file) : file.path
 
-			this.$emit("file-drop", files)
-		},
+        if (entry.isDirectory) {
+          files.push({
+            path: filePath,
+            isDir: true
+          })
+        } else {
+          files.push({
+            path: filePath,
+            isDir: false
+          })
+        }
+      }
 
-		searchUp() {
-			if (this.searchWord && this.searchAddon) {
-				this.searchAddon.findPrevious(this.searchWord)
-			}
-		},
-		searchDown() {
-			if (this.searchWord && this.searchAddon) {
-				this.searchAddon.findNext(this.searchWord)
-			}
-		},
-		searchClose() {
-			this.searchShow = false
-		},
-		searchOpen(s) {
-			if (this.searchShow) {
-				this.searchClose()
-				return
-			}
-			this.searchWord = s
-			this.searchShow = true
-			setTimeout(() => {
-				this.$refs.searchInputRef?.focus()
-			}, 100)
-		},
-		keyboardInputAllow() {
-			this.$emit("sendToAll", this.showOn)
-		},
-		selectAll() {
-			this.terminal?.selectAll()
-		}
-	},
+      this.$emit('file-drop', files)
+    },
 
-	beforeUnmount() {
-		try {
-			this.terminal?.dispose()
-		} catch (e) {
-			// ignore addon dispose errors during unmount
-		}
-		this.terminal = null
-		if (this.nativeResizeHandler) {
-			// window.removeEventListener("resize", this.nativeResizeHandler);
-			this.$ptElementResizeDetector.removeListener(this.$el, this.nativeResizeHandler)
-			//this.resizeObserve.unobserve(this.$el);
-			this.nativeResizeHandler = null
-			//this.resizeObserve = null;
-		}
-		// if (this.ptViewResizeHandler) {
-		//     window.removeEventListener("pt-view-resize", this.ptViewResizeHandler);
-		//     this.ptViewResizeHandler = null;
-		// }
-		this.$refs.xtermContainer?.removeEventListener("contextmenu", this.contextmenuPast)
-		if (this.hideAiTipHandler) {
-			this.$refs.xtermContainer?.removeEventListener("mousedown", this.hideAiTipHandler)
-			this.hideAiTipHandler = null
-		}
-		if (this.updateAiTipDebounced) {
-			this.updateAiTipDebounced.cancel()
-			this.updateAiTipDebounced = null
-		}
-		// document.removeEventListener("contextmenu", this.contextmenuPast)
-	}
+    searchUp() {
+      if (this.searchWord && this.searchAddon) {
+        this.searchAddon.findPrevious(this.searchWord)
+      }
+    },
+    searchDown() {
+      if (this.searchWord && this.searchAddon) {
+        this.searchAddon.findNext(this.searchWord)
+      }
+    },
+    searchClose() {
+      this.searchShow = false
+    },
+    searchOpen(s) {
+      if (this.searchShow) {
+        this.searchClose()
+        return
+      }
+      this.searchWord = s
+      this.searchShow = true
+      setTimeout(() => {
+        this.$refs.searchInputRef?.focus()
+      }, 100)
+    },
+    keyboardInputAllow() {
+      this.$emit('sendToAll', this.showOn)
+    },
+    selectAll() {
+      this.terminal?.selectAll()
+    }
+  }
 }
 </script>
 
+<template>
+  <div class="pt-xterm" :style="{ 'background-color': backgroundColor }" @dragover.prevent @drop="handleFileDrop">
+    <div v-if="searchShow" class="xterm-search">
+      <div class="search-input">
+        <el-input
+          ref="searchInputRef"
+          v-model="searchWord"
+          :placeholder="$t('components.pt-xterm.search-placeholder')"
+          @keydown.enter="searchDown"
+        />
+      </div>
+      <div class="search-icons">
+        <n-space size="5">
+          <el-tooltip class="item" effect="dark" :content="$t('components.pt-xterm.search-up')" placement="top-start">
+            <n-icon name="direction-up" @click="searchUp" />
+          </el-tooltip>
+          <el-tooltip class="item" effect="dark" :content="$t('components.pt-xterm.search-down')" placement="top-start">
+            <n-icon name="direction-down" @click="searchDown" />
+          </el-tooltip>
+          <el-tooltip class="item" effect="dark" :content="$t('components.pt-xterm.search-close')" placement="top-start">
+            <n-icon name="close" @click="searchClose" />
+          </el-tooltip>
+        </n-space>
+      </div>
+    </div>
+    <div v-show="sendToAllTerm" class="keyboard-input">
+      <div>{{ $t("components.pt-xterm.keyboard-input-note") }}</div>
+      <el-switch v-model="showOn" @change="keyboardInputAllow" />
+    </div>
+    <div ref="xtermContainer" class="xterm-container" @click="onXtermFocus" />
+    <div v-if="urlTip" class="xterm-link-tip" :style="{ left: `${urlTipPosition.left}px`, top: `${urlTipPosition.top}px` }">
+      {{ $t("components.pt-xterm.open-url") }}
+    </div>
+    <div v-if="aiTip.show" class="xterm-ai-tip" :style="{ left: `${aiTip.left}px`, top: `${aiTip.top}px` }" @click="handleAskAIClick">
+      {{ $t('home.session-instance.context-menu.ask-ai') }}
+    </div>
+  </div>
+</template>
+
 <style lang="scss" scoped>
 .pt-xterm {
-	position: relative;
-	width: 100%;
-	height: 100%;
-	padding: 5px 5px 5px 10px;
-	box-sizing: border-box;
+  position: relative;
+  width: 100%;
+  height: 100%;
+  padding: 5px 5px 5px 10px;
+  box-sizing: border-box;
 
-	.xterm-container {
-		width: 100%;
-		height: 100%;
+  .xterm-container {
+    width: 100%;
+    height: 100%;
 
-		::-webkit-scrollbar-thumb {
-			width: 4px;
-			border-radius: 4px;
-			background: rgba(144, 147, 153, 0.3);
-			transition: 0.3s background-color;
-		}
+    ::-webkit-scrollbar-thumb {
+      width: 4px;
+      border-radius: 4px;
+      background: rgba(144, 147, 153, 0.3);
+      transition: 0.3s background-color;
+    }
 
-		.xterm {
-			height: 100%;
-		}
-	}
+    .xterm {
+      height: 100%;
+    }
+  }
 
-	.xterm-link-tip {
-		position: absolute;
-		height: 30px;
-		line-height: 30px;
-		z-index: 999;
+  .xterm-link-tip {
+    position: absolute;
+    height: 30px;
+    line-height: 30px;
+    z-index: 999;
 
-		border-radius: 3px;
-		font-size: 14px;
-		padding: 0 10px;
-		background-color: lightgray;
-	}
+    border-radius: 3px;
+    font-size: 14px;
+    padding: 0 10px;
+    background-color: lightgray;
+  }
 
-	.xterm-ai-tip {
-		position: absolute;
-		z-index: 1000;
-		background-color: var(--n-button-primary);
-		color: var(--n-button-primary-text);
-		border-radius: 4px;
-		padding: 4px 10px;
-		font-size: 12px;
-		cursor: pointer;
-		white-space: nowrap;
-		box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  .xterm-ai-tip {
+    position: absolute;
+    z-index: 1000;
+    background-color: var(--n-button-primary);
+    color: var(--n-button-primary-text);
+    border-radius: 4px;
+    padding: 4px 10px;
+    font-size: 12px;
+    cursor: pointer;
+    white-space: nowrap;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
 
-		&:hover {
-			background-color: var(--n-button-primary-hover);
-		}
-	}
+    &:hover {
+      background-color: var(--n-button-primary-hover);
+    }
+  }
 
-	.xterm-search {
-		position: absolute;
-		top: 0;
-		left: 0;
-		backdrop-filter: blur(5px);
-		display: flex;
-		flex-direction: row;
-		justify-content: space-between;
-		align-items: center;
-		width: 100%;
-		height: 40px;
-		z-index: 999;
-		padding: 0 5px;
-		box-sizing: border-box;
+  .xterm-search {
+    position: absolute;
+    top: 0;
+    left: 0;
+    backdrop-filter: blur(5px);
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    height: 40px;
+    z-index: 999;
+    padding: 0 5px;
+    box-sizing: border-box;
 
-		.search-input {
-			flex-grow: 1;
-		}
+    .search-input {
+      flex-grow: 1;
+    }
 
-		.search-icons {
-			display: flex;
-			flex-shrink: 0;
-			justify-content: flex-end;
-			align-items: center;
-			color: #ffffff;
-			padding-left: 10px;
-		}
-	}
+    .search-icons {
+      display: flex;
+      flex-shrink: 0;
+      justify-content: flex-end;
+      align-items: center;
+      color: #ffffff;
+      padding-left: 10px;
+    }
+  }
 
-	.keyboard-input {
-		position: absolute;
-		display: flex;
-		flex-direction: row;
-		justify-content: space-between;
-		align-items: center;
-		z-index: 998;
-		box-sizing: border-box;
-		padding-left: 5px;
-		padding-right: 5px;
-		background-color: goldenrod;
-		width: calc(100% - 10px);
-		height: 30px;
+  .keyboard-input {
+    position: absolute;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    z-index: 998;
+    box-sizing: border-box;
+    padding-left: 5px;
+    padding-right: 5px;
+    background-color: goldenrod;
+    width: calc(100% - 10px);
+    height: 30px;
 
-		.switch-btn {
-			border: 1px solid var(--n-text-color-base);
-			color: var(--n-text-color-base);
-			background-color: var(--n-bg-color-base);
-		}
-	}
+    .switch-btn {
+      border: 1px solid var(--n-text-color-base);
+      color: var(--n-text-color-base);
+      background-color: var(--n-bg-color-base);
+    }
+  }
 }
 </style>

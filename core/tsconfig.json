@@ -1,22 +1,23 @@
 {
-    "compilerOptions": {
-        "target": "ESNext",
-        "module": "CommonJS",
-        "moduleResolution": "node",
-        "strict": false,
-        "allowJs": true,
-        "esModuleInterop": true,
-        "skipLibCheck": true,
-        "noEmit": true,
-        "resolveJsonModule": true,
-        "baseUrl": ".",
-        "paths": {
-            "@/*": ["src/*"]
-        }
+  "compilerOptions": {
+    "target": "ESNext",
+    "module": "esnext",
+    "moduleResolution": "bundler",
+    "paths": {
+      "@/*": [
+        "./src/*"
+      ]
     },
-    "include": [
-        "src/**/*.ts",
-        "src/**/*.js",
-        "index.js"
-    ]
+    "resolveJsonModule": true,
+    "allowJs": true,
+    "strict": false,
+    "noEmit": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true
+  },
+  "include": [
+    "src/**/*.ts",
+    "src/**/*.js",
+    "index.ts"
+  ]
 }

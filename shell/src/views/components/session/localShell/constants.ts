@@ -1,7 +1,7 @@
 export const defaultForm = {
-	sessType: "localshell",
-	protocal: "localshell",
-	hostName: "",
-	system: "powershell",
-	shellType: "powershell",
+  sessType: 'localshell',
+  protocal: 'localshell',
+  hostName: '',
+  system: 'powershell',
+  shellType: 'powershell'
 }

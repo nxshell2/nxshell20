@@ -1,0 +1,14 @@
+diff --git a/lib/unixTerminal.js b/lib/unixTerminal.js
+index 1ec12f796a822c78fba9ad7f6448c3987e325c23..67300f702d65013b152a15ed16eed1ca75740ae6 100644
+--- a/lib/unixTerminal.js
++++ b/lib/unixTerminal.js
+@@ -30,6 +30,9 @@ var helperPath = native.dir + '/spawn-helper';
+ helperPath = path.resolve(__dirname, helperPath);
+ helperPath = helperPath.replace('app.asar', 'app.asar.unpacked');
+ helperPath = helperPath.replace('node_modules.asar', 'node_modules.asar.unpacked');
++// nxshell: pnpm 安装会丢失 prebuild 二进制的执行权限位，导致 posix_spawnp failed。
++// 模块加载时强制 chmod，幂等，保证 spawn-helper 可执行。
++try { fs.chmodSync(helperPath, 0o755); } catch (e) { }
+ var DEFAULT_FILE = 'sh';
+ var DEFAULT_NAME = 'xterm';
+ var DESTROY_SOCKET_TIMEOUT_MS = 200;

@@ -1,79 +1,79 @@
-//import LocalWebStorage from "./localWebStorage";
-import LocalFileStorage from "./localFileSystem";
+// import LocalWebStorage from "./localWebStorage";
+import LocalFileStorage from './localFileSystem'
 
 class Storage {
-    _localStorageProvider: any = null;
-    storageProviders: any = {};
+  _localStorageProvider: any = null
+  storageProviders: any = {}
 
-    constructor() {
-        this._localStorageProvider = new LocalFileStorage();
-        this.storageProviders[this._localStorageProvider.name] = this._localStorageProvider;
-    }
+  constructor() {
+  this._localStorageProvider = new LocalFileStorage()
+  this.storageProviders[this._localStorageProvider.name] = this._localStorageProvider
+  }
 
-    get localStorage() {
-        return this._localStorageProvider;
-    }
+  get localStorage() {
+  return this._localStorageProvider
+  }
 
-    get providerList() {
-        return Object.keys(this.storageProviders).map((key) => this.storageProviders[key])
-    }
+  get providerList() {
+  return Object.keys(this.storageProviders).map(key => this.storageProviders[key])
+  }
 
-    async initialize() {
-        // TODO: add code here
-        // 读取远程存储的配置
-        // 初始化远程配置
-    }
+  async initialize() {
+  // TODO: add code here
+  // 读取远程存储的配置
+  // 初始化远程配置
+  }
 
-    /**
-     * 同步本地数据到远程
-     * @param {String} name 同步的数据名称
-     */
-    async syncToRemote(_name: string) {
-        // TODO:
-    }
+  /**
+   * 同步本地数据到远程
+   * @param {string} name 同步的数据名称
+   */
+  async syncToRemote(_name: string) {
+  // TODO:
+  }
 
-    /**
-     * 同步远程配置到本地
-     * @param {String} name 同步的数据名称
-     */
-    async syncToLocal(_name: string) {
-        // TODO:
-    }
+  /**
+   * 同步远程配置到本地
+   * @param {string} name 同步的数据名称
+   */
+  async syncToLocal(_name: string) {
+  // TODO:
+  }
 
-    async setConfigPath(path: string) {
-        return await this.localStorage.setConfigPath(path);
-    }
+  async setConfigPath(path: string) {
+  return await this.localStorage.setConfigPath(path)
+  }
 
-    async save(name: string, object: any, sync = false) {
-        const ls = this.localStorage;
-        await ls.save(name, object)
-        if (sync) {
-            await this.syncToRemote(name);
-        }
-    }
+  async save(name: string, object: any, sync = false) {
+  const ls = this.localStorage
+  await ls.save(name, object)
+  if (sync) {
+    await this.syncToRemote(name)
+  }
+  }
 
-    async read(name: string) {
-        return await this.localStorage.read(name)
-    }
+  async read(name: string) {
+  return await this.localStorage.read(name)
+  }
 
-    async saveSoftConfig(object: any, _sync = false) {
-        const ls = this.localStorage;
-        await ls.saveSoftConfig(object)
-    }
+  async saveSoftConfig(object: any, _sync = false) {
+  const ls = this.localStorage
+  await ls.saveSoftConfig(object)
+  }
 
-    async readSoftConfig() {
-        return await this.localStorage.readSoftConfig()
-    }
+  async readSoftConfig() {
+  return await this.localStorage.readSoftConfig()
+  }
 
-    async export(src: string, dst: string) {
-        return await this.localStorage.export(src, dst)
-    }
+  async export(src: string, dst: string) {
+  return await this.localStorage.export(src, dst)
+  }
 
-    async import(src: string, dst: string) {
-        return await this.localStorage.import(src, dst);
-    }
+  async import(src: string, dst: string) {
+  return await this.localStorage.import(src, dst)
+  }
 }
 
-const storage = new Storage();
+const storage = new Storage()
 
-export default storage;
+export default storage

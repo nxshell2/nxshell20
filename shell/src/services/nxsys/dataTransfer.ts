@@ -1,53 +1,53 @@
-import { NxDataTransfer } from "../../../common/nxsys/dataTransfer";
+import { NxDataTransfer } from '../../../common/nxsys/dataTransfer'
 
 class NxDataTransferClient extends NxDataTransfer {
-    service: any = null;
-    handle: any = null;
-    channel: any = null;
-    constructor(handle: any) {
-        super();
-        this.service = powertools.getService();
-        this.handle = handle;
-    }
+  service: any = null
+  handle: any = null
+  channel: any = null
+  constructor(handle: any) {
+  super()
+  this.service = powertools.getService()
+  this.handle = handle
+  }
 
-    async _init() {
-        this.channel = this.service.createChannel();
-        await this._bindChannel(this.channel.channelId);
-    }
+  async _init() {
+  this.channel = this.service.createChannel()
+  await this._bindChannel(this.channel.channelId)
+  }
 
-    async _setFrom(from: any) {
-        await this.service.callObject(this.handle, "_setFrom", from);
-    }
+  async _setFrom(from: any) {
+  await this.service.callObject(this.handle, '_setFrom', from)
+  }
 
-    async _setTo(to: any) {
-        await this.service.callObject(this.handle, "_setTo", to);
-    }
+  async _setTo(to: any) {
+  await this.service.callObject(this.handle, '_setTo', to)
+  }
 
-    async _bindChannel(channelId: any) {
-        this.channel.on("data", (eventInfo: any) => {
-            const {event, args} = eventInfo;
-            this.emit(event, args);
-        });
+  async _bindChannel(channelId: any) {
+  this.channel.on('data', (eventInfo: any) => {
+    const { event, args } = eventInfo
+    this.emit(event, args)
+  })
 
-        await this.service.callObject(this.handle, "_bindChannel", channelId);
-    }
+  await this.service.callObject(this.handle, '_bindChannel', channelId)
+  }
 
-    async answer(action: any, keep: any) {
-        await this.service.callObject(this.handle, "answer", action, keep);
-    }
+  async answer(action: any, keep: any) {
+  await this.service.callObject(this.handle, 'answer', action, keep)
+  }
 
-    async startTransferring() {
-        await this.service.callObject(this.handle, "startTransferring");
-    }
+  async startTransferring() {
+  await this.service.callObject(this.handle, 'startTransferring')
+  }
 }
 
 export async function createDataTransfer() {
-    const service = powertools.getService();
+  const service = powertools.getService()
 
-    const handle = await service.createDataTransfer();
+  const handle = await service.createDataTransfer()
 
-    const client = new NxDataTransferClient(handle);
-    await client._init();
+  const client = new NxDataTransferClient(handle)
+  await client._init()
 
-    return client;
+  return client
 }

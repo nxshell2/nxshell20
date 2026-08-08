@@ -1,6 +1,6 @@
-import NxToolbar from "./toolbar"
+import NxMenus from './menu'
 import NxNavbar from './navbar'
 import NxTabMenu from './tabbar'
-import NxMenus from './menu'
+import NxToolbar from './toolbar'
 
-export { NxToolbar, NxNavbar, NxTabMenu, NxMenus }
+export { NxMenus, NxNavbar, NxTabMenu, NxToolbar }

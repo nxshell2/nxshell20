@@ -1,341 +1,398 @@
-<template>
-	<div class="n-setting-wrapper">
-		<div class="n-setting-header">
-			<span class="n-setting-header__left">{{ t("home.profile.global-setting") }}</span>
-		</div>
-		<div class="n-setting-content">
-			<el-scrollbar>
-				<el-row :gutter="40">
-					<el-col :xs="24" :sm="24" :md="24" :lg="12" :xl="12" class="n-terminal-preview">
-						<xterm-theme-list v-bindv-model:value="settingsForm.xtermTheme" :theme-options="settingsForm" />
-					</el-col>
-					<el-col :xs="24" :sm="24" :md="24" :lg="12" :xl="12">
-						<el-row :gutter="40" style="margin-bottom: 20px">
-							<el-col :span="8" class="n-setting-content__label">{{ t(termTheme.title) }}</el-col>
-							<el-col :span="16">
-								<el-select v-model="settingsForm[termTheme.name]" @change="handlerSettingChange">
-									<el-option v-for="(item, index) in termTheme.options" :label="t(item.label)" :value="item.value" :key="index" />
-								</el-select>
-							</el-col>
-						</el-row>
-						<el-row :gutter="40" style="margin-bottom: 20px">
-							<el-col :span="8" class="n-setting-content__label">{{ t(cursorStyle.title) }}</el-col>
-							<el-col :span="16">
-								<el-radio-group v-model="settingsForm[cursorStyle.name]" @change="handlerSettingChange">
-									<el-radio-button label="block">█</el-radio-button>
-									<el-radio-button label="bar">|</el-radio-button>
-									<el-radio-button label="underline">▁</el-radio-button>
-								</el-radio-group>
-							</el-col>
-						</el-row>
-						<!-- 是否闪烁 -->
-						<el-row :gutter="40" style="margin-bottom: 20px">
-							<el-col :span="8" class="n-setting-content__label">{{ t(cursorBlink.title) }}</el-col>
-							<el-col :span="16">
-								<el-switch v-model="settingsForm[cursorBlink.name]" @change="handlerSettingChange" />
-							</el-col>
-						</el-row>
-						<!-- 字体 -->
-						<el-row :gutter="40" style="margin-bottom: 20px">
-							<el-col :span="8" class="n-setting-content__label">{{ t(fontFamily.title) }}</el-col>
-							<el-col :span="16">
-								<el-select v-model="settingsForm[fontFamilyList.name]" @change="handlerSettingChange">
-									<el-option v-for="(item, index) in fontFamilyList.options" :label="t(item.label)" :value="item.value" :key="index" />
-								</el-select>
-							</el-col>
-						</el-row>
-						<!-- 字体大小 -->
-						<el-row :gutter="40" style="margin-bottom: 20px">
-							<el-col :span="8" class="n-setting-content__label">{{ t(fontSize.title) }}</el-col>
-							<el-col :span="16">
-								<el-select v-model="settingsForm[fontSize.name]" @change="handlerSettingChange">
-									<el-option v-for="(item, index) in fontSize.options" :label="t(item.label)" :value="item.value" :key="index" />
-								</el-select>
-							</el-col>
-						</el-row>
-					</el-col>
-				</el-row>
-				<el-row :gutter="40">
-					<el-col :xs="24" :sm="24" :md="24" :lg="12" :xl="12">
-						<el-row :gutter="40" style="margin-bottom: 20px">
-							<el-col :span="8" class="n-setting-content__label">{{ t(fontWeight.title) }}</el-col>
-							<el-col :span="16">
-								<el-select v-model="settingsForm[fontWeight.name]" @change="handlerSettingChange">
-									<el-option v-for="(item, index) in fontWeight.options" :label="t(item.label)" :value="item.value" :key="index" />
-								</el-select>
-							</el-col>
-						</el-row>
-					</el-col>
-					<el-col :xs="24" :sm="24" :md="24" :lg="12" :xl="12">
-						<el-row :gutter="40" style="margin-bottom: 20px">
-							<el-col :span="8" class="n-setting-content__label">{{ t(lineHeight.title) }}</el-col>
-							<el-col :span="16">
-								<el-input-number
-									v-model="settingsForm[lineHeight.name]"
-									:step="0.1"
-									:min="1"
-									:max="10"
-									controls-position="right"
-									style="width: 218px"
-									@change="handlerSettingChange"
-								/>
-							</el-col>
-						</el-row>
-					</el-col>
-				</el-row>
-				<el-row :gutter="40">
-					<el-col :xs="24" :sm="24" :md="24" :lg="12" :xl="12">
-						<el-row :gutter="40" style="margin-bottom: 20px">
-							<el-col :span="8" class="n-setting-content__label">{{ t(charset.title) }}</el-col>
-							<el-col :span="16">
-								<el-select v-model="settingsForm[charset.name]" @change="handlerSettingChange">
-									<el-option v-for="(item, index) in charset.options" :label="t(item.label)" :value="item.value" :key="index" />
-								</el-select>
-							</el-col>
-						</el-row>
-					</el-col>
-					<el-col :xs="24" :sm="24" :md="24" :lg="12" :xl="12">
-						<el-row :gutter="40" style="margin-bottom: 20px">
-							<el-col :span="8" class="n-setting-content__label">{{ t(letterSpacing.title) }}</el-col>
-							<el-col :span="16">
-								<el-input-number
-									v-model="settingsForm[letterSpacing.name]"
-									:step="0.1"
-									:min="1"
-									:max="10"
-									controls-position="right"
-									style="width: 218px"
-									@change="handlerSettingChange"
-								/>
-							</el-col>
-						</el-row>
-					</el-col>
-				</el-row>
-				<el-row :gutter="40">
-					<el-col :xs="24" :sm="24" :md="24" :lg="12" :xl="12">
-						<el-row :gutter="40" style="margin-bottom: 20px">
-							<el-col :span="8" class="n-setting-content__label">
-								{{ t("home.profile.system.nxconfig.title") }}
-							</el-col>
-							<el-col :span="16">
-								<pt-folder v-model="settingsForm['nxconfig']" @change="handlerSettingChange" />
-							</el-col>
-						</el-row>
-					</el-col>
-					<el-col :xs="24" :sm="24" :md="24" :lg="12" :xl="12">
-						<el-row :gutter="40" style="margin-bottom: 20px">
-							<el-col :span="8" class="n-setting-content__label">{{t('home.profile.mouse-copy')}}</el-col>
-							<el-col :span="16">
-								<el-switch v-model="settingsForm.selectedCopy" @change="handlerSettingChange"></el-switch>
-							</el-col>
-						</el-row>
-					</el-col>
-				</el-row>
-
-			<div class="n-setting-divider"></div>
-
-			<div class="n-setting-section-title">{{ t('home.ai.settings.title') }}</div>
-			<el-row :gutter="40">
-				<el-col :xs="24" :sm="24" :md="24" :lg="12" :xl="12">
-					<el-row :gutter="40" style="margin-bottom: 20px">
-						<el-col :span="8" class="n-setting-content__label">{{ t('home.ai.settings.provider') }}</el-col>
-						<el-col :span="16">
-							<el-select v-model="aiConfig.provider" @change="handleAIConfigChange">
-								<el-option :label="t('home.ai.settings.provider-ollama')" value="ollama" />
-								<el-option :label="t('home.ai.settings.provider-openai')" value="openai" />
-							</el-select>
-						</el-col>
-					</el-row>
-				</el-col>
-				<el-col :xs="24" :sm="24" :md="24" :lg="12" :xl="12">
-					<el-row :gutter="40" style="margin-bottom: 20px">
-						<el-col :span="8" class="n-setting-content__label">{{ t('home.ai.settings.context-lines') }}</el-col>
-						<el-col :span="16">
-							<el-input-number v-model="aiConfig.maxContextLines" :min="10" :max="200" :step="10" controls-position="right" style="width: 218px" @change="handleAIConfigChange" />
-						</el-col>
-					</el-row>
-				</el-col>
-			</el-row>
-			<template v-if="aiConfig.provider === 'ollama'">
-				<el-row :gutter="40">
-					<el-col :xs="24" :sm="24" :md="24" :lg="12" :xl="12">
-						<el-row :gutter="40" style="margin-bottom: 20px">
-							<el-col :span="8" class="n-setting-content__label">{{ t('home.ai.settings.ollama-url') }}</el-col>
-							<el-col :span="16">
-								<el-input v-model="aiConfig.ollama.baseUrl" @change="handleAIConfigChange" />
-							</el-col>
-						</el-row>
-					</el-col>
-					<el-col :xs="24" :sm="24" :md="24" :lg="12" :xl="12">
-						<el-row :gutter="40" style="margin-bottom: 20px">
-							<el-col :span="8" class="n-setting-content__label">{{ t('home.ai.settings.ollama-model') }}</el-col>
-							<el-col :span="16">
-								<el-input v-model="aiConfig.ollama.model" @change="handleAIConfigChange" />
-							</el-col>
-						</el-row>
-					</el-col>
-				</el-row>
-			</template>
-			<template v-if="aiConfig.provider === 'openai'">
-				<el-row :gutter="40">
-					<el-col :xs="24" :sm="24" :md="24" :lg="12" :xl="12">
-						<el-row :gutter="40" style="margin-bottom: 20px">
-							<el-col :span="8" class="n-setting-content__label">{{ t('home.ai.settings.openai-url') }}</el-col>
-							<el-col :span="16">
-								<el-input v-model="aiConfig.openai.baseUrl" @change="handleAIConfigChange" />
-							</el-col>
-						</el-row>
-					</el-col>
-					<el-col :xs="24" :sm="24" :md="24" :lg="12" :xl="12">
-						<el-row :gutter="40" style="margin-bottom: 20px">
-							<el-col :span="8" class="n-setting-content__label">{{ t('home.ai.settings.openai-model') }}</el-col>
-							<el-col :span="16">
-								<el-input v-model="aiConfig.openai.model" @change="handleAIConfigChange" />
-							</el-col>
-						</el-row>
-					</el-col>
-				</el-row>
-				<el-row :gutter="40">
-					<el-col :xs="24" :sm="24" :md="24" :lg="12" :xl="12">
-						<el-row :gutter="40" style="margin-bottom: 20px">
-							<el-col :span="8" class="n-setting-content__label">{{ t('home.ai.settings.openai-key') }}</el-col>
-							<el-col :span="16">
-								<el-input v-model="aiConfig.openai.apiKey" type="password" show-password @change="handleAIConfigChange" />
-							</el-col>
-						</el-row>
-					</el-col>
-				</el-row>
-			</template>
-			</el-scrollbar>
-		</div>
-	</div>
-</template>
-
 <script setup>
-import { getProfile, setProfile } from "@/services/globalSetting"
-import { getAIConfig, saveAIConfig } from "@/services/ai/config"
-import xtermThemeList from "@/views/session/components/xtermTheme/index.vue"
-import { charset, cursorBlink, cursorStyle, fontFamily, fontSize, fontWeight, letterSpacing, lineHeight, termTheme } from "./constants"
-import { settingFormReset } from "./constants/default.ts"
-import { onBeforeMount, onMounted, ref } from "vue"
-import { useI18n } from "vue-i18n"
+import { onBeforeMount, onMounted, ref } from 'vue'
+import { useI18n } from 'vue-i18n'
+import { getAIConfig, saveAIConfig } from '@/services/ai/config'
+import { getProfile, setProfile } from '@/services/globalSetting'
+import xtermThemeList from '@/views/session/components/xtermTheme/index.vue'
+import { charset, cursorBlink, cursorStyle, fontFamily, fontSize, fontWeight, letterSpacing, lineHeight, termTheme } from './constants'
+import { settingFormReset } from './constants/default.ts'
 
 const settingsForm = ref({
-	...settingFormReset
+  ...settingFormReset
 })
 const fontFamilyList = ref({ ...fontFamily })
 const { t } = useI18n()
 const aiConfig = ref(getAIConfig())
-const handleAIConfigChange = async () => {
-	await saveAIConfig(aiConfig.value)
+async function handleAIConfigChange() {
+  await saveAIConfig(aiConfig.value)
 }
-const handlerSettingChange = async () => {
-	const defaultSettings = getProfile("xterm") ?? {}
-	await setProfile("xterm", { ...defaultSettings, ...settingsForm.value })
+async function handlerSettingChange() {
+  const defaultSettings = getProfile('xterm') ?? {}
+  await setProfile('xterm', { ...defaultSettings, ...settingsForm.value })
 }
-const getSystemFonts = async () => {
-	const service = powertools.getService()
-	const _fonts = await service.getSystemFonts()
-	if (_fonts) {
-		fontFamilyList.value.options = [
-			{
-				label: "home.profile.terminal.font-family.options.default",
-				value: "default"
-			}
-		]
-		fontFamilyList.value.options.push(
-			...[..._fonts].map((f) => {
-				return {
-					label: f,
-					value: f
-				}
-			})
-		)
-	}
+async function getSystemFonts() {
+  const service = powertools.getService()
+  const _fonts = await service.getSystemFonts()
+  if (_fonts) {
+    fontFamilyList.value.options = [
+      {
+        label: 'home.profile.terminal.font-family.options.default',
+        value: 'default'
+      }
+    ]
+    fontFamilyList.value.options.push(
+      ...[..._fonts].map((f) => {
+        return {
+          label: f,
+          value: f
+        }
+      })
+    )
+  }
 }
 
-onBeforeMount(async () => {
-	await getSystemFonts()
+onBeforeMount(async() => {
+  await getSystemFonts()
 })
 
 onMounted(() => {
-	const storeSetting = getProfile("xterm")
-	settingsForm.value = { ...settingFormReset, ...storeSetting }
+  const storeSetting = getProfile('xterm')
+  settingsForm.value = { ...settingFormReset, ...storeSetting }
 })
 </script>
 
+<template>
+  <div class="n-setting-wrapper">
+    <div class="n-setting-header">
+      <span class="n-setting-header__left">{{ t("home.profile.global-setting") }}</span>
+    </div>
+    <div class="n-setting-content">
+      <el-scrollbar>
+        <el-row :gutter="40">
+          <el-col
+            :xs="24"
+            :sm="24"
+            :md="24"
+            :lg="12"
+            :xl="12"
+            class="n-terminal-preview"
+          >
+            <xterm-theme-list v-model:value="settingsForm.xtermTheme" :theme-options="settingsForm" />
+          </el-col>
+          <el-col :xs="24" :sm="24" :md="24" :lg="12" :xl="12">
+            <el-row :gutter="40" style="margin-bottom: 20px">
+              <el-col :span="8" class="n-setting-content__label">
+                {{ t(termTheme.title) }}
+              </el-col>
+              <el-col :span="16">
+                <el-select v-model="settingsForm[termTheme.name]" @change="handlerSettingChange">
+                  <el-option v-for="(item, index) in termTheme.options" :key="index" :label="t(item.label)" :value="item.value" />
+                </el-select>
+              </el-col>
+            </el-row>
+            <el-row :gutter="40" style="margin-bottom: 20px">
+              <el-col :span="8" class="n-setting-content__label">
+                {{ t(cursorStyle.title) }}
+              </el-col>
+              <el-col :span="16">
+                <el-radio-group v-model="settingsForm[cursorStyle.name]" @change="handlerSettingChange">
+                  <el-radio-button label="block">
+                    █
+                  </el-radio-button>
+                  <el-radio-button label="bar">
+                    |
+                  </el-radio-button>
+                  <el-radio-button label="underline">
+                    ▁
+                  </el-radio-button>
+                </el-radio-group>
+              </el-col>
+            </el-row>
+            <!-- 是否闪烁 -->
+            <el-row :gutter="40" style="margin-bottom: 20px">
+              <el-col :span="8" class="n-setting-content__label">
+                {{ t(cursorBlink.title) }}
+              </el-col>
+              <el-col :span="16">
+                <el-switch v-model="settingsForm[cursorBlink.name]" @change="handlerSettingChange" />
+              </el-col>
+            </el-row>
+            <!-- 字体 -->
+            <el-row :gutter="40" style="margin-bottom: 20px">
+              <el-col :span="8" class="n-setting-content__label">
+                {{ t(fontFamily.title) }}
+              </el-col>
+              <el-col :span="16">
+                <el-select v-model="settingsForm[fontFamilyList.name]" @change="handlerSettingChange">
+                  <el-option v-for="(item, index) in fontFamilyList.options" :key="index" :label="t(item.label)" :value="item.value" />
+                </el-select>
+              </el-col>
+            </el-row>
+            <!-- 字体大小 -->
+            <el-row :gutter="40" style="margin-bottom: 20px">
+              <el-col :span="8" class="n-setting-content__label">
+                {{ t(fontSize.title) }}
+              </el-col>
+              <el-col :span="16">
+                <el-select v-model="settingsForm[fontSize.name]" @change="handlerSettingChange">
+                  <el-option v-for="(item, index) in fontSize.options" :key="index" :label="t(item.label)" :value="item.value" />
+                </el-select>
+              </el-col>
+            </el-row>
+          </el-col>
+        </el-row>
+        <el-row :gutter="40">
+          <el-col :xs="24" :sm="24" :md="24" :lg="12" :xl="12">
+            <el-row :gutter="40" style="margin-bottom: 20px">
+              <el-col :span="8" class="n-setting-content__label">
+                {{ t(fontWeight.title) }}
+              </el-col>
+              <el-col :span="16">
+                <el-select v-model="settingsForm[fontWeight.name]" @change="handlerSettingChange">
+                  <el-option v-for="(item, index) in fontWeight.options" :key="index" :label="t(item.label)" :value="item.value" />
+                </el-select>
+              </el-col>
+            </el-row>
+          </el-col>
+          <el-col :xs="24" :sm="24" :md="24" :lg="12" :xl="12">
+            <el-row :gutter="40" style="margin-bottom: 20px">
+              <el-col :span="8" class="n-setting-content__label">
+                {{ t(lineHeight.title) }}
+              </el-col>
+              <el-col :span="16">
+                <el-input-number
+                  v-model="settingsForm[lineHeight.name]"
+                  :step="0.1"
+                  :min="1"
+                  :max="10"
+                  controls-position="right"
+                  style="width: 218px"
+                  @change="handlerSettingChange"
+                />
+              </el-col>
+            </el-row>
+          </el-col>
+        </el-row>
+        <el-row :gutter="40">
+          <el-col :xs="24" :sm="24" :md="24" :lg="12" :xl="12">
+            <el-row :gutter="40" style="margin-bottom: 20px">
+              <el-col :span="8" class="n-setting-content__label">
+                {{ t(charset.title) }}
+              </el-col>
+              <el-col :span="16">
+                <el-select v-model="settingsForm[charset.name]" @change="handlerSettingChange">
+                  <el-option v-for="(item, index) in charset.options" :key="index" :label="t(item.label)" :value="item.value" />
+                </el-select>
+              </el-col>
+            </el-row>
+          </el-col>
+          <el-col :xs="24" :sm="24" :md="24" :lg="12" :xl="12">
+            <el-row :gutter="40" style="margin-bottom: 20px">
+              <el-col :span="8" class="n-setting-content__label">
+                {{ t(letterSpacing.title) }}
+              </el-col>
+              <el-col :span="16">
+                <el-input-number
+                  v-model="settingsForm[letterSpacing.name]"
+                  :step="0.1"
+                  :min="1"
+                  :max="10"
+                  controls-position="right"
+                  style="width: 218px"
+                  @change="handlerSettingChange"
+                />
+              </el-col>
+            </el-row>
+          </el-col>
+        </el-row>
+        <el-row :gutter="40">
+          <el-col :xs="24" :sm="24" :md="24" :lg="12" :xl="12">
+            <el-row :gutter="40" style="margin-bottom: 20px">
+              <el-col :span="8" class="n-setting-content__label">
+                {{ t("home.profile.system.nxconfig.title") }}
+              </el-col>
+              <el-col :span="16">
+                <pt-folder v-model="settingsForm.nxconfig" @change="handlerSettingChange" />
+              </el-col>
+            </el-row>
+          </el-col>
+          <el-col :xs="24" :sm="24" :md="24" :lg="12" :xl="12">
+            <el-row :gutter="40" style="margin-bottom: 20px">
+              <el-col :span="8" class="n-setting-content__label">
+                {{ t('home.profile.mouse-copy') }}
+              </el-col>
+              <el-col :span="16">
+                <el-switch v-model="settingsForm.selectedCopy" @change="handlerSettingChange" />
+              </el-col>
+            </el-row>
+          </el-col>
+        </el-row>
+
+        <div class="n-setting-divider" />
+
+        <div class="n-setting-section-title">
+          {{ t('home.ai.settings.title') }}
+        </div>
+        <el-row :gutter="40">
+          <el-col :xs="24" :sm="24" :md="24" :lg="12" :xl="12">
+            <el-row :gutter="40" style="margin-bottom: 20px">
+              <el-col :span="8" class="n-setting-content__label">
+                {{ t('home.ai.settings.provider') }}
+              </el-col>
+              <el-col :span="16">
+                <el-select v-model="aiConfig.provider" @change="handleAIConfigChange">
+                  <el-option :label="t('home.ai.settings.provider-ollama')" value="ollama" />
+                  <el-option :label="t('home.ai.settings.provider-openai')" value="openai" />
+                </el-select>
+              </el-col>
+            </el-row>
+          </el-col>
+          <el-col :xs="24" :sm="24" :md="24" :lg="12" :xl="12">
+            <el-row :gutter="40" style="margin-bottom: 20px">
+              <el-col :span="8" class="n-setting-content__label">
+                {{ t('home.ai.settings.context-lines') }}
+              </el-col>
+              <el-col :span="16">
+                <el-input-number
+                  v-model="aiConfig.maxContextLines"
+                  :min="10"
+                  :max="200"
+                  :step="10"
+                  controls-position="right"
+                  style="width: 218px"
+                  @change="handleAIConfigChange"
+                />
+              </el-col>
+            </el-row>
+          </el-col>
+        </el-row>
+        <template v-if="aiConfig.provider === 'ollama'">
+          <el-row :gutter="40">
+            <el-col :xs="24" :sm="24" :md="24" :lg="12" :xl="12">
+              <el-row :gutter="40" style="margin-bottom: 20px">
+                <el-col :span="8" class="n-setting-content__label">
+                  {{ t('home.ai.settings.ollama-url') }}
+                </el-col>
+                <el-col :span="16">
+                  <el-input v-model="aiConfig.ollama.baseUrl" @change="handleAIConfigChange" />
+                </el-col>
+              </el-row>
+            </el-col>
+            <el-col :xs="24" :sm="24" :md="24" :lg="12" :xl="12">
+              <el-row :gutter="40" style="margin-bottom: 20px">
+                <el-col :span="8" class="n-setting-content__label">
+                  {{ t('home.ai.settings.ollama-model') }}
+                </el-col>
+                <el-col :span="16">
+                  <el-input v-model="aiConfig.ollama.model" @change="handleAIConfigChange" />
+                </el-col>
+              </el-row>
+            </el-col>
+          </el-row>
+        </template>
+        <template v-if="aiConfig.provider === 'openai'">
+          <el-row :gutter="40">
+            <el-col :xs="24" :sm="24" :md="24" :lg="12" :xl="12">
+              <el-row :gutter="40" style="margin-bottom: 20px">
+                <el-col :span="8" class="n-setting-content__label">
+                  {{ t('home.ai.settings.openai-url') }}
+                </el-col>
+                <el-col :span="16">
+                  <el-input v-model="aiConfig.openai.baseUrl" @change="handleAIConfigChange" />
+                </el-col>
+              </el-row>
+            </el-col>
+            <el-col :xs="24" :sm="24" :md="24" :lg="12" :xl="12">
+              <el-row :gutter="40" style="margin-bottom: 20px">
+                <el-col :span="8" class="n-setting-content__label">
+                  {{ t('home.ai.settings.openai-model') }}
+                </el-col>
+                <el-col :span="16">
+                  <el-input v-model="aiConfig.openai.model" @change="handleAIConfigChange" />
+                </el-col>
+              </el-row>
+            </el-col>
+          </el-row>
+          <el-row :gutter="40">
+            <el-col :xs="24" :sm="24" :md="24" :lg="12" :xl="12">
+              <el-row :gutter="40" style="margin-bottom: 20px">
+                <el-col :span="8" class="n-setting-content__label">
+                  {{ t('home.ai.settings.openai-key') }}
+                </el-col>
+                <el-col :span="16">
+                  <el-input v-model="aiConfig.openai.apiKey" type="password" show-password @change="handleAIConfigChange" />
+                </el-col>
+              </el-row>
+            </el-col>
+          </el-row>
+        </template>
+      </el-scrollbar>
+    </div>
+  </div>
+</template>
+
 <style lang="scss" scoped>
 .n-setting-wrapper {
-	height: 100%;
-	padding: 15px;
-	background-color: var(--n-bg-color-base);
+  height: 100%;
+  padding: 15px;
+  background-color: var(--n-bg-color-base);
 
-	.n-setting-header {
-		margin-bottom: 20px;
-		color: var(--n-text-color-base);
+  .n-setting-header {
+    margin-bottom: 20px;
+    color: var(--n-text-color-base);
 
-		&__left {
-			display: flex;
-			justify-content: flex-start;
-			align-items: center;
-			font-size: 24px;
-			font-weight: 800;
-		}
-	}
+    &__left {
+      display: flex;
+      justify-content: flex-start;
+      align-items: center;
+      font-size: 24px;
+      font-weight: 800;
+    }
+  }
 
-	.n-setting-content {
-		overflow-x: hidden;
-		height: calc(100% - 71px);
+  .n-setting-content {
+    overflow-x: hidden;
+    height: calc(100% - 71px);
 
-		.n-terminal-preview {
-			position: sticky;
-			top: 0;
-			margin-bottom: 20px;
-			z-index: 9;
-			height: 280px;
-		}
+    .n-terminal-preview {
+      position: sticky;
+      top: 0;
+      margin-bottom: 20px;
+      z-index: 9;
+      height: 280px;
+    }
 
-		&__label {
-			color: var(--n-text-color-base);
-		}
-	}
+    &__label {
+      color: var(--n-text-color-base);
+    }
+  }
 
-	.n-setting-divider {
-		height: 1px;
-		background-color: var(--n-border-color);
-		margin: 24px 0;
-	}
+  .n-setting-divider {
+    height: 1px;
+    background-color: var(--n-border-color);
+    margin: 24px 0;
+  }
 
-	.n-setting-section-title {
-		font-size: 18px;
-		font-weight: 700;
-		color: var(--n-text-color-base);
-		margin-bottom: 16px;
-	}
+  .n-setting-section-title {
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--n-text-color-base);
+    margin-bottom: 16px;
+  }
 }
 
 .n-theme-color {
-	display: flex;
-	justify-content: space-between;
-	align-items: center;
-	flex-wrap: wrap;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
 
-	.n-theme-color-tag-wrapper {
-		display: flex;
-		justify-content: flex-start;
-		align-items: center;
-		width: 150px;
-		flex-wrap: wrap;
-	}
+  .n-theme-color-tag-wrapper {
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    width: 150px;
+    flex-wrap: wrap;
+  }
 
-	.n-theme-color-tag {
-		width: 10px;
-		height: 10px;
-		border-radius: 50%;
+  .n-theme-color-tag {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
 
-		&:not(:last-child) {
-			margin: 2px;
-		}
-	}
+    &:not(:last-child) {
+      margin: 2px;
+    }
+  }
 }
 </style>

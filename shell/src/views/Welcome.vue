@@ -1,23 +1,3 @@
-<template>
-	<div class='n-home-empty'>
-		<div class='n-home-content'>
-			<span class='n-logo'>
-				<n-icon name='logo' size='70' />
-			</span>
-			<p class='n-logo-text'>NxShell</p>
-		</div>
-		<h1>{{ t('app.welcome') }}</h1>
-		<div class='n-home-footer'>
-			<div class='n-home-footer__feedback'>
-				<nx-button icon='official-website' label='app.website' label-align='flex-end' @click='toWebsite' />
-				<nx-button icon='github' label='Github' label-align='flex-end' @click='toStar' />
-				<nx-button icon='bug' label='home.welcome.reportProblem' label-align='flex-end' @click='toIssues' />
-			</div>
-			<div class='n-home-footer__version'>{{ t('home.welcome.software-version') }} {{ version }}</div>
-		</div>
-	</div>
-</template>
-
 <script setup>
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
@@ -26,18 +6,42 @@ import NxButton from '@/components/nxButton/index.vue'
 const { t } = useI18n()
 const version = computed(() => `V${window.powertools.getVersion()}`)
 
-const toWebsite = () => {
-	window.powertools.openExterUrl('https://nxshell.github.io/')
+function toWebsite() {
+  window.powertools.openExterUrl('https://nxshell.github.io/')
 }
-const toStar = () => {
-	const github = 'https://github.com/nxshell/nxshell'
-	window.powertools.openExterUrl(github)
+function toStar() {
+  const github = 'https://github.com/nxshell/nxshell'
+  window.powertools.openExterUrl(github)
 }
-const toIssues = () => {
-	const issues = 'https://github.com/nxshell/nxshell/issues'
-	window.powertools.openExterUrl(issues)
+function toIssues() {
+  const issues = 'https://github.com/nxshell/nxshell/issues'
+  window.powertools.openExterUrl(issues)
 }
 </script>
+
+<template>
+  <div class="n-home-empty">
+    <div class="n-home-content">
+      <span class="n-logo">
+        <n-icon name="logo" size="70" />
+      </span>
+      <p class="n-logo-text">
+        NxShell
+      </p>
+    </div>
+    <h1>{{ t('app.welcome') }}</h1>
+    <div class="n-home-footer">
+      <div class="n-home-footer__feedback">
+        <NxButton icon="official-website" label="app.website" label-align="flex-end" @click="toWebsite" />
+        <NxButton icon="github" label="Github" label-align="flex-end" @click="toStar" />
+        <NxButton icon="bug" label="home.welcome.reportProblem" label-align="flex-end" @click="toIssues" />
+      </div>
+      <div class="n-home-footer__version">
+        {{ t('home.welcome.software-version') }} {{ version }}
+      </div>
+    </div>
+  </div>
+</template>
 
 <style lang='scss' scoped>
 .n-home-empty {

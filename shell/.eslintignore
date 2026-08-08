@@ -1,7 +1,0 @@
-node_modules
-dist
-build
-public
-*.d.ts
-babel.config.js
-vue.config.js

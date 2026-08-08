@@ -1,6 +1,6 @@
-import { system } from './system'
-import { protocol } from './protocol'
 import initSystemFontList from './font-list'
+import { protocol } from './protocol'
+import { system } from './system'
 import initDefaultThemeOptions from './xterm-theme'
 
-export { system, protocol, initSystemFontList, initDefaultThemeOptions }
+export { initDefaultThemeOptions, initSystemFontList, protocol, system }

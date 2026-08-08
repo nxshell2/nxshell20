@@ -1,1 +1,1 @@
-declare const powertools: any;
+declare const powertools: any

@@ -1,9 +1,9 @@
 interface UUID {
-    v4(): string;
+  v4: () => string
 }
 
-declare module "uuid" {
-    export = uuid;
+declare module 'uuid' {
+  export = uuid
 }
 
-declare var uuid: UUID;
+declare var uuid: UUID

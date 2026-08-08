@@ -1,3 +1,3 @@
 export default {
-    WINDOW_TITLE_HEIGHT: 30
-};
+  WINDOW_TITLE_HEIGHT: 30
+}

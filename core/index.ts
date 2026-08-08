@@ -1,1 +1,3 @@
-require("./src");
+import Core from '@/core'
+
+Core.initialize()

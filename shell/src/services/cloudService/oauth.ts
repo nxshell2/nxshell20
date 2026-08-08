@@ -1,9 +1,9 @@
-import axios from "./axios";
+import axios from './axios'
 
 function getContributers() {
-    return axios.get("contributers");
+  return axios.get('contributers')
 }
 
 export default {
-    getContributers
+  getContributers
 }

@@ -20,7 +20,6 @@ const useNxTabsStore = defineStore('nxTabs', () => {
   const tabData = ref<INxTabProps[]>([])
   const currentActive = ref<number>(0)
   const checkedTabType = ref('')
-  const showTabs = ref(true)
   const configPanel = ref(true)
   const noConfirm = ref(false)
   const editorChange = ref(false)
@@ -128,20 +127,20 @@ const useNxTabsStore = defineStore('nxTabs', () => {
   subscript('instance-destroyed', async() => {
     updateTabInstance()
     if (tabData.value.length <= 0) {
-    sessionManager.createWelcomeSessionInstance()
-    } else {
+      // No tabs remaining → Welcome slot will be shown by MainLayout
+      router.push('/')
+      return
+    }
     if (currentActive.value >= tabData.value.length) {
       updateActiveTabIndex(tabData.value.length - 1)
     }
     await activateSession(currentActive.value)
-    }
   })
   })
 
   onUnmounted(() => {})
   return {
   tabData,
-  showTabs,
   configPanel,
   checkedTabType,
   currentActive,

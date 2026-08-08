@@ -102,14 +102,6 @@ const sessionTabContextMenu = reactive({
       handler: handleCloseLeft
     }
   ],
-  welcome: [
-    {
-      label: 'home.sessions-context-menu.close-other',
-      type: 'normal',
-      icon: '',
-      handler: handleCloseOther
-    }
-  ],
   login: [
     {
       label: 'home.sessions-context-menu.close',
@@ -153,12 +145,7 @@ function handleSessionInstRemove(index) {
   if (!tabData.value[index]) {
     return
   }
-  const { title, sessionType, session } = tabData.value[index]
-  // 首页不需要确认
-  if (title === 'Welcome') {
-    session?.close()
-    return
-  }
+  const { sessionType, session } = tabData.value[index]
   // 编辑器特殊处理
   if (sessionType === 'editor' && !editorChange.value) {
     session?.beforeClose()
@@ -311,7 +298,6 @@ onBeforeUnmount(() => hotKey(0))
           <span>{{ item.title }}</span>
         </n-space>
         <span
-          v-if="tabData.length !== 1 || tabData[0].sessionType !== 'welcome'"
           class="tabs-item__close"
           @click="handleSessionInstRemove(index)"
         >

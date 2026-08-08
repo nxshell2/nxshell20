@@ -1,30 +1,22 @@
 <script setup>
+import { computed } from 'vue'
 import { storeToRefs } from 'pinia'
-import { getCurrentInstance, onBeforeMount } from 'vue'
 import * as EventBus from '@/services/eventbus'
 import { useNxTabsStore } from '@/store'
 import { NxMenus, NxTabMenu } from './components'
+import Welcome from '@/views/Welcome.vue'
 
-const { configPanel, showTabs } = storeToRefs(useNxTabsStore())
-const proxy = getCurrentInstance()?.proxy
+const nxTabsStore = useNxTabsStore()
+const { configPanel, tabData } = storeToRefs(nxTabsStore)
+
+// 是否有真实标签页（排除 Welcome，Welcome 不再是会话实例）
+const hasRealTabs = computed(() => tabData.value.length > 0)
 
 function handlerCollapsed() {
   const action = configPanel.value ? 'close' : 'open'
   configPanel.value = !configPanel.value
   EventBus.publish('session-config-panel', action)
 }
-
-onBeforeMount(async() => {
-  // @ts-ignore
-  const sessionManager = proxy?.$sessionManager
-  // 避免重复创建欢迎会话实例
-  if (!sessionManager) {
-    return
-  }
-  if (!sessionManager.getSessionIntances().some(x => x.name === 'Welcome')) {
-    await sessionManager.createWelcomeSessionInstance()
-  }
-})
 </script>
 
 <template>
@@ -41,14 +33,20 @@ onBeforeMount(async() => {
         <div class="nx-layout-toggle-bar__top" />
         <div class="nx-layout-toggle-bar__bottom" />
       </div>
-      <NxTabMenu v-if="showTabs" style="flex-shrink: 0" />
-      <div class="nx-content">
-        <router-view v-slot="{ Component }">
-          <keep-alive :exclude="['GlobalSetting', 'lock']">
-            <component :is="Component" />
-          </keep-alive>
-        </router-view>
-      </div>
+      <!-- Default welcome slot: shown when no real tabs exist -->
+      <Welcome v-if="!hasRealTabs" />
+
+      <!-- Normal tab layout: shown when real tabs exist -->
+      <template v-else>
+        <NxTabMenu style="flex-shrink: 0" />
+        <div class="nx-content">
+          <router-view v-slot="{ Component }">
+            <keep-alive :exclude="['GlobalSetting', 'lock']">
+              <component :is="Component" />
+            </keep-alive>
+          </router-view>
+        </div>
+      </template>
     </div>
   </div>
 </template>

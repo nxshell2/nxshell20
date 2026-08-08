@@ -88,7 +88,7 @@ export default {
         v-for="(tabItem, idx) in tabs"
         :key="idx"
         :icon="tabItem.icon"
-        :closable="tabItem.title !== 'Welcome'"
+        closable
         :title="translate ? $t(tabItem.title) : tabItem.title"
         :selected="idx === currentTab"
         :show-split="idx !== currentTab && idx + 1 !== currentTab && idx !== tabs.length - 1 && !flat"

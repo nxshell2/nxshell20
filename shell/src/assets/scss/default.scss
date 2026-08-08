@@ -1,24 +1,25 @@
-@use 'reset';
-@import url(./theme/dark.scss);
-@import url(./theme/light.scss);
-@import url(./theme/pink.scss);
+/* ================================================================
+ * NxShell 主题入口文件
+ *
+ * 加载顺序：
+ *   1. const      - SCSS 变量/常量（编译时使用）
+ *   2. element    - Element Plus 跨主题 CSS 变量覆盖（边框、圆角等）
+ *   3. theme      - 主题色板 + Element Plus CSS 变量颜色映射
+ *   4. reset      - 全局重置 + 组件自定义行为覆盖
+ *
+ * 依赖关系：reset 中的 --n-* 变量需要 theme 先定义
+ *          reset 中也引用 --el-* 变量（来自 theme + element）
+ * ================================================================ */
 
-@keyframes breathe {
-  0% {
-    opacity: 0.5;
-  }
+@import 'const';
 
-  100% {
-    opacity: 1;
-  }
-}
+/* Element Plus 共享变量覆盖（非颜色：圆角、间距、边框等） */
+@import 'element/variables';
 
-@-webkit-keyframes breathe {
-  0% {
-    opacity: 0.5;
-  }
+/* 主题色板 */
+@import 'theme/light';
+@import 'theme/dark';
+@import 'theme/pink';
 
-  100% {
-    opacity: 1;
-  }
-}
+/* 全局重置 & 组件行为覆盖 */
+@import '_reset';

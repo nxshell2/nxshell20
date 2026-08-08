@@ -17,17 +17,15 @@ onMounted(() => {
 </script>
 
 <template>
-  <div id="app" class="main-window">
-    <NxLayout>
-      <template #main-panel>
-        <router-view v-slot="{ Component }">
-          <keep-alive>
-            <component :is="Component" />
-          </keep-alive>
-        </router-view>
-      </template>
-    </NxLayout>
-  </div>
+  <NxLayout>
+    <template #main-panel>
+      <router-view v-slot="{ Component }">
+        <keep-alive>
+          <component :is="Component" />
+        </keep-alive>
+      </router-view>
+    </template>
+  </NxLayout>
 </template>
 
 <style lang="scss">

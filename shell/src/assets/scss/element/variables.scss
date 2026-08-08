@@ -1,0 +1,80 @@
+/* ================================================================
+ * Element Plus CSS Variable Overrides - Shared (theme-independent)
+ *
+ * 遵循官方最佳实践：
+ * - 颜色相关的变量在各主题文件中定义
+ * - 本文件仅包含跨主题共享的非颜色变量覆盖
+ * - 使用 color-mix() 动态计算主色系变体，自动适配各主题
+ * ================================================================ */
+
+:root {
+  /* ---- Border & Radius ---- */
+  --el-border-radius-base: 2px;
+  --el-border-radius-small: 2px;
+  --el-border-radius-round: 20px;
+
+  /* ---- Typography ---- */
+  --el-font-size-base: 13px;
+
+  /* ================================================================
+   * 动态主色系变体
+   * 通过 color-mix() 根据 --el-color-primary 自动计算亮/暗变体
+   * 无需在每个主题中重复定义
+   * ================================================================ */
+  --el-color-primary-light-3: color-mix(in srgb, var(--el-color-primary) 70%, white);
+  --el-color-primary-light-5: color-mix(in srgb, var(--el-color-primary) 50%, white);
+  --el-color-primary-light-7: color-mix(in srgb, var(--el-color-primary) 30%, white);
+  --el-color-primary-light-8: color-mix(in srgb, var(--el-color-primary) 20%, white);
+  --el-color-primary-light-9: color-mix(in srgb, var(--el-color-primary) 10%, white);
+  --el-color-primary-dark-2: color-mix(in srgb, var(--el-color-primary) 80%, black);
+
+  /* ---- Danger 色系变体 ---- */
+  --el-color-danger-light-3: color-mix(in srgb, var(--el-color-danger) 70%, white);
+  --el-color-danger-light-5: color-mix(in srgb, var(--el-color-danger) 50%, white);
+  --el-color-danger-light-7: color-mix(in srgb, var(--el-color-danger) 30%, white);
+  --el-color-danger-light-8: color-mix(in srgb, var(--el-color-danger) 20%, white);
+  --el-color-danger-light-9: color-mix(in srgb, var(--el-color-danger) 10%, white);
+  --el-color-danger-dark-2: color-mix(in srgb, var(--el-color-danger) 80%, black);
+
+  /* ---- Warning 色系变体 ---- */
+  --el-color-warning-light-3: color-mix(in srgb, var(--el-color-warning) 70%, white);
+  --el-color-warning-light-5: color-mix(in srgb, var(--el-color-warning) 50%, white);
+  --el-color-warning-light-7: color-mix(in srgb, var(--el-color-warning) 30%, white);
+  --el-color-warning-light-8: color-mix(in srgb, var(--el-color-warning) 20%, white);
+  --el-color-warning-light-9: color-mix(in srgb, var(--el-color-warning) 10%, white);
+  --el-color-warning-dark-2: color-mix(in srgb, var(--el-color-warning) 80%, black);
+
+  /* ---- Success 色系变体 ---- */
+  --el-color-success-light-3: color-mix(in srgb, var(--el-color-success) 70%, white);
+  --el-color-success-light-5: color-mix(in srgb, var(--el-color-success) 50%, white);
+  --el-color-success-light-7: color-mix(in srgb, var(--el-color-success) 30%, white);
+  --el-color-success-light-8: color-mix(in srgb, var(--el-color-success) 20%, white);
+  --el-color-success-light-9: color-mix(in srgb, var(--el-color-success) 10%, white);
+  --el-color-success-dark-2: color-mix(in srgb, var(--el-color-success) 80%, black);
+
+  /* ---- Info 色系变体 ---- */
+  --el-color-info-light-3: color-mix(in srgb, var(--el-color-info) 70%, white);
+  --el-color-info-light-5: color-mix(in srgb, var(--el-color-info) 50%, white);
+  --el-color-info-light-7: color-mix(in srgb, var(--el-color-info) 30%, white);
+  --el-color-info-light-8: color-mix(in srgb, var(--el-color-info) 20%, white);
+  --el-color-info-light-9: color-mix(in srgb, var(--el-color-info) 10%, white);
+  --el-color-info-dark-2: color-mix(in srgb, var(--el-color-info) 80%, black);
+
+  /* ================================================================
+   * Button 全局样式覆盖
+   * 无边框设计：所有按钮默认无边框
+   * ================================================================ */
+  --el-button-border-color: transparent;
+  --el-button-hover-border-color: transparent;
+  --el-button-active-border-color: transparent;
+  --el-button-disabled-border-color: transparent;
+
+  /* ---- Dialog / MessageBox 间距 ---- */
+  --el-dialog-padding-primary: 12px;
+}
+
+/* ================================================================
+ * 暗色主题下 color-mix 需要混入不同的中性色
+ * 在白色背景下 color-mix(..., white) 产生浅色变体
+ * 在深色背景下 color-mix(..., white) 同样正确（向白色方向变亮）
+ * ================================================================ */

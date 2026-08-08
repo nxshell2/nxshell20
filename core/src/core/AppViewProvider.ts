@@ -1,174 +1,144 @@
-import { BrowserWindow, BrowserWindowConstructorOptions } from "electron";
-import { EventEmitter } from "events";
+import type { BrowserWindowConstructorOptions } from 'electron'
+import type { Channel } from './AppRPC'
+import * as path from 'node:path'
 
-import * as AppRPC from "./AppRPC";
-import { Channel } from "./AppRPC";
+import { BrowserWindow } from 'electron'
 
 const WINDOW_TYPE = {
-  MAIN_WINDOW: "mainWindow",
-  SUB_WINDOW: "subWindow"
-};
+  MAIN_WINDOW: 'mainWindow',
+  SUB_WINDOW: 'subWindow'
+}
 
-let windowProviderChannel: Channel | null = null;
+let windowProviderChannel: Channel | null = null
 
-let lastWindowProviderRequestId = 0;
-let requestWaiters: { [key: number]: RequestWaiter } = {};
+let lastWindowProviderRequestId = 0
+const requestWaiters: { [key: number]: RequestWaiter } = {}
 
 class RequestWaiter {
-  resolve: (value: any) => void = () => {};
-  reject: (e: any) => void = () => {};
-  promise: Promise<any> | null = null;
+  resolve: (value: any) => void = () => { }
+  reject: (e: any) => void = () => { }
+  promise: Promise<any> | null = null
   constructor() {
     this.promise = new Promise((resolve, reject) => {
       this.resolve = (value: any) => {
-        resolve(value);
-      };
+        resolve(value)
+      }
       this.reject = (e: any) => {
-        reject(e);
-      };
-    });
+        reject(e)
+      }
+    })
   }
 
   wait() {
-    return this.promise!;
+    return this.promise!
   }
 }
 
 function getLastWindowProviderRequestId(): number {
-  let id = lastWindowProviderRequestId++;
+  const id = lastWindowProviderRequestId++
   if (lastWindowProviderRequestId === Number.MAX_SAFE_INTEGER) {
-    lastWindowProviderRequestId = 0;
+    lastWindowProviderRequestId = 0
   }
-  return id;
+  return id
 }
 
 function onWindowProviderResponse(viewInfo: any) {
-  let waiter = requestWaiters[viewInfo.reqId];
+  const waiter = requestWaiters[viewInfo.reqId]
   if (!waiter) {
-    console.error(new Error("invalid view info"));
-    return;
+    console.error(new Error('invalid view info'))
+    return
   }
-  waiter.resolve(viewInfo);
+  waiter.resolve(viewInfo)
 
-  delete requestWaiters[viewInfo.reqId];
+  delete requestWaiters[viewInfo.reqId]
 }
 
-class ShellAppView extends EventEmitter {
-  webContents: any = null;
-  constructor(wc: any) {
-    super();
-    this.webContents = wc;
-  }
-
-  loadURL(url: string) {
-    return this.webContents.loadURL(url);
-  }
+async function callViewProvider(webContentId: number | null = null, method: string = '', args: any[] = []) {
+  const reqId = getLastWindowProviderRequestId()
+  windowProviderChannel!.send({
+    reqId,
+    webContentId,
+    method,
+    args
+  })
+  const waiter = new RequestWaiter()
+  requestWaiters[reqId] = waiter
+  return await waiter.wait()
 }
 
-const subViewManager = {
-  lastViewId: 0,
-  views: {} as { [key: number]: any },
-
-  getLastViewId(): number {
-    let id = this.lastViewId++;
-    if (this.lastViewId >= Number.MAX_SAFE_INTEGER) {
-      this.lastViewId = 0;
+/**
+ * 子视图代理：任意方法调用都被转成一次 view provider RPC。
+ * 依赖渲染进程侧对 viewManagerChannel 的应答，目前该应答尚未实现。
+ */
+export async function createSubView(): Promise<any> {
+  const { webContentId } = await callViewProvider()
+  return new Proxy({}, {
+    get(_target: any, method: string | symbol) {
+      return async(...args: any[]) => await callViewProvider(webContentId, String(method), args)
     }
-    return id;
-  },
+  })
+}
 
-  async callViewProvider(webContentId: number | null = null, method: string = "", args: any[] = []) {
-    let reqId = getLastWindowProviderRequestId();
-    windowProviderChannel!.send({
-      reqId,
-      webContentId,
-      method,
-      args
-    });
-    let waiter = new RequestWaiter();
-    requestWaiters[reqId] = waiter;
-    let response = await waiter.wait();
-    return response;
-  },
+function getNxshellLogo(): string {
+  const baseDir = process.env.NODE_ENV === 'development' ? process.cwd() : process.resourcesPath
+  return path.join(baseDir, 'nxshell.png')
+}
 
-  async createView() {
-    let { webContentId } = await this.callViewProvider();
-    const _this = this;
-    let viewProxy = new Proxy({}, {
-      get(target: any, p: string, receiver: any) {
-        return async function (...args: any[]) {
-          return await _this.callViewProvider(webContentId, p, args);
-        };
-      },
-      set(target: any, p: string, value: any, receiver: any) {
-      }
-    });
-
-    return viewProxy;
-  }
-};
-
-function get_nxshell_logo() {
+const WINDOW_FLAG_OPTIONS: { [flag: string]: BrowserWindowConstructorOptions } = {
+  frameless: { frame: false },
+  hidden: { titleBarStyle: 'hidden' },
+  transparent: { transparent: true }
 }
 
 const windowProviders = {
   async mainWindow(flags?: string[]): Promise<BrowserWindow> {
-    let options: BrowserWindowConstructorOptions = {
+    const options: BrowserWindowConstructorOptions = {
       width: 1250,
       minWidth: 1250,
       height: 720,
       minHeight: 720,
       show: false,
+      transparent: true,
+      titleBarOverlay: process.platform !== 'darwin',
       webPreferences: {
-        preload: `${__dirname}/AppClient.js`,
+        preload: path.join(__dirname, 'AppClient.js'),
         webviewTag: true,
         contextIsolation: false,
         sandbox: false
       } as any,
-      icon: get_nxshell_logo()
-    };
-    let transparent = false;
-    for (let winFlag of (flags || [])) {
-      if (winFlag === "frameless") {
-        options.frame = false;
-      } else if (winFlag === "hidden") {
-        options.titleBarStyle = "hidden";
-      } else if (winFlag === "transparent") {
-        options.transparent = true;
-        transparent = true;
-      }
+      icon: getNxshellLogo()
     }
-
-    let window = new BrowserWindow(options);
-    if (transparent) {
+    for (const flag of (flags || [])) {
+      Object.assign(options, WINDOW_FLAG_OPTIONS[flag] || {})
     }
+    const window = new BrowserWindow(options)
 
-    window.once("ready-to-show", () => {
-      window.show();
-    });
+    window.once('ready-to-show', () => {
+      window.show()
+    })
 
-    return window;
+    return window
   },
 
   async subWindow(flags?: string[]): Promise<BrowserWindow> {
-    return await windowProviders.mainWindow(flags);
+    return await windowProviders.mainWindow(flags)
   }
-};
+}
 
 export async function createWindow(windowType: string, flags?: string[]): Promise<BrowserWindow> {
-  let windowCtor = (windowProviders as any)[windowType] || windowProviders.mainWindow;
-  return await windowCtor(flags);
+  const windowCtor = (windowProviders as any)[windowType] || windowProviders.mainWindow
+  return await windowCtor(flags)
 }
 
 export function registerWindowProvider(winProviderChannel: Channel) {
   if (windowProviderChannel) {
-    return;
+    return
   }
-  windowProviderChannel = winProviderChannel;
+  windowProviderChannel = winProviderChannel
 
-  winProviderChannel.on("data", (data: any) => {
-    onWindowProviderResponse(data);
-  });
+  winProviderChannel.on('data', (data: any) => {
+    onWindowProviderResponse(data)
+  })
 }
 
-export { WINDOW_TYPE };
+export { WINDOW_TYPE }

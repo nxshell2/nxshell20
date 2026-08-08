@@ -9,7 +9,7 @@
         "./src/*"
       ]
     },
-    "types": ["node"],
+    "types": ["node", "element-plus/global"],
     "allowJs": true,
     "strict": true,
     "strictNullChecks": true,

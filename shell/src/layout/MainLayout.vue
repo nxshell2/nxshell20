@@ -1,14 +1,14 @@
 <script setup>
-import { computed } from 'vue'
 import { storeToRefs } from 'pinia'
+import { computed, useTemplateRef } from 'vue'
 import * as EventBus from '@/services/eventbus'
 import { useNxTabsStore } from '@/store'
-import { NxMenus, NxTabMenu } from './components'
 import Welcome from '@/views/Welcome.vue'
+import { NxMenus, NxTabMenu } from './components'
 
 const nxTabsStore = useNxTabsStore()
 const { configPanel, tabData } = storeToRefs(nxTabsStore)
-
+const meunRef = useTemplateRef('menuRef')
 // 是否有真实标签页（排除 Welcome，Welcome 不再是会话实例）
 const hasRealTabs = computed(() => tabData.value.length > 0)
 
@@ -85,7 +85,7 @@ $nx-content-tabs: 40px;
       width: 32px;
       position: absolute;
       top: calc(50% - 36px);
-      left: -15px;
+      left: -5px;
       z-index: 100;
 
       &__top,

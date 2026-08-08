@@ -88,6 +88,8 @@
     "style-loader": "^4.0.0",
     "ts-loader": "^9.6.2",
     "typescript": "^5.9.3",
+    "unplugin-auto-import": "^21.1.0",
+    "unplugin-vue-components": "^32.1.0",
     "util": "^0.12.5",
     "webpack": "^5.94.0"
   },

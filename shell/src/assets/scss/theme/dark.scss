@@ -1,4 +1,7 @@
 [nx-theme='dark']:root {
+  /* ================================================================
+   * NxShell 自定义变量（项目内部组件使用）
+   * ================================================================ */
   --n-disabled-color: #b8b8b8;
 
   --n-bg-color-base: #18181c;
@@ -42,4 +45,145 @@
 
   --n-switch-active: rgb(22 93 255);
   --n-jump-box-shadow: rgb(255 255 255 / 20%);
+
+  /* ================================================================
+   * Element Plus CSS 变量映射（遵循官方主题定制规范）
+   * ================================================================ */
+
+  /* ---- 主色系 ---- */
+  --el-color-primary: var(--n-text-color-active);
+  --el-color-white: #ffffff;
+  --el-color-black: #000000;
+  --el-color-danger: var(--n-button-danger);
+  --el-color-warning: var(--n-button-warning);
+  --el-color-success: #67c23a;
+  --el-color-error: var(--el-color-danger);
+  --el-color-info: #909399;
+
+  /* ---- 文本颜色 ---- */
+  --el-text-color-primary: var(--n-text-color-base);
+  --el-text-color-regular: var(--n-text-color-base);
+  --el-text-color-secondary: var(--n-text-color-light);
+  --el-text-color-placeholder: var(--n-text-color-light);
+  --el-text-color-disabled: var(--n-disabled-color);
+
+  /* ---- 边框颜色 ---- */
+  --el-border-color: var(--n-border-color);
+  --el-border-color-light: var(--n-border-color);
+  --el-border-color-lighter: var(--n-border-color);
+  --el-border-color-extra-light: var(--n-border-color);
+  --el-border-color-dark: var(--n-border-color);
+  --el-border-color-darker: var(--n-border-color);
+  --el-border-color-hover: var(--n-border-color);
+
+  /* ---- 填充/背景色 ---- */
+  --el-fill-color: var(--n-bg-color-light);
+  --el-fill-color-light: var(--n-bg-color-light);
+  --el-fill-color-lighter: var(--n-bg-color-light);
+  --el-fill-color-extra-light: var(--n-bg-color-light);
+  --el-fill-color-dark: var(--n-bg-color-base);
+  --el-fill-color-darker: var(--n-bg-color-light);
+  --el-fill-color-blank: var(--n-input-bg-color);
+
+  /* ---- 背景色 ---- */
+  --el-bg-color: var(--n-bg-color-base);
+  --el-bg-color-page: var(--n-bg-color-light);
+  --el-bg-color-overlay: var(--n-color-bg-dialog);
+
+  /* ---- 禁用状态 ---- */
+  --el-disabled-bg-color: var(--n-bg-color-light);
+  --el-disabled-text-color: var(--n-disabled-color);
+  --el-disabled-border-color: var(--n-border-color);
+
+  /* ---- Button 组件 ---- */
+  --el-button-bg-color: var(--n-button-default);
+  --el-button-text-color: var(--n-button-default-text);
+  --el-button-hover-bg-color: var(--n-button-default-hover);
+  --el-button-hover-text-color: var(--n-button-default-text);
+  --el-button-active-bg-color: var(--n-button-default-hover);
+  --el-button-active-text-color: var(--n-button-default-text);
+  --el-button-disabled-bg-color: var(--el-fill-color-blank);
+  --el-button-disabled-text-color: var(--n-disabled-color);
+  --el-button-outline-color: var(--el-color-primary);
+  --el-button-active-color: var(--el-color-primary);
+
+  /* ---- Input 组件 ---- */
+  --el-input-bg-color: var(--n-input-bg-color);
+  --el-input-border-color: var(--n-border-color);
+  --el-input-hover-border-color: var(--n-border-color);
+  --el-input-focus-border-color: var(--n-text-color-active);
+  --el-input-text-color: var(--n-text-color-base);
+  --el-input-placeholder-color: var(--n-text-color-light);
+  --el-input-icon-color: var(--n-text-color-light);
+  --el-input-clear-hover-color: var(--n-text-color-light);
+
+  /* Input disabled */
+  --el-input-disabled-bg-color: var(--el-disabled-bg-color);
+  --el-input-disabled-border-color: var(--el-disabled-border-color);
+  --el-input-disabled-text-color: var(--n-disabled-color);
+
+  /* ---- Select 组件 ---- */
+  --el-select-border-color-hover: var(--n-border-color);
+  --el-select-input-focus-border-color: var(--n-text-color-active);
+  --el-select-input-color: var(--n-text-color-light);
+  --el-select-disabled-border: var(--el-disabled-border-color);
+
+  /* Select dropdown */
+  --el-select-dropdown-bg-color: var(--n-select-bg-color);
+  --el-select-dropdown-border: 1px solid var(--n-select-bg-color);
+  --el-select-multiple-input-color: var(--n-text-color-base);
+
+  /* Select option */
+  --el-select-option-text-color: var(--n-text-color-base);
+  --el-select-option-hover-background: var(--n-select-hover-bg-color);
+  --el-select-option-selected-text-color: var(--n-text-color-active);
+
+  /* ---- Switch 组件 ---- */
+  --el-switch-on-color: var(--n-switch-active);
+  --el-switch-off-color: var(--n-border-color);
+
+  /* ---- Checkbox 组件 ---- */
+  --el-checkbox-text-color: var(--n-text-color-base);
+  --el-checkbox-checked-text-color: var(--n-text-color-active);
+  --el-checkbox-checked-input-border-color: var(--n-text-color-active);
+  --el-checkbox-checked-bg-color: var(--n-text-color-active);
+
+  /* ---- Radio 组件 ---- */
+  --el-radio-text-color: var(--n-text-color-base);
+  --el-radio-input-border-color-hover: var(--n-text-color-active);
+
+  /* Radio button */
+  --el-radio-button-checked-bg-color: var(--n-button-primary);
+  --el-radio-button-checked-text-color: var(--n-button-primary-text);
+  --el-radio-button-checked-border-color: var(--n-button-primary);
+  --el-radio-button-bg-color: var(--n-input-bg-color);
+
+  /* ---- Form 组件 ---- */
+  --el-form-label-text-color: var(--n-text-color-base);
+
+  /* ---- Popover 组件 ---- */
+  --el-popover-bg-color: var(--n-color-modal);
+  --el-popover-border-color: transparent;
+
+  /* ---- Dialog 组件 ---- */
+  --el-dialog-bg-color: var(--n-color-bg-dialog);
+  --el-dialog-title-font-size: 14px;
+
+  /* ---- MessageBox 组件 ---- */
+  --el-messagebox-title-color: var(--n-text-color-base);
+  --el-messagebox-content-color: var(--n-text-color-base);
+
+  /* ---- Tabs 组件 ---- */
+  --el-tabs-header-height: 40px;
+
+  /* ---- Link 组件 ---- */
+  --el-link-text-color: var(--n-text-color-base);
+
+  /* ---- Descriptions 组件 ---- */
+  --el-descriptions-table-border: 1px solid var(--n-border-color);
+  --el-descriptions-item-bordered-label-background: var(--n-bg-color-light);
+
+  /* ---- Popper / Tooltip ---- */
+  --el-popper-border-color: var(--n-select-bg-color);
+  --el-popper-bg-color: var(--n-select-bg-color);
 }

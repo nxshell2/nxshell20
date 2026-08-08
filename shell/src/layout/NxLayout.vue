@@ -10,7 +10,7 @@ const { t } = useI18n()
 const IS_MAC_OS = /macintosh/i.test(navigator.userAgent)
 
 const isMainWindow = ref(true)
-const leftPanelWidth = ref(IS_MAC_OS ? 60 : 50)
+const leftPanelWidth = ref(IS_MAC_OS ? 70 : 50)
 const leftPanel = ref(true)
 const topPanel = ref(true)
 const state = ref('normal')
@@ -40,7 +40,6 @@ function setWindowHandlers() {
 }
 
 function workaroundLinuxMaxMinEvent(status) {
-  // @ts-ignore
   // electron version < 17.xx ,it not emit maximize/unmaximize events
   const os = powertools.getostype()
   if (os === 'Linux') {
@@ -75,11 +74,12 @@ function changeLayout(event) {
 
 const proxy = getCurrentInstance()?.proxy
 const { configPanel } = storeToRefs(useSettingStore())
-
+const mainPanelWidth = computed(() => {
+  return leftPanel.value ? `calc(100% - ${leftPanelWidth.value}px)` : '100%'
+})
 onMounted(() => {
   setWindowHandlers()
   // 检测是否需要显示会话布局
-  // @ts-ignore
   const sessionManager = proxy?.$sessionManager
   const updateShowLayout = () => {
     const sessions = sessionManager?.getSessionIntances() || []
@@ -96,6 +96,7 @@ onMounted(() => {
       await document.body.requestFullscreen()
     } catch(e) {
       // pass
+      console.error(e)
     }
   })
   document.addEventListener('fullscreenchange', () => {
@@ -116,7 +117,7 @@ onMounted(() => {
     <div v-if="leftPanel" class="left-panel" :style="{ width: `${leftPanelWidth}px` }">
       <NxNavbar />
     </div>
-    <div class="main-panel" :style="{ width: leftPanel ? `calc(100% - 50px)` : '100%' }">
+    <div class="main-panel">
       <div class="title-bar" :class="{ drag: isMainWindow, deactive: !active }">
         <!-- 顶部工具栏 -->
         <NxToolbar />
@@ -268,7 +269,7 @@ onMounted(() => {
   }
 
   .main-panel {
-    width: calc(100vw - 50px);
+    width: v-bind(mainPanelWidth);
     height: 100%;
 
     .title-bar {

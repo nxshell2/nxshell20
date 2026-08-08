@@ -1,448 +1,335 @@
-@use 'const' as *;
+/* ================================================================
+ * NxShell Reset & Custom Styles
+ *
+ * 全局重置、滚动条和 Element Plus 组件自定义行为覆盖。
+ *
+ * 颜色/主题相关样式已迁移至：
+ *   - theme/light.scss, theme/dark.scss, theme/pink.scss (--el-* 颜色变量)
+ *   - element/variables.scss                        (跨主题 --el-* 变量)
+ *
+ * 本文件仅保留：
+ *   1. 全局 HTML/Body 重置
+ *   2. 滚动条样式（WebKit 专有）
+ *   3. 无法通过 Element Plus CSS 变量实现的组件行为/布局覆盖
+ * ================================================================ */
 
-%reset-margin-padding {
-  margin: 0;
-  padding: 0;
+/* ---- 根元素 ---- */
+[data-theme] {
+  background-color: var(--n-bg-color-light);
+  font-family:
+    Helvetica Neue,
+    Helvetica,
+    PingFang SC,
+    Hiragino Sans GB,
+    Microsoft YaHei,
+    Arial,
+    sans-serif;
 }
 
+/* ---- 全局 HTML/Body 重置 ---- */
 html,
 body {
-  font-family: 'DejaVu Mono', Avenir, Helvetica, Arial, sans-serif, 'PingFang SC', '微软雅黑';
-  font-size: $fontSize;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-
-  width: 100%;
-  height: 100%;
-
+  scrollbar-color: #8b8b8b transparent !important;
   overflow: hidden;
+  padding: 0;
+  margin: 0;
   -webkit-user-select: none;
   user-select: none;
+  width: 100vw;
+  height: 100vh;
 }
 
-html,
-body,
-p,
-div,
-ul,
-li,
-hr {
-  box-sizing: content-box;
-  @extend %reset-margin-padding;
-}
-
-ul,
-li {
-  list-style: none;
-}
-
-a {
-  text-decoration: none;
-
-  &:visited {
-    text-decoration: none;
-  }
-
-  &:hover {
-    text-decoration: none;
-  }
-}
-
+/* ---- 全局滚动条定制 ---- */
 ::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
-  border-radius: 4px;
+  width: 5px;
+  height: 5px;
 }
 
 ::-webkit-scrollbar-thumb {
-  border-radius: 4px;
-  background-color: var(--n-scrollbar-color);
-  transition: 0.3s ease-in-out;
+  background: var(--n-scrollbar-color) !important;
+  border-radius: 2px;
 }
 
-::-webkit-scrollbar-track {
-  border-radius: 4px;
+::-webkit-scrollbar-thumb:hover {
+  background: var(--n-bg-color-light) !important;
 }
 
+/* ================================================================
+ * Element Plus 组件自定义行为覆盖
+ *
+ * 以下样式处理 Element Plus CSS 变量系统无法覆盖的：
+ * - 布局/间距调整
+ * - 组件内部结构定制
+ * - 特定交互行为
+ *
+ * 注意：颜色、背景、文字色等主题变量已在 theme/*.scss 和
+ * element/variables.scss 中通过 --el-* 变量完成映射
+ * ================================================================ */
+
+/* ---- Dialog 布局调整 ---- */
 .el-dialog {
-  background-color: var(--n-color-bg-dialog) !important;
+  padding: 12px !important;
+  border-radius: 4px !important;
 
   &__header {
-    padding: 12px !important;
-  }
-
-  &__title {
-    color: var(--n-text-color-base) !important;
-  }
-
-  &__headerbtn {
-    i {
-      color: var(--n-text-color-base) !important;
-    }
+    padding-top: 10px;
+    padding-bottom: 10px;
   }
 
   &__body {
-    color: var(--n-text-color-base) !important;
-    padding: 12px 20px !important;
+    padding: 12px !important;
   }
 
   &__footer {
-    padding: 10px !important;
-  }
-}
+    padding-top: 18px;
+    padding-bottom: 0;
+    position: relative;
 
-.el-form {
-  &-item {
-    &__label {
-      color: var(--n-text-color-base) !important;
+    .el-button:last-child {
+      position: absolute;
+      bottom: 0;
+      right: 0;
     }
   }
 }
 
-.el-message-box {
-  border: none !important;
-  background-color: var(--n-color-bg-dialog) !important;
-
-  .el-message-box__header {
-    .el-message-box__title {
-      color: var(--n-text-color-base);
-    }
-
-    .el-message-box__headerbtn {
-      .el-message-box__close {
-        color: var(--n-text-color-base);
-      }
-    }
-  }
-
-  .el-message-box__content {
-    color: var(--n-text-color-base);
-  }
-}
-
+/* ---- Button 组件自定义行为 ---- */
 .el-button {
-  border-color: transparent !important;
-
-  &--default {
-    background-color: var(--n-button-default) !important;
-
-    &:hover,
-    &:focus {
-      color: var(--n-button-default-text) !important;
-      background-color: var(--n-button-default-hover) !important;
-    }
-  }
-
-  &--primary {
-    //color: var(--n-color) !important;
-    background-color: var(--n-button-primary) !important;
-    border-color: var(--n-button-primary) !important;
-
-    &:hover,
-    &:focus {
-      color: var(--n-button-primary-text) !important;
-      border-color: var(--n-button-primary-hover) !important;
-      background-color: var(--n-button-primary-hover) !important;
-    }
-  }
-
+  /* ---- Text 按钮下图标大小 ---- */
   &--text {
-    color: var(--n-text-color-base) !important;
-
     i {
       font-size: 20px;
     }
   }
 
-  &.is-disabled {
-    color: var(--n-disabled-color) !important;
-
-    i {
-      color: var(--n-disabled-color) !important;
-    }
-  }
-
-  &--danger {
-    background-color: var(--n-button-danger) !important;
-    border-color: var(--n-button-danger) !important;
-
-    &:hover {
-      background-color: var(--n-button-danger-hover) !important;
-      border-color: var(--n-button-danger-hover) !important;
-    }
-  }
-
-  &--warning {
-    background-color: var(--n-button-warning) !important;
-    border-color: var(--n-button-warning) !important;
-
-    &:hover {
-      background-color: var(--n-button-warning-hover) !important;
-      border-color: var(--n-button-warning-hover) !important;
-    }
+  /* ---- 防止按钮图标间距为 0 ---- */
+  & + .el-button {
+    margin-left: 2px;
   }
 }
 
-/** element ui reset **/
-.el-input__wrapper,
-.el-select__wrapper,
-.el-textarea__inner {
-  background-color: var(--n-input-bg-color) !important;
-  box-shadow: 0 0 0 1px var(--n-border-color) inset !important;
+/* ---- Input / Select / Textarea 组件 ---- */
 
-  &:hover {
-    box-shadow: 0 0 0 1px var(--n-border-color) inset !important;
-  }
-
-  &.is-focus,
-  &.is-hovering {
-    box-shadow: 0 0 0 1px var(--n-text-color-active) inset !important;
-  }
-}
-
+/* 输入框内部元素：保持透明无边框（视觉由 wrapper 层控制） */
 .el-input__inner,
 .el-select__inner,
-.el-select__placeholder,
 .el-textarea__inner {
-  color: var(--n-text-color-base) !important;
-  caret-color: var(--n-text-color-base);
+  color: var(--el-input-text-color, var(--n-text-color-base));
+  caret-color: var(--el-input-text-color, var(--n-text-color-base));
   border-width: 0 !important;
   background-color: transparent !important;
-
-  &:focus {
-    background-color: transparent !important;
-  }
-
-  &::placeholder {
-    color: var(--n-text-color-light) !important;
-  }
 }
 
-.el-select__caret,
-.el-select__suffix {
-  color: var(--n-text-color-base) !important;
-  font-size: 14px !important;
-
-  svg {
-    width: 14px !important;
-    height: 14px !important;
-  }
+/* Placeholder 颜色 */
+.el-select__placeholder {
+  color: var(--el-input-placeholder-color, var(--n-text-color-light));
 }
 
-.el-input {
-  &-number.is-controls-right {
-    .el-input__inner {
-      padding-right: 32px !important;
-    }
-    .el-input-number__increase,
-    .el-input-number__decrease {
-      color: var(--n-text-color-base) !important;
-      border-width: 0 !important;
-      background-color: transparent !important;
-
-      .el-icon {
-        font-size: 12px !important;
-      }
-
-      svg {
-        width: 12px !important;
-        height: 12px !important;
-      }
-
-      &:hover {
-        color: var(--n-text-color-active) !important;
-      }
-    }
-  }
-
-  &-group {
-    &__append {
-      border-width: 0 !important;
-      background-color: var(--n-input-bg-color) !important;
-
-      .is-plain:hover,
-      .is-plain:focus {
-        background-color: transparent !important;
-      }
-    }
-  }
+.el-textarea__inner {
+  box-sizing: border-box !important;
+  border-radius: 3px !important;
 }
 
-.el-link {
-  &--default {
-    color: var(--n-text-color-base) !important;
-
-    &:hover,
-    &:focus {
-      color: var(--n-text-color-light) !important;
-    }
-  }
+/* Input group append：无边框 */
+.el-select .el-input-group__append {
+  border-width: 0 !important;
 }
 
+/* ---- Select Dropdown 自定义行为 ---- */
 .el-select-dropdown {
-  border-color: var(--n-select-bg-color) !important;
-  background-color: var(--n-select-bg-color) !important;
-
-  &__item {
-    color: var(--n-text-color-base) !important;
-    background-color: var(--n-select-bg-color) !important;
-
-    &:hover,
-    &.selected {
-      background-color: var(--n-select-hover-bg-color) !important;
-    }
-  }
-
-  .popper__arrow {
-    border-bottom-color: var(--n-select-bg-color) !important;
-
-    &:after {
-      border-bottom-color: var(--n-select-bg-color) !important;
-    }
-  }
-}
-
-.el-autocomplete {
-  &-suggestion {
-    border-color: var(--n-select-bg-color) !important;
-    background-color: var(--n-select-bg-color) !important;
-
-    & li {
-      color: var(--n-text-color-base) !important;
-
-      &:hover {
-        background-color: var(--n-select-hover-bg-color) !important;
-      }
-    }
-  }
-}
-
-.el-popper {
-  .popper__arrow {
-    border-bottom-color: var(--n-select-bg-color) !important;
-
-    &::after {
-      border-bottom-color: var(--n-select-bg-color) !important;
-    }
-  }
-}
-
-.el-switch {
-  &__label {
-    &--right {
-      color: var(--n-text-color-base) !important;
-    }
-
-    &.is-active {
-      color: var(--n-text-color-active) !important;
-    }
-  }
-
-  &.is-checked {
-    .el-switch__core {
-      border-color: var(--n-switch-active) !important;
-      background-color: var(--n-switch-active) !important;
-    }
-  }
-}
-
-.el-checkbox {
-  &__label {
-    color: var(--n-text-color-base) !important;
-  }
-}
-
-.el-descriptions {
-  &__body {
-    color: var(--n-text-color-light) !important;
-    background-color: var(--n-color-modal) !important;
-  }
-}
-
-.el-scrollbar {
-  height: 100%;
+  margin-top: 4px !important;
+  border: none !important;
 
   &__wrap {
-    overflow-x: hidden !important;
+    max-height: 214px !important;
   }
 
-  &__bar.is-horizontal {
+  &__list {
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+  /* 空数据和无结果提示居中 */
+  &__empty,
+  &__empty-block {
+    margin: 0 auto;
+  }
+
+  .el-popper__arrow {
     display: none !important;
   }
 }
 
-.el-radio {
-  &-button {
+/* ---- Checkbox ---- */
+.el-checkbox__label {
+  font-size: 13px;
+}
+
+/* ---- Tabs 组件 ---- */
+.el-tabs__header {
+  margin: 0 !important;
+}
+
+/* ---- Radio Button 组 ---- */
+.el-radio-group {
+  .el-radio-button {
     &__inner {
-      color: var(--n-text-color-light) !important;
+      border-color: transparent !important;
+      background-color: var(--n-input-bg-color) !important;
+
+      &:hover {
+        color: var(--n-text-color-base) !important;
+      }
+    }
+
+    &__orig-radio:checked + .el-radio-button__inner {
+      /* 选中状态的 glow 效果：使用 box-shadow 模拟 outline */
+      box-shadow: var(--n-button-primary) !important;
+    }
+  }
+}
+
+/* ---- Form 组件 ---- */
+.el-form-item .el-form-item {
+  margin-bottom: 0;
+}
+
+/* ---- Popover / Popper 组件 ---- */
+.el-popover,
+.el-popper {
+  min-width: 80px !important;
+
+  .el-popper__arrow {
+    display: none !important;
+  }
+}
+
+/* ---- DatePicker 日期编辑 ---- */
+.el-date-editor {
+  &--daterange {
+    width: 100%;
+  }
+
+  .el-range-separator {
+    color: var(--n-text-color-light) !important;
+    width: 8% !important;
+    font-size: 10px !important;
+    flex-shrink: 0;
+  }
+
+  .el-range-input {
+    font-size: 12px !important;
+    text-align: center !important;
+  }
+
+  .el-range__icon,
+  .el-range__close-icon {
+    font-size: 15px !important;
+    flex-shrink: 0;
+  }
+}
+
+.el-picker-panel {
+  .el-date-table td.today span {
+    border: 1px solid var(--n-text-color-active);
+  }
+
+  .el-date-table td.current:not(.disabled) span {
+    background-color: var(--n-text-color-active);
+    color: var(--el-color-white);
+  }
+
+  .el-date-table td.available:hover {
+    color: var(--n-text-color-active);
+  }
+}
+
+/* ---- Input Number 步进器按钮 ---- */
+.el-input-number.is-controls-right {
+  .el-input__inner {
+    padding-right: 32px !important;
+    text-align: left !important;
+  }
+
+  .el-input-number__increase,
+  .el-input-number__decrease {
+    color: var(--n-text-color-base) !important;
+    border-width: 0 !important;
+    background-color: transparent !important;
+    width: 22px !important;
+
+    &:hover {
+      color: var(--el-color-primary) !important;
+    }
+  }
+}
+
+/* ---- Autocomplete 弹出层 ---- */
+.el-autocomplete {
+  .el-input-group__append {
+    border-width: 0 !important;
+  }
+
+  .el-input__wrapper {
+    padding-left: 8px;
+  }
+
+  &.el-select {
+    .el-input.is-focus .el-input__inner,
+    .el-input__inner:focus {
+      border-color: transparent !important;
+    }
+  }
+}
+
+/* ---- Table ---- */
+.el-table {
+  .el-table__header-wrapper .el-table__header {
+    th {
+      color: var(--n-text-color-base) !important;
+      font-weight: normal;
     }
   }
 
-  &-group {
-    .el-radio-button {
-      &__inner {
-        border-color: transparent !important;
-        background-color: var(--n-input-bg-color) !important;
+  .el-table__inner-wrapper::before {
+    background-color: var(--n-border-color) !important;
+  }
+}
 
-        &:hover {
-          color: var(--n-text-color-base) !important;
-        }
-      }
+/* ---- Descriptions ---- */
+.el-descriptions {
+  &__body {
+    .el-descriptions__table {
+      border: 1px solid var(--n-border-color) !important;
 
-      &__orig-radio:checked + .el-radio-button__inner {
-        box-shadow: var(--n-button-primary) !important;
-        background-color: var(--n-button-primary) !important;
-        color: var(--n-button-primary-text) !important;
+      .el-descriptions__cell {
+        border-color: var(--n-border-color) !important;
       }
     }
   }
 }
 
-.el-popover {
-  background-color: var(--n-color-modal) !important;
-  min-width: 102px !important;
-  box-sizing: border-box;
-  border: 0 !important;
-  padding: 0 !important;
-
-  &[x-placement^='right'] .popper__arrow {
-    border-right-color: var(--n-color-modal) !important;
-
-    &::after {
-      border-right-color: var(--n-color-modal) !important;
-    }
-  }
-
-  &[x-placement^='bottom'] .popper__arrow {
-    border-bottom-color: var(--n-color-modal) !important;
-
-    &::after {
-      border-bottom-color: var(--n-color-modal) !important;
-    }
-  }
+/* ---- MessageBox 按钮区域 ---- */
+.el-message-box__btns {
+  padding-top: 16px;
+  text-align: right;
 }
 
-.el-tabs {
-  &--border-card {
-    background: var(--n-color-bg-dialog) !important;
-    box-shadow: none !important;
-    border-color: var(--n-color-bg-dialog) !important;
+/* ---- Steps 步骤条 ---- */
+.el-step {
+  &__head,
+  &__title,
+  &__icon,
+  &__description {
+    color: var(--el-text-color-primary, var(--n-text-color-base)) !important;
+  }
 
-    & > .el-tabs__header {
-      background-color: var(--n-color-bg-dialog) !important;
-      border-bottom: 1px solid var(--n-bg-color-base);
-      border-bottom-color: var(--n-bg-color-light) !important;
+  &__line {
+    background-color: var(--el-border-color, var(--n-border-color)) !important;
+    margin: 0 !important;
+  }
 
-      .el-tabs__item {
-        color: var(--n-text-color-light) !important;
-
-        &.is-active {
-          color: var(--n-button-primary-text) !important;
-          background-color: var(--n-button-primary) !important;
-          border-color: var(--n-button-primary) !important;
-          outline: none;
-        }
-      }
-    }
+  &__main {
+    margin-left: 2px !important;
   }
 }

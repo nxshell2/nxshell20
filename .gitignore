@@ -10,3 +10,4 @@ electron-builder.env
 .reasonix
 reasonix.toml
 website/
+.codebuddy/

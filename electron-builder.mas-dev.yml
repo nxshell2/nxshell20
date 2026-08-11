@@ -14,30 +14,8 @@ directories:
   buildResources: build/resources
   output: dist/apppackage
   app: pack
-target:
-  - target: zip
-win:
-  icon: build/resources/appx/Square512x512Logo.png
-  target:
-    - appx
-    - nsis
-appx:
-  publisherDisplayName: nxshell
-  identityName: 64354nxshell.nxshell
-  publisher: CN=13CA10C8-3E4F-483D-844A-FB63CF8E93F7
-  applicationId: nxshell.com
-nsis:
-  oneClick: false
-  allowToChangeInstallationDirectory: true
-linux:
-  target:
-    - AppImage
-    - deb
-  icon: build/resources/icons
-  category: Development
 mac:
   target:
-    - dmg
     - mas
   icon: build/resources/mac/icon.icns
   category: public.app-category.developer-tools
@@ -45,10 +23,10 @@ mac:
   entitlements: build/entitlements.mac.plist
   entitlementsInherit: build/entitlements.mac.plist
 mas:
-  type: distribution
+  type: development
   hardenedRuntime: false
   asar: false
   entitlements: build/entitlements.mas.plist
   entitlementsInherit: build/entitlements.mas.inherit.plist
-  provisioningProfile: build/NxShell.provisionprofile
+  provisioningProfile: build/NxShelldev.provisionprofile
 afterPack: ./build/afterPackHook.js

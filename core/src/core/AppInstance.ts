@@ -7,6 +7,7 @@ import { PROTOCOL_APP } from "./Protocol";
 import { AppServiceManager, AppService } from "./AppService";
 import { getGlobalExchange } from "./AppIPC";
 import { createWindow, WINDOW_TYPE } from "./AppViewProvider";
+import { debugLog } from "../utils/debuglog";
 
 interface AppPackageInfo {
     appPath: string;
@@ -138,14 +139,27 @@ class AppInstance extends EventEmitter {
 
     async _createView() {
         let startInfo = this.appPackageInfo.package.start || {};
+        debugLog(`[AppInstance] creating window view=${startInfo.view || WINDOW_TYPE.MAIN_WINDOW}`);
         this.view = await createWindow(startInfo.view || WINDOW_TYPE.MAIN_WINDOW, startInfo.viewFlags || []);
+        debugLog(`[AppInstance] window created id=${this.view.id}`);
         if (process.env.NODE_ENV === "development") {
             this.view.webContents.openDevTools();
         }
 
         this._setIconOnLinux();
         this._forwardWindowEvents();
-        this.view.loadURL(this._getViewURL());
+
+        this.view.webContents.on("did-fail-load", (_e: any, errorCode: number, errorDescription: string, validatedURL: string) => {
+            debugLog(`[AppInstance] did-fail-load code=${errorCode} desc=${errorDescription} url=${validatedURL}`);
+        });
+
+        this.view.webContents.on("did-finish-load", () => {
+            debugLog(`[AppInstance] did-finish-load url=${this.view?.webContents.getURL()}`);
+        });
+
+        let viewURL = this._getViewURL();
+        debugLog(`[AppInstance] loadURL=${viewURL}`);
+        this.view.loadURL(viewURL);
     }
 
     _forwardWindowEvents() {

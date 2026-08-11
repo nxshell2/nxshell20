@@ -42,17 +42,4 @@ module.exports = async (context) => {
         path.join(rootDir, "shell", "ptservices", "package.json"),
         path.join(destDir, "package.json")
     );
-
-    // Disable V8 WASM trap handler for macOS App Sandbox compatibility
-    if (process.platform === "darwin") {
-        const { flipFuses, FuseVersion, FuseV1Options } = require("@electron/fuses");
-        const electronFrameworkPath = path.join(
-            appOutDir, "NxShell.app", "Contents", "Frameworks",
-            "Electron Framework.framework", "Versions", "A", "Electron Framework"
-        );
-        await flipFuses(electronFrameworkPath, {
-            version: FuseVersion.V1,
-            [FuseV1Options.EnableWasmTrapHandler]: false,
-        });
-    }
 };

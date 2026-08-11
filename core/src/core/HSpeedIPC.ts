@@ -1,14 +1,23 @@
 import * as net from 'net';
 import * as os from 'os';
 import * as path from 'path';
+import * as fs from 'fs';
 import { EventEmitter } from "events";
 import { Buffer } from "buffer";
 
 const PID = process.pid;
 
 function get_unix_file(): string {
-    let prefix = os.platform() === 'win32' ? "\\\\?\\pipe" : "/tmp";
-    return path.join(prefix, `${PID}.sock`);
+    if (os.platform() === 'win32') {
+        // NXSHELL_SOCK_DIR may point to a temp directory, which is not a valid
+        // Windows named-pipe namespace. Always use the \\?\pipe root.
+        return path.join("\\\\?\\pipe", `${PID}.sock`);
+    }
+    let dir = process.env.NXSHELL_SOCK_DIR || os.tmpdir();
+    if (!fs.existsSync(dir)) {
+        fs.mkdirSync(dir, { recursive: true });
+    }
+    return path.join(dir, `${PID}.sock`);
 }
 
 class IdGenerator {

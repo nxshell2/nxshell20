@@ -5,7 +5,7 @@
 #   make clean     - remove build outputs
 #   make clean-all - remove build outputs and node_modules
 
-.PHONY: all install lint lint-fix dev core shell native pack dist dist_cn dist_mas dist_mas_cn clean clean-all
+.PHONY: all install lint lint-fix dev core shell native pack dist dist_cn dist_dmg dist_mas dist_mas_cn dist_mas_dev dist_mas_dev_cn clean clean-all
 
 export buildTimes := $(shell date -u +%Y%m%d%H%M)
 VERSION ?= $(shell node -p "require('./package.json').version")
@@ -62,11 +62,14 @@ shell: shell/node_modules
 # -----------------------------------------------------------------------------
 # Build native modules for packaged app
 # -----------------------------------------------------------------------------
-native: pack
+pack/native/node_modules: build/native-package.json
 	mkdir -p pack/native
 	cp build/native-package.json pack/native/package.json
 	cd pack/native && npm install --production=false
 	cd pack/native && npm run rebuild -- -f -v $(ELECTRON_VERSION) -w serialport,node-pty
+	touch $@
+
+native: pack pack/native/node_modules
 
 # -----------------------------------------------------------------------------
 # Stage application for electron-builder
@@ -84,6 +87,11 @@ dist: pack native
 	@node -e "const fs=require('fs'); const p='pack/package.json'; const pkg=JSON.parse(fs.readFileSync(p,'utf8')); pkg.version='$(VERSION)'; fs.writeFileSync(p, JSON.stringify(pkg,null,2)+'\\n');"
 	npx electron-builder --config electron-builder.yml
 
+dist_dmg: pack native
+	@echo "buildTimes=$(buildTimes)" > electron-builder.env
+	@node -e "const fs=require('fs'); const p='pack/package.json'; const pkg=JSON.parse(fs.readFileSync(p,'utf8')); pkg.version='$(VERSION)'; fs.writeFileSync(p, JSON.stringify(pkg,null,2)+'\\n');"
+	npx electron-builder --config electron-builder.yml --mac dmg
+
 dist_cn:
 	ELECTRON_MIRROR=https://npmmirror.com/mirrors/electron/ ELECTRON_BUILDER_BINARIES_MIRROR=https://npmmirror.com/mirrors/electron-builder-binaries/ $(MAKE) dist
 
@@ -97,6 +105,17 @@ dist_mas: pack native
 
 dist_mas_cn:
 	ELECTRON_MIRROR=https://npmmirror.com/mirrors/electron/ ELECTRON_BUILDER_BINARIES_MIRROR=https://npmmirror.com/mirrors/electron-builder-binaries/ $(MAKE) dist_mas
+
+# -----------------------------------------------------------------------------
+# Package for MAS development (local testing, no TestFlight upload needed)
+# -----------------------------------------------------------------------------
+dist_mas_dev: pack native
+	@echo "buildTimes=$(buildTimes)" > electron-builder.env
+	@node -e "const fs=require('fs'); const p='pack/package.json'; const pkg=JSON.parse(fs.readFileSync(p,'utf8')); pkg.version='$(VERSION)'; fs.writeFileSync(p, JSON.stringify(pkg,null,2)+'\\n');"
+	npx electron-builder --config electron-builder.mas-dev.yml --mac mas-dev
+
+dist_mas_dev_cn:
+	ELECTRON_MIRROR=https://npmmirror.com/mirrors/electron/ ELECTRON_BUILDER_BINARIES_MIRROR=https://npmmirror.com/mirrors/electron-builder-binaries/ $(MAKE) dist_mas_dev
 
 # -----------------------------------------------------------------------------
 # Clean

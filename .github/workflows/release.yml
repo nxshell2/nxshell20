@@ -31,10 +31,12 @@ jobs:
           key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
           restore-keys: |
             ${{ runner.os }}-node-
+      - name: Install root dependencies
+        run: npm install --production=false
       - name: Extract version from tag
         id: version
         run: echo "version=${GITHUB_REF_NAME#release/v}" >> "$GITHUB_OUTPUT"
-      - run: make dist VERSION=${{ steps.version.outputs.version }}
+      - run: make dist_dmg VERSION=${{ steps.version.outputs.version }}
       - uses: actions/upload-artifact@v4
         with:
           name: dist-macos-arm
@@ -64,10 +66,12 @@ jobs:
           key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
           restore-keys: |
             ${{ runner.os }}-node-
+      - name: Install root dependencies
+        run: npm install --production=false
       - name: Extract version from tag
         id: version
         run: echo "version=${GITHUB_REF_NAME#release/v}" >> "$GITHUB_OUTPUT"
-      - run: make dist VERSION=${{ steps.version.outputs.version }}
+      - run: make dist_dmg VERSION=${{ steps.version.outputs.version }}
       - uses: actions/upload-artifact@v4
         with:
           name: dist-macos-intel
@@ -97,6 +101,8 @@ jobs:
           key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
           restore-keys: |
             ${{ runner.os }}-node-
+      - name: Install root dependencies
+        run: npm install --production=false
       - name: Extract version from tag
         id: version
         run: echo "version=${GITHUB_REF_NAME#release/v}" >> "$GITHUB_OUTPUT"
@@ -130,6 +136,8 @@ jobs:
           key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
           restore-keys: |
             ${{ runner.os }}-node-
+      - name: Install root dependencies
+        run: npm install --production=false
       - name: Extract version from tag
         id: version
         run: echo "version=${GITHUB_REF_NAME#release/v}" >> "$GITHUB_OUTPUT"
@@ -163,6 +171,8 @@ jobs:
           key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
           restore-keys: |
             ${{ runner.os }}-node-
+      - name: Install root dependencies
+        run: npm install --production=false
       - name: Extract version from tag
         id: version
         run: echo "version=${GITHUB_REF_NAME#release/v}" >> "$GITHUB_OUTPUT"

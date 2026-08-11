@@ -1,6 +1,7 @@
 import { fork, ChildProcess } from "child_process";
 import { EventEmitter } from "events";
 import * as path from "path";
+import { debugLog } from "../utils/debuglog";
 
 class AppService extends EventEmitter {
     serviceProcess: ChildProcess | null = null;
@@ -14,26 +15,46 @@ class AppService extends EventEmitter {
             gidAndUid.uid = process.getgid();
         }
 
+        debugLog(`[AppService] forking AppLoader serviceModule=${serviceModule}`);
         this.serviceProcess = fork(path.join(__dirname, "./AppLoader.js"), [serviceModule, JSON.stringify(args)], {
             serialization: "advanced",
             detached: false,
+            silent: true,
             ...gidAndUid
         });
+        debugLog(`[AppService] forked pid=${this.serviceProcess.pid}`);
+        if (this.serviceProcess.stdout) {
+            this.serviceProcess.stdout.on("data", (data: Buffer) => {
+                debugLog(`[AppService] stdout: ${data.toString()}`);
+            });
+        }
+        if (this.serviceProcess.stderr) {
+            this.serviceProcess.stderr.on("data", (data: Buffer) => {
+                debugLog(`[AppService] stderr: ${data.toString()}`);
+            });
+        }
         this._initHandlers();
     }
 
     _initHandlers() {
         this.serviceProcess!.on("close", (code: number | null, signal: NodeJS.Signals | null) => {
+            debugLog(`[AppService] close code=${code} signal=${signal}`);
             this.isTerminate = true;
             this.emit("close");
         });
 
         this.serviceProcess!.on("disconnect", () => {
+            debugLog(`[AppService] disconnect`);
             this.emit("close");
         });
 
         this.serviceProcess!.on("exit", (code: number | null, signal: NodeJS.Signals | null) => {
+            debugLog(`[AppService] exit code=${code} signal=${signal}`);
             this.emit("exit");
+        });
+
+        this.serviceProcess!.on("error", (err: Error) => {
+            debugLog(`[AppService] error: ${err.message}`);
         });
 
         this.serviceProcess!.on("message", (message: any) => {

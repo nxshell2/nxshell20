@@ -2,6 +2,7 @@ import { app, protocol, BrowserWindow } from "electron";
 import { report_app_statis } from '../utils/collect';
 import { check_app_update } from './AppUpdate';
 import "./preloadIpc";
+import { debugLog } from "../utils/debuglog";
 
 import * as Core from "./Core";
 import { PROTOCOL_APP } from "./Protocol";
@@ -48,18 +49,39 @@ function setup_app_report_interval() {
 
 export default {
     async initialize() {
+        debugLog("[Core] registerSchemesAsPrivileged");
         protocol.registerSchemesAsPrivileged([
             { scheme: PROTOCOL_APP, privileges: { standard: true, secure: true } }
         ]);
+        debugLog("[Core] waiting for app.whenReady()");
         await app.whenReady();
+        debugLog("[Core] app ready");
 
-        await Core.initialize();
+        if (process.platform !== "win32") {
+            process.env.NXSHELL_SOCK_DIR = app.getPath("temp");
+        }
+        debugLog(`[Core] NXSHELL_SOCK_DIR=${process.env.NXSHELL_SOCK_DIR}`);
 
-        await open_shell_instance();
+        try {
+            debugLog("[Core] Core.initialize()");
+            await Core.initialize();
+            debugLog("[Core] Core.initialize() done");
+        } catch (e) {
+            debugLog(`[Core] Core.initialize() error: ${(e as Error).stack || (e as Error).message || e}`);
+            return;
+        }
+
+        try {
+            debugLog("[Core] open_shell_instance()");
+            await open_shell_instance();
+            debugLog("[Core] open_shell_instance() done");
+        } catch (e) {
+            debugLog(`[Core] open_shell_instance() error: ${(e as Error).stack || (e as Error).message || e}`);
+        }
 
         process_macos_acitve_event();
-
         report_app_statis();
         setup_app_report_interval();
+        debugLog("[Core] all initialization complete");
     }
 };

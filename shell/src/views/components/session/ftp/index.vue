@@ -75,7 +75,7 @@ const saveOrUpdateSession = async () => {
 	const layout = formLayoutRef.value
 	const formVal = layout.getFormData()
 	const isEdit = layout.getIsEdit()
-	const sessionConfig = layout.getSessionConfig()
+	let sessionConfig = layout.getSessionConfig()
 	const sessionName = formVal.hostName
 
 	if (isEdit) {
@@ -84,10 +84,11 @@ const saveOrUpdateSession = async () => {
 		const newConfig = new SessionConfig(
 			sessionName,
 			SESSION_CONFIG_TYPE.NODE,
-			formVal,
+			deepClone(formVal),
 			'ftp session'
 		)
 		await sessionStore.appendSessionConfig(newConfig)
+		sessionConfig = newConfig
 	}
 	publish('refresh-session-tree')
 	return { formVal, sessionConfig, isEdit }

@@ -7,3 +7,5 @@ shell/devtools/webpack/dist/
 electron-builder.env
 .DS_Store
 *.log
+*.provisionprofile
+build/NxShell.provisionprofile

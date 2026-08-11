@@ -5,7 +5,7 @@
 #   make clean     - remove build outputs
 #   make clean-all - remove build outputs and node_modules
 
-.PHONY: all install lint lint-fix dev core shell native pack dist dist_cn clean clean-all
+.PHONY: all install lint lint-fix dev core shell native pack dist dist_cn dist_mas dist_mas_cn clean clean-all
 
 export buildTimes := $(shell date -u +%Y%m%d%H%M)
 VERSION ?= $(shell node -p "require('./package.json').version")
@@ -86,6 +86,17 @@ dist: pack native
 
 dist_cn:
 	ELECTRON_MIRROR=https://npmmirror.com/mirrors/electron/ ELECTRON_BUILDER_BINARIES_MIRROR=https://npmmirror.com/mirrors/electron-builder-binaries/ $(MAKE) dist
+
+# -----------------------------------------------------------------------------
+# Package for Mac App Store (MAS)
+# -----------------------------------------------------------------------------
+dist_mas: pack native
+	@echo "buildTimes=$(buildTimes)" > electron-builder.env
+	@node -e "const fs=require('fs'); const p='pack/package.json'; const pkg=JSON.parse(fs.readFileSync(p,'utf8')); pkg.version='$(VERSION)'; fs.writeFileSync(p, JSON.stringify(pkg,null,2)+'\\n');"
+	npx electron-builder --config electron-builder.yml --mac mas
+
+dist_mas_cn:
+	ELECTRON_MIRROR=https://npmmirror.com/mirrors/electron/ ELECTRON_BUILDER_BINARIES_MIRROR=https://npmmirror.com/mirrors/electron-builder-binaries/ $(MAKE) dist_mas
 
 # -----------------------------------------------------------------------------
 # Clean

@@ -1,6 +1,6 @@
 {
     "name": "nxshell",
-    "version": "2.0.0",
+    "version": "2.0.1",
     "private": true,
     "description": "NxShell monorepo: Electron main core + Vue renderer shell + packaging",
     "author": "NxShell Team",
@@ -16,6 +16,7 @@
         "clean-all": "make clean-all"
     },
     "devDependencies": {
+        "@electron/fuses": "^2.1.3",
         "electron-builder": "^26.15.3"
     }
 }

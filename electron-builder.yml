@@ -1,4 +1,4 @@
-appId: org.nxshell.shell
+appId: nxshell2.nxshell.com
 productName: NxShell
 copyright: Copyright © 2020-2021 NxShell Team
 artifactName: ${productName}-${arch}-${os}-${version}-${env.buildTimes}.${ext}
@@ -36,7 +36,16 @@ linux:
   icon: build/resources/icons
   category: Development
 mac:
-  target: dmg
-  icon: build/resources/mac/icon-128.icns
+  target:
+    - dmg
+    - mas
+  icon: build/resources/mac/icon.icns
   category: public.app-category.developer-tools
+  hardenedRuntime: true
+  entitlements: build/entitlements.mac.plist
+  entitlementsInherit: build/entitlements.mac.plist
+mas:
+  entitlements: build/entitlements.mas.plist
+  entitlementsInherit: build/entitlements.mas.plist
+  provisioningProfile: build/NxShell.provisionprofile
 afterPack: ./build/afterPackHook.js

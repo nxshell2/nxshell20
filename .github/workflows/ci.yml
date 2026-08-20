@@ -64,7 +64,12 @@ jobs:
         run: make shell
 
       - name: Package application for testing
-        run: make dist
+        run: |
+          if [ "$RUNNER_OS" = "macOS" ]; then
+            make dist_dmg
+          else
+            make dist
+          fi
 
       - name: Upload test artifacts
         uses: actions/upload-artifact@v4

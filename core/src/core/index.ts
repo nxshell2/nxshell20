@@ -16,6 +16,15 @@ app.on("window-all-closed", () => {
     }
 });
 
+app.on("before-quit", () => {
+    close_shell_instance();
+    Core.terminateAllServices();
+});
+
+app.on("will-quit", () => {
+    Core.terminateAllServices();
+});
+
 function process_macos_acitve_event() {
     if (process.platform !== 'darwin') {
         return;

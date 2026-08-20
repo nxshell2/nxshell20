@@ -43,6 +43,7 @@ class AppInstance extends EventEmitter {
     appPackageInfo: AppPackageInfo;
     appInstanceId: number;
     _ipcHandlers: IpcHandlerEntry[] | null = null;
+    _closed: boolean = false;
 
     constructor(appPackageInfo: AppPackageInfo, appInstanceId: number, args: any[]) {
         super();
@@ -112,6 +113,9 @@ class AppInstance extends EventEmitter {
         this.view!.webContents.on("did-create-window", (newGuest: BrowserWindow) => {
             newGuest.removeMenu();
             newGuest.show();
+        });
+        this.view!.on("closed", () => {
+            this.close();
         });
         ipcExchange.onRecv(renderRouter, ({ dest, src, body }) => {
             if (webContents.isDestroyed()) {
@@ -201,6 +205,7 @@ class AppInstance extends EventEmitter {
         }
         this.service = AppServiceManager.createService(packageInfo.package.name,
             this._getServiceModulePath(),
+            this.appInstanceId,
             ...args
         );
     }
@@ -210,6 +215,10 @@ class AppInstance extends EventEmitter {
     saveViewBounds() {}
 
     close() {
+        if (this._closed) {
+            return;
+        }
+        this._closed = true;
         if (this._ipcHandlers) {
             this._ipcHandlers.forEach(({ channel, handler }) => {
                 ipcMain.removeListener(channel, handler);

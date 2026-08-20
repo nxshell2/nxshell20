@@ -5,6 +5,7 @@ import AppInstance from "./AppInstance";
 import * as AppIPC from "./AppIPC";
 import { ChannelServer, RPCServer, dispatch } from "./AppRPC";
 import { registerWindowProvider } from "./AppViewProvider";
+import { AppServiceManager } from "./AppService";
 import * as CoreUI from "./CoreUI";
 
 let initialized = false;
@@ -64,6 +65,10 @@ const CoreServiceHandler = {
     ...CoreUI
 };
 
+function terminateAllServices() {
+    AppServiceManager.terminateAllServices(true);
+}
+
 async function initialize() {
     if (initialized) {
         return;
@@ -102,5 +107,6 @@ async function initialize() {
 export {
     initialize,
     startShell,
-    startApp
+    startApp,
+    terminateAllServices
 };

@@ -144,6 +144,17 @@ class AppServiceManager {
         }
         return serviceEntry.appInstance;
     }
+
+    terminateAllServices(force: boolean = true) {
+        const names = Object.keys(this.services);
+        for (let name of names) {
+            let entry = this.services[name];
+            if (entry) {
+                entry.appInstance.exit(force);
+            }
+            delete this.services[name];
+        }
+    }
 }
 
 const appServiceManagerInstance = new AppServiceManager();

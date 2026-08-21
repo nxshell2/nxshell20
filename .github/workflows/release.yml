@@ -211,3 +211,69 @@ jobs:
           draft: false
           prerelease: false
           generate_release_notes: true
+
+      - name: Sync release to Gitee
+        env:
+          GITEE_TOKEN: ${{ secrets.GITEE_TOKEN }}
+          GITEE_OWNER: ${{ secrets.GITEE_OWNER }}
+          GITEE_REPO: ${{ secrets.GITEE_REPO }}
+          GITEE_BRANCH: ${{ vars.GITEE_BRANCH }}
+          TAG_NAME: ${{ github.ref_name }}
+          VERSION: ${{ steps.version.outputs.version }}
+        run: |
+          set -euo pipefail
+          if [ -z "${GITEE_TOKEN:-}" ]; then
+            echo "GITEE_TOKEN not set, skip Gitee sync"
+            exit 0
+          fi
+          API="https://gitee.com/api/v5/repos/${GITEE_OWNER}/${GITEE_REPO}"
+          GITEE_BRANCH="${GITEE_BRANCH:-master}"
+
+          # Ensure the tag exists on Gitee, create it if missing
+          tag_check=$(curl -sS -o /dev/null -w "%{http_code}" \
+            "${API}/tags?access_token=${GITEE_TOKEN}")
+          echo "tags list HTTP ${tag_check}"
+
+          tag_exists=$(curl -sS "${API}/tags?access_token=${GITEE_TOKEN}" \
+            | node -e "let s='';process.stdin.on('data',d=>s+=d).on('end',()=>{try{const a=JSON.parse(s);console.log(a.some(t=>t.name==='${TAG_NAME}')?'yes':'no')}catch(e){console.log('no')}})")
+
+          if [ "${tag_exists}" != "yes" ]; then
+            echo "Tag ${TAG_NAME} not found on Gitee, creating it from ${GITEE_BRANCH}..."
+            # Resolve latest commit sha of the target branch
+            sha=$(curl -sS "${API}/branches/${GITEE_BRANCH}?access_token=${GITEE_TOKEN}" \
+              | node -e "let s='';process.stdin.on('data',d=>s+=d).on('end',()=>{try{console.log(JSON.parse(s).commit.sha||'')}catch(e){console.log('')}})")
+            if [ -z "${sha}" ]; then
+              echo "Failed to resolve commit sha of branch ${GITEE_BRANCH}; aborting Gitee sync"
+              exit 1
+            fi
+            tag_resp=$(curl -sS -X POST "${API}/tags" \
+              -H "Content-Type: application/json" \
+              -d "{\"access_token\":\"${GITEE_TOKEN}\",\"refs\":\"${sha}\",\"tag_name\":\"${TAG_NAME}\",\"tag_message\":\"Release ${VERSION}\"}")
+            echo "create tag response: ${tag_resp}"
+          else
+            echo "Tag ${TAG_NAME} already exists on Gitee."
+          fi
+
+          # Create Gitee release
+          create_resp=$(curl -sS -X POST "${API}/releases" \
+            -H "Content-Type: application/json" \
+            -d "{\"access_token\":\"${GITEE_TOKEN}\",\"tag_name\":\"${TAG_NAME}\",\"name\":\"Release ${VERSION}\",\"body\":\"Automated release ${VERSION}\",\"target_commitish\":\"${GITEE_BRANCH}\"}")
+          echo "create response: ${create_resp}"
+
+          release_id=$(echo "${create_resp}" | node -e "let s='';process.stdin.on('data',d=>s+=d).on('end',()=>{try{console.log(JSON.parse(s).id||'')}catch(e){console.log('')}})")
+          if [ -z "${release_id}" ]; then
+            echo "Failed to create Gitee release; aborting Gitee sync"
+            exit 1
+          fi
+          echo "Gitee release id: ${release_id}"
+
+          # Upload each asset
+          for f in release-assets/*; do
+            [ -f "$f" ] || continue
+            echo "Uploading $f to Gitee..."
+            curl -sS -X POST "${API}/releases/${release_id}/attach_files" \
+              -F "access_token=${GITEE_TOKEN}" \
+              -F "file=@${f}" \
+              -o /dev/null -w "  -> HTTP %{http_code}\n"
+          done
+          echo "Gitee sync done."

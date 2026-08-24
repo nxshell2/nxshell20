@@ -283,7 +283,13 @@ export class SessionConfig extends EventEmitter {
      */
     static _flatToLayered(config: ShellConfig | null): Record<string, unknown> {
         if (!config) return {};
-        const protocol = config.sessType || config.protocal || "";
+        let protocol = (config.protocal || config.sessType || "").toLowerCase();
+        if (protocol === "shell" && (config.hostAddress || config.hostPort)) {
+            protocol = (config.protocal || "ssh").toLowerCase();
+        }
+        if (!protocol) {
+            protocol = "ssh";
+        }
         const result: Record<string, unknown> = {};
 
         // Terminal fields
@@ -314,7 +320,7 @@ export class SessionConfig extends EventEmitter {
             };
             // authentication
             result.authentication = {
-                type: config.authType || "password",
+                type: config.authType || (config.cert ? "cert" : "password"),
                 username: config.username || "",
                 password: config.password || "",
                 cert: config.cert || "",
@@ -779,12 +785,16 @@ class SessionManager extends EventEmitter {
                         // Rename/delete old SESSIONS file after successful migration
                         try {
                             if (typeof provider.getAppDataDirty === 'function') {
-                                // Local storage: rename to .bak in legacy dir
-                                const legacyDir = path.dirname(provider.getAppDataDirty());
+                                const customDir = ((provider as any).nxsoftconfig?.xterm?.nxconfig || (provider as any).nxsoftconfig?.nxconfig) as string | undefined;
+                                const legacyDir = customDir || path.dirname(provider.getAppDataDirty());
                                 const oldPath = path.join(legacyDir, "__PT_LOCAL_STORAGE__SESSIONS");
                                 const bakPath = path.join(legacyDir, "__PT_LOCAL_STORAGE__SESSIONS.bak");
-                                await provider.move(oldPath, bakPath);
-                                console.log(`[SessionManager] Renamed legacy SESSIONS to .bak for mount ${mountId}`);
+                                try {
+                                    await provider.move(oldPath, bakPath);
+                                    console.log(`[SessionManager] Renamed legacy SESSIONS to .bak for mount ${mountId}`);
+                                } catch (e: unknown) {
+                                    // ignore if not present in legacyDir
+                                }
                             } else if (typeof provider.delete === 'function') {
                                 // Remote storage: delete old file
                                 await provider.delete("SESSIONS");

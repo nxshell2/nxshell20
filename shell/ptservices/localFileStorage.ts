@@ -21,14 +21,27 @@ class FileStorage {
     async read(name: string): Promise<any> {
         let rawVal: string | null = null;
         try {
-            rawVal = fs.readFileSync(name, { encoding: 'utf8' });
+            rawVal = fs.readFileSync(name, { encoding: 'utf8' }).trim();
         } catch (e) {
+            return null;
         }
         if (!rawVal) {
             return null;
         }
-        const decrypted = decrypt(JSON.parse(rawVal));
-        return JSON.parse(decrypted);
+        try {
+            const parsed = JSON.parse(rawVal);
+            if (parsed && typeof parsed === 'object' && parsed.iv && parsed.content) {
+                const decrypted = decrypt(parsed);
+                let data = JSON.parse(decrypted);
+                if (typeof data === 'string') {
+                    data = JSON.parse(data);
+                }
+                return data;
+            }
+            return parsed;
+        } catch (e) {
+            return null;
+        }
     }
 
     async export(src: string, dst: string): Promise<boolean> {

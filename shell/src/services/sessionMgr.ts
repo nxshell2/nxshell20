@@ -69,7 +69,17 @@ export class SessionConfig extends EventEmitter {
 
     /** 协议类型快捷访问 */
     get protocol(): string {
-        return this.config?.sessType || this.config?.protocal || ""
+        let p = (this.config?.protocal || this.config?.sessType || "").toLowerCase();
+        if (p === "shell" && (this.config?.hostAddress || this.config?.hostPort || this.config?.cert || this.config?.authType)) {
+            p = (this.config?.protocal && this.config.protocal !== "shell" ? this.config.protocal : "ssh").toLowerCase();
+        }
+        if (p === "shell") {
+            p = "ssh";
+        }
+        if (!p) {
+            p = "ssh";
+        }
+        return p;
     }
 
     /**
@@ -265,12 +275,13 @@ export class SessionConfig extends EventEmitter {
      */
     toPersistentJSON(): Record<string, unknown> {
         const layered = SessionConfig._flatToLayered(this.config);
+        const protocol = this.protocol || "ssh";
         return {
             version: 1,
             id: this.uuid,
             name: this.name,
             type: this.type,
-            protocol: this.protocol,
+            protocol: protocol,
             description: this.description,
             order: this.order,
             system: this.config?.system || "",
@@ -284,8 +295,8 @@ export class SessionConfig extends EventEmitter {
     static _flatToLayered(config: ShellConfig | null): Record<string, unknown> {
         if (!config) return {};
         let protocol = (config.protocal || config.sessType || "").toLowerCase();
-        if (protocol === "shell" && (config.hostAddress || config.hostPort)) {
-            protocol = (config.protocal || "ssh").toLowerCase();
+        if (protocol === "shell") {
+            protocol = (config.protocal && config.protocal !== "shell" ? config.protocal : "ssh").toLowerCase();
         }
         if (!protocol) {
             protocol = "ssh";
@@ -404,9 +415,15 @@ export class SessionConfig extends EventEmitter {
     static _layeredToFlat(data: any): ShellConfig {
         if (!data) return {} as ShellConfig;
         const rawConfig: ShellConfig = (data.config as ShellConfig) || {} as ShellConfig;
-        const protocol = (data.protocol as string) || rawConfig.sessType || rawConfig.protocal || "";
+        let protocol = ((data.protocol as string) || rawConfig.protocal || rawConfig.sessType || "").toLowerCase();
+        if (protocol === "shell" && (data.connection || data.authentication || data.sshOptions || rawConfig.hostAddress || rawConfig.hostPort)) {
+            protocol = (rawConfig.protocal && rawConfig.protocal !== "shell" ? rawConfig.protocal : "ssh").toLowerCase();
+        }
+        if (!protocol) {
+            protocol = "ssh";
+        }
         const config: Record<string, unknown> = {
-            sessType: protocol,
+            sessType: protocol === "ssh" ? "shell" : protocol,
             protocal: protocol,
             hostName: data.name || "",
             system: data.system || data.config?.system || ""
@@ -440,7 +457,7 @@ export class SessionConfig extends EventEmitter {
             config.username = data.authentication.username || "";
             config.password = data.authentication.password || "";
             if (protocol === "ssh") {
-                config.authType = data.authentication.type || "password";
+                config.authType = data.authentication.type || (data.authentication.cert ? "cert" : "password");
                 config.cert = data.authentication.cert || "";
                 config.passphrase = data.authentication.passphrase || "";
             }
@@ -791,7 +808,7 @@ class SessionManager extends EventEmitter {
                                 const bakPath = path.join(legacyDir, "__PT_LOCAL_STORAGE__SESSIONS.bak");
                                 try {
                                     await provider.move(oldPath, bakPath);
-                                    console.log(`[SessionManager] Renamed legacy SESSIONS to .bak for mount ${mountId}`);
+                                    console.log(`[SessionManager] Renamed legacy SESSIONS to .bak in ${legacyDir}`);
                                 } catch (e: unknown) {
                                     // ignore if not present in legacyDir
                                 }

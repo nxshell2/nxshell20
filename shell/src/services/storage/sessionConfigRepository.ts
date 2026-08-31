@@ -164,8 +164,8 @@ class SessionConfigRepository {
         const isTopLevel = (dirPath === this.basePath);
 
         for (const entry of entries) {
-            // 跳过元数据文件
-            if (entry.name === FOLDER_META_FILE || entry.name === ROOT_META_FILE) {
+            // 跳过元数据文件及隐藏文件
+            if (entry.name === FOLDER_META_FILE || entry.name === ROOT_META_FILE || entry.name.startsWith(".")) {
                 continue;
             }
             // 跳过非 JSON 文件或备份文件（非 session）

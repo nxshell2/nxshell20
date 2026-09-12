@@ -367,7 +367,7 @@ onBeforeUnmount(() => hotKey(0))
 				align-items: center;
 				justify-content: center;
 				padding: 2px;
-				border-radius: 2px;
+				border-radius: 4px;
 				color: var(--n-text-color-base);
 				opacity: 0.6;
 

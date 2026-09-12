@@ -116,10 +116,9 @@ export default {
 		align-items: center;
 		box-sizing: border-box;
 		padding: 5px;
-		width: 32px;
-		height: 32px;
-		line-height: 22px;
-		border-radius: 2px;
+		width: 26px;
+		height: 26px;
+		border-radius: 4px;
 		color: var(--n-button-primary-text);
 		background-color: var(--n-button-primary);
 

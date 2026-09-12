@@ -44,7 +44,7 @@
 							</span>
                         </el-tooltip>
                     </div>
-                    <n-space v-if="!IS_MAC_OS" :size="14">
+                    <n-space v-if="!IS_MAC_OS" :size="4">
 						<span class="control-btn" @click="doMinimize">
 							<Minus />
 						</span>
@@ -260,12 +260,14 @@ onMounted(() => {
         }
 
         .control-btn {
-          display: inline-block;
-          width: 32px;
-          height: 32px;
-          line-height: 32px;
-          text-align: center;
+          display: inline-flex;
+          justify-content: center;
+          align-items: center;
+          width: 26px;
+          height: 26px;
+          font-size: 16px;
           color: var(--n-text-color-base);
+          border-radius: 4px;
 
           &:hover {
             cursor: pointer;

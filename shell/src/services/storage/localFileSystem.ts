@@ -122,7 +122,7 @@ class LocalFileStorage extends StorageProviderInterface {
             return null;
         }
 
-        return JSON.parse(rawVal as string) as Record<string, unknown>;
+        return (typeof rawVal === "string" ? JSON.parse(rawVal) : rawVal) as Record<string, unknown>;
     }
 
     async read(name: string): Promise<unknown> {
@@ -134,18 +134,39 @@ class LocalFileStorage extends StorageProviderInterface {
             return null;
         }
 
-        return JSON.parse(rawVal as string) as unknown;
+        return typeof rawVal === "string" ? JSON.parse(rawVal) : rawVal;
     }
 
     async readLegacy(name: string): Promise<unknown> {
         if(! this.handler) {
             await this._init();
         }
+
+        // 1. 优先尝试从 1.x 用户自定义存储目录 (如 OneDrive/网盘同步目录) 中读取
+        if (this.nxsoftconfig) {
+            try {
+                const customDir = ((this.nxsoftconfig as any)?.xterm?.nxconfig || (this.nxsoftconfig as any)?.nxconfig) as string | undefined;
+                if (customDir && typeof customDir === "string") {
+                    const customFilePath = path.join(customDir, STORAGE_ITEM + name);
+                    const exists = await this.service.callObject(this.handler, "path_exists", customFilePath);
+                    if (exists) {
+                        const rawVal = await this.service.callObject(this.handler, "read", customFilePath);
+                        if (rawVal) {
+                            return typeof rawVal === "string" ? JSON.parse(rawVal) : rawVal;
+                        }
+                    }
+                }
+            } catch (e: unknown) {
+                console.warn("[LocalFileStorage] Failed to read from custom legacy path:", e);
+            }
+        }
+
+        // 2. 尝试从系统默认 1.x 存储目录中读取
         const rawVal = await this.service.callObject(this.handler, "read", path.join(getLegacyAppDataDirty(), STORAGE_ITEM + name));
         if (!rawVal) {
             return null;
         }
-        return JSON.parse(rawVal as string) as unknown;
+        return typeof rawVal === "string" ? JSON.parse(rawVal) : rawVal;
     }
 
     async export(src: string, dst: string) {

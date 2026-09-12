@@ -618,7 +618,7 @@ class SessionManager extends EventEmitter {
      * 处理会话配置移除事件
      * @param {SessionConfig} sessCfgObj 会话配置对象
      */
-    handleSessionConfigRemove(sessCfgObj: any) {
+    async handleSessionConfigRemove(sessCfgObj: any) {
         // this.emit("session-remove", sessCfgObj);
 
         /* 清除历史记录 */
@@ -628,6 +628,16 @@ class SessionManager extends EventEmitter {
         sessionInstances.forEach((inst) => {
             inst.close();
         });
+
+        /* 从磁盘删除对应的文件/目录 */
+        try {
+            const repo = await this._getMountRepo(sessCfgObj.mountId);
+            if (repo) {
+                await repo.delete(sessCfgObj);
+            }
+        } catch (e) {
+            console.warn(`[SessionManager] Failed to delete session from disk:`, (e as Error).message);
+        }
 
         /* 销毁自己 */
         sessCfgObj.dispose();

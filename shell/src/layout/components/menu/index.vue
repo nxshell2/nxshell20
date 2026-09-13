@@ -187,10 +187,16 @@ const handleDelete = (sessionId) => {
 		?.$confirm(message, t("home.host-manager.dialog-delete-confirm.title"), {
 			type: "warning"
 		})
-		.then(() => {
-			sessionManager.removeSessionConfig(sessionConfig)
+		.then(async () => {
+			await sessionManager.removeSessionConfig(sessionConfig)
 			handleSessionTreeContainerClick()
-			sessionStore.updateProcess()
+			// 只移除被删除的节点，避免整棵树重建导致闪烁
+			const node = sessionTreeRef.value?.getNode(sessionId)
+			if (node) {
+				sessionTreeRef.value?.remove(node.data)
+			} else {
+				sessionStore.updateProcess()
+			}
 		})
 		.catch(() => {})
 }
@@ -522,6 +528,7 @@ const handleSessionTreeContainerClick = () => {
 const handleNodeSelected = (data, node, _vnode, _element) => {
 	// 修复由于当前文件夹下子元素为0 导致tree无法触发原有打开关闭事件
 	if (data.isFolder && data.children.length === 0) node.expanded = !node.expanded
+	menuProps.highlightCurrent = true
 	const { data: sessionData } = data
 	sessionStore.updateCurrentNode(sessionTreeRef.value, node, data)
 	if (data.isFolder) {

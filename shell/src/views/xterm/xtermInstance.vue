@@ -27,6 +27,11 @@
 					<Monitor />
 				</span>
 			</el-tooltip>
+			<el-tooltip class="item" effect="dark" :content="isRecording ? $t('home.session-instance.context-menu.stop-record') : $t('home.session-instance.context-menu.start-record')" placement="top-start">
+				<span class="btn" :class="{ 'recording-active': isRecording }" @click="isRecording ? stopRecording() : startRecording()">
+					<span class="rec-dot" :class="{ 'rec-dot-on': isRecording }"></span>
+				</span>
+			</el-tooltip>
 		</div>
 		<div class="xterm-main-area">
 			<PtXterm
@@ -51,6 +56,8 @@
 			<ai-assistant-panel ref="aiAssistantPanel" @insert-command="handleInsertCommand" />
 			<sys-monitor ref="sysMonitor" :sessionInstance="sessionInstance" />
 			<component ref="sessionModalRef" :is="sessionModalComponent" />
+			<recording-player ref="recordingPlayer" />
+			<recording-list ref="recordingList" @play="playRecording" />
 		</div>
 	</div>
 </template>
@@ -61,7 +68,7 @@ import xtermTheme from "xterm-theme"
 import PtAuthDialog from "../components/auth/auth"
 import AIAssistantPanel from "../components/ai/AIAssistantPanel.vue"
 import SysMonitor from "./components/SysMonitor.vue"
-import { getProfile } from "@/services/globalSetting"
+import { getProfile, loadGlobalProfile } from "@/services/globalSetting"
 import * as EventBus from "../../services/eventbus"
 import { PtXterm } from "@/components"
 import { xzmodem } from "./xzmodem.ts"
@@ -72,6 +79,9 @@ import { mapState, mapStores } from "pinia"
 import { useSessionStore } from "@/store"
 import { markRaw } from "vue"
 import { shellModalInstance } from "@/views/components/session"
+import { TerminalRecorder } from "@/services/terminalRecorder"
+import RecordingPlayer from "../components/recorder/RecordingPlayer.vue"
+import RecordingList from "../components/recorder/RecordingList.vue"
 
 export default {
 	name: "XtermInstance",
@@ -79,7 +89,9 @@ export default {
 		PtXterm,
 		PtAuthDialog,
 		"ai-assistant-panel": AIAssistantPanel,
-		"sys-monitor": SysMonitor
+		"sys-monitor": SysMonitor,
+		"recording-player": RecordingPlayer,
+		"recording-list": RecordingList
 	},
 	props: {
 		sessionInstanceId: {
@@ -95,6 +107,9 @@ export default {
 			tunnelMapTitle: {},
 			backgroundColor: "#000",
 			sessionInstance: null,
+			recorder: null,
+			isRecording: false,
+			autoRecord: false,
 			enableSendToAllTerm: false,
 			xtermMenu: [
 				{
@@ -224,6 +239,24 @@ export default {
 					label: "home.session-instance.context-menu.property",
 					type: "normal",
 					handler: this.handleProperty
+				},
+				{
+					type: "separator"
+				},
+				{
+					label: "home.session-instance.context-menu.start-record",
+					type: "normal",
+					handler: this.startRecording
+				},
+				{
+					label: "home.session-instance.context-menu.stop-record",
+					type: "normal",
+					handler: this.stopRecording
+				},
+				{
+					label: "home.session-instance.context-menu.recordings",
+					type: "normal",
+					handler: this.showRecordings
 				}
 			],
 			options: {}
@@ -422,6 +455,8 @@ export default {
 			})
 
 			this.sessionInstance.on("close", () => {
+				// stop recording if active
+				this.stopRecording()
 				// destroy ssh instance
 				this.$emit("remove-session")
 			})
@@ -435,6 +470,7 @@ export default {
 				this.$refs.xterm?.focus()
 			})
 			this.setupshortcut()
+			this.checkAutoRecord()
 		},
 		setupshortcut() {
 			if (this.mousetrap) {
@@ -524,12 +560,12 @@ export default {
 				this.sessionInstance.emit("send_data", data)
 			}
 
-			this.iconv_to_uft8.on("data", (d) => {
-				this.$nextTick(() => this.$refs.xterm?.feedData(d))
+			this.iconv_to_uft8.on("data", (_d) => {
+				this.$nextTick(() => this.$refs.xterm?.feedData(_d))
 			})
 
-			const write = async (data) => {
-				this.iconv_to_uft8.write(data)
+			const write = async (_data) => {
+				this.iconv_to_uft8.write(_data)
 			}
 			return new xzmodem({ sendTo, write })
 		},
@@ -790,6 +826,51 @@ export default {
 		},
 		split_normal() {
 			this.$emit("split_screen", "normal")
+		},
+
+		startRecording() {
+			if (this.isRecording) return
+			this.recorder = new TerminalRecorder()
+			const sessionConfig = this.$sessionManager.getSessionConfigByInstanceId(this.sessionInstanceId)
+			const sessionName = sessionConfig?.name || "session"
+			const sessionUuid = sessionConfig?.uuid || ""
+			const cols = this.$refs.xterm?.terminal?.cols || 80
+			const rows = this.$refs.xterm?.terminal?.rows || 24
+			this.recorder.start(this.sessionInstance, sessionName, sessionUuid, cols, rows)
+			this.isRecording = true
+		},
+
+		async stopRecording() {
+			if (!this.isRecording || !this.recorder) return
+			const meta = await this.recorder.stop()
+			this.isRecording = false
+			this.recorder = null
+			if (meta) {
+				console.log("[Recorder] Saved:", meta.fileName)
+			}
+		},
+
+		showRecordings() {
+			const sessionConfig = this.$sessionManager.getSessionConfigByInstanceId(this.sessionInstanceId)
+			const sessionUuid = sessionConfig?.uuid || ""
+			this.$refs.recordingList?.show(sessionUuid)
+		},
+
+		playRecording(meta) {
+			this.$refs.recordingPlayer?.show(meta)
+		},
+
+		async checkAutoRecord() {
+			try {
+				await loadGlobalProfile()
+				const recorderProfile = getProfile("recorder")
+				if (recorderProfile && recorderProfile.autoRecord) {
+					this.autoRecord = true
+					this.startRecording()
+				}
+			} catch (e) {
+				// settings not loaded yet, skip
+			}
 		}
 	}
 }
@@ -850,6 +931,28 @@ export default {
 				color: var(--n-button-primary-text);
 				background-color: var(--n-button-primary-hover);
 			}
+		}
+
+		.rec-dot {
+			width: 10px;
+			height: 10px;
+			border-radius: 50%;
+			background-color: #999;
+			transition: background-color 0.2s;
+
+			&.rec-dot-on {
+				background-color: #ff4444;
+				animation: rec-pulse 1.5s ease-in-out infinite;
+			}
+		}
+
+		.recording-active {
+			background-color: rgba(255, 68, 68, 0.1);
+		}
+
+		@keyframes rec-pulse {
+			0%, 100% { opacity: 1; }
+			50% { opacity: 0.4; }
 		}
 	}
 

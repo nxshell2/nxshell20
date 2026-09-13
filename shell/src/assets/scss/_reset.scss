@@ -391,7 +391,9 @@ a {
         }
       }
 
-      &__orig-radio:checked + .el-radio-button__inner {
+      &__orig-radio:checked + .el-radio-button__inner,
+      &.is-checked .el-radio-button__inner,
+      &.is-active .el-radio-button__inner {
         box-shadow: var(--n-button-primary) !important;
         background-color: var(--n-button-primary) !important;
         color: var(--n-button-primary-text) !important;

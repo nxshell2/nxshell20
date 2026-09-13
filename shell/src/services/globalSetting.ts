@@ -8,7 +8,7 @@ import {
 	updateProfile as _updateProfile
 } from "./storage/settingsManager"
 
-type GlobalCategoryType = "xterm" | "storage"
+type GlobalCategoryType = "xterm" | "storage" | "recorder"
 
 interface IProfile {
 	[propName: string]: unknown

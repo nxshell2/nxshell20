@@ -525,7 +525,10 @@
         "send-one": "Current SSH Terminal",
         "lock": "Lock Sessions",
         "select-all": "Select All",
-        "ask-ai": "Ask AI"
+        "ask-ai": "Ask AI",
+        "start-record": "Start Recording",
+        "stop-record": "Stop Recording",
+        "recordings": "Recordings"
       },
       "delete-dialog": {
         "title": "Close Session Instance",
@@ -535,6 +538,16 @@
         "title": "Close Sftp Editor",
         "message": "Are you sure to save the file?"
       }
+    },
+    "recorder": {
+      "play": "Play",
+      "pause": "Pause",
+      "recordings-title": "Recordings",
+      "no-recordings": "No recordings",
+      "export": "Export",
+      "delete": "Delete",
+      "settings-title": "Terminal Recording",
+      "auto-record": "Auto-record terminal sessions"
     },
     "ai": {
       "panel-title": "AI Assistant",

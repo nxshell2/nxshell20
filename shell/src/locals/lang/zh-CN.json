@@ -527,7 +527,10 @@
         "send-one": "当前会话",
         "lock": "锁定会话",
         "select-all": "选中所有",
-        "ask-ai": "Ask AI"
+        "ask-ai": "Ask AI",
+        "start-record": "开始录制",
+        "stop-record": "停止录制",
+        "recordings": "录制记录"
       },
       "delete-dialog": {
         "title": "关闭会话实例",
@@ -537,6 +540,16 @@
         "title": "关闭在线编辑",
         "message": "确定保存文档到服务器?"
       }
+    },
+    "recorder": {
+      "play": "播放",
+      "pause": "暂停",
+      "recordings-title": "录制记录",
+      "no-recordings": "暂无录制",
+      "export": "导出",
+      "delete": "删除",
+      "settings-title": "终端录制",
+      "auto-record": "自动录制终端会话"
     },
     "ai": {
       "panel-title": "AI 助手",

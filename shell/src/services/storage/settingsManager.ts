@@ -37,7 +37,10 @@ const DEFAULT_SETTINGS: Settings = {
     locale: "zh-CN",
     keymap: {},
     xterm: {},
-    storage: {}
+    storage: {},
+    recorder: {
+        autoRecord: false
+    }
 };
 
 let currentSettings: Settings | null = null;
@@ -68,6 +71,10 @@ async function loadSettings(): Promise<Settings> {
                 },
                 storage: {
                     ...(parsed.storage || {})
+                },
+                recorder: {
+                    ...DEFAULT_SETTINGS.recorder,
+                    ...(parsed.recorder || {})
                 }
             };
         }

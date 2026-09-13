@@ -206,6 +206,20 @@
 					</el-col>
 				</el-row>
 			</template>
+
+			<div class="n-setting-divider"></div>
+
+			<div class="n-setting-section-title">{{ t('home.recorder.settings-title') }}</div>
+			<el-row :gutter="40">
+				<el-col :xs="24" :sm="24" :md="24" :lg="12" :xl="12">
+					<el-row :gutter="40" style="margin-bottom: 20px">
+						<el-col :span="8" class="n-setting-content__label">{{ t('home.recorder.auto-record') }}</el-col>
+						<el-col :span="16">
+							<el-switch v-model="recorderConfig.autoRecord" @change="handleRecorderConfigChange" />
+						</el-col>
+					</el-row>
+				</el-col>
+			</el-row>
 			</el-scrollbar>
 		</div>
 	</div>
@@ -226,8 +240,12 @@ const settingsForm = ref({
 const fontFamilyList = ref({ ...fontFamily })
 const { t } = useI18n()
 const aiConfig = ref(getAIConfig())
+const recorderConfig = ref({ autoRecord: false })
 const handleAIConfigChange = async () => {
 	await saveAIConfig(aiConfig.value)
+}
+const handleRecorderConfigChange = async () => {
+	await setProfile("recorder", { ...recorderConfig.value })
 }
 const handlerSettingChange = async () => {
 	const defaultSettings = getProfile("xterm") ?? {}
@@ -261,6 +279,10 @@ onBeforeMount(async () => {
 onMounted(() => {
 	const storeSetting = getProfile("xterm")
 	settingsForm.value = { ...settingFormReset, ...storeSetting }
+	const recorderSetting = getProfile("recorder")
+	if (recorderSetting) {
+		recorderConfig.value = { autoRecord: false, ...recorderSetting }
+	}
 })
 </script>
 

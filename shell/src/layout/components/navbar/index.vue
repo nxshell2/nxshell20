@@ -219,10 +219,11 @@ onMounted(() => {
 		padding-bottom: 10px;
 
 		:deep(.el-button) {
-			width: 40px;
+			width: 32px;
+			height: 32px;
 
 			i {
-				font-size: 20px;
+				font-size: 16px;
 			}
 
 			&:hover {

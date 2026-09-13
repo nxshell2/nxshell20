@@ -1006,15 +1006,38 @@ class SessionManager extends EventEmitter {
 
     /**
      * 移除会话配置
+     * 先删除磁盘文件，再从内存移除，确保文件不残留
      * @param {SessionConfig|Object} sessCfg 会话配置
      */
-    removeSessionConfig(sessCfg: any) {
-        // TODO: add code here
+    async removeSessionConfig(sessCfg: any) {
         if (!(sessCfg instanceof SessionConfig)) {
             sessCfg = this.getSessionConfigById(sessCfg._id);
         }
+        // 先删除磁盘文件（此时 _parent 链还完整，能正确计算路径）
+        await this._deleteSessionTreeFromDisk(sessCfg);
+        // 再从内存移除（会触发 session-removed 事件）
         sessCfg._parent.removeSubSessionConfig(sessCfg);
-        this.saveSessionConfigs();
+        await this.saveSessionConfigs();
+    }
+
+    /**
+     * 递归删除会话节点及其子节点在磁盘上的文件
+     */
+    async _deleteSessionTreeFromDisk(sessCfg: any) {
+        // 先递归删除子节点文件
+        if (sessCfg.subSessions && sessCfg.subSessions.length > 0) {
+            for (const child of [...sessCfg.subSessions]) {
+                await this._deleteSessionTreeFromDisk(child);
+            }
+        }
+        try {
+            const repo = await this._getMountRepo(sessCfg.mountId);
+            if (repo) {
+                await repo.delete(sessCfg);
+            }
+        } catch (e) {
+            console.warn(`[SessionManager] Failed to delete session from disk:`, (e as Error).message);
+        }
     }
 
     createShellSessionConfig(name: string) {

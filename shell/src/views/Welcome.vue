@@ -83,7 +83,7 @@ const toIssues = () => {
       margin-left: 60px;
       font-size: 80px;
       font-weight: 700;
-      color: #132847;
+      color: var(--n-text-color-base);
       z-index: 0;
 
       &::before {

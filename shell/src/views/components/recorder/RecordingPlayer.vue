@@ -18,7 +18,7 @@
 				@input="onSeek"
 				class="player-progress"
 			/>
-			<el-select v-model="speed" size="small" class="player-speed" @change="onSpeedChange">
+			<el-select v-model="speed" size="small" class="player-speed" popper-class="player-speed-popper" @change="onSpeedChange">
 				<el-option :value="0.5" label="0.5x" />
 				<el-option :value="1" label="1x" />
 				<el-option :value="2" label="2x" />
@@ -291,7 +291,7 @@ export default {
 
 		.player-time {
 			font-size: 12px;
-			color: var(--n-text-color-disabled);
+			color: var(--n-text-color-light);
 			margin-right: 16px;
 			font-family: monospace;
 		}
@@ -299,7 +299,7 @@ export default {
 		.player-close {
 			cursor: pointer;
 			font-size: 20px;
-			color: var(--n-text-color-disabled);
+			color: var(--n-text-color-light);
 			&:hover {
 				color: var(--n-text-color-base);
 			}
@@ -334,5 +334,11 @@ export default {
 			width: 80px;
 		}
 	}
+}
+</style>
+
+<style lang="scss">
+.player-speed-popper {
+	z-index: 10000 !important;
 }
 </style>

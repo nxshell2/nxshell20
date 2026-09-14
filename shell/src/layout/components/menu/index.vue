@@ -133,45 +133,8 @@ const refreshMount = async () => {
 	}
 }
 
-const clipboard = reactive({
-	data: null,
-	operate: ""
-})
-
 const handleOpenSFTP = (data) => {
 	sessionManager.createSFTPSessionInstance(data)
-}
-
-// 复制/剪切会话
-const menuClipboard = (type) => {
-	clipboard.operate = type
-	clipboard.data = currentNode.value.sessionData
-}
-
-// 粘贴会话
-const handleSessionTreeContextMenu_Paste = () => {
-	try {
-		const { data, operate } = clipboard
-		if (!data) {
-			return
-		}
-		const sessionConfig = sessionManager.getSessionConfigById(data?.id)
-		if (!sessionConfig) {
-			console.warn("source session config is null")
-			return
-		}
-		if (operate === "cut") {
-			sessionConfig._parent.removeSubSessionConfig(sessionConfig, true)
-		}
-		sessionStore.appendSessionConfig(operate === "cut" ? sessionConfig : sessionConfig.duplicate())
-	} catch (error) {
-		console.error("剪切复制异常", error)
-		return null
-	} finally {
-		// 当前只粘贴一次，避免不必要的麻烦
-		clipboard.data = null
-		clipboard.operate = ""
-	}
 }
 
 /**
@@ -218,125 +181,37 @@ const handleHostOpen = async (sessionData) => {
 	await sessionManager.createSessionInstance(sessionData)
 }
 
-/**
- * 导出配置文件
- *
- * @returns 导出的配置文件
- */
-async function exportSessionConfig() {
-	const coreService = powertools.getService("powertools-core")
-	const selectedFiles = await coreService.showSaveDialog({
-		properties: ["openFile"]
-	})
-
-	if (selectedFiles.canceled) {
-		return
-	}
-
-	const filePath = selectedFiles.filePath
-	try {
-		await sessionManager.exportConfig(filePath)
-	} catch (e) {
-		console.log("export config error ", e)
-	}
-}
-
-/**
- * 导入配置文件
- *
- */
-async function importSessionConfig() {
-	const coreService = powertools.getService("powertools-core")
-	const selectedFiles = await coreService.showOpenDialog({
-		properties: ["openFile"]
-	})
-
-	if (selectedFiles.canceled) {
-		return
-	}
-
-	const filePath = selectedFiles.filePaths[0]
-
-	try {
-		await sessionManager.importConfig(filePath)
-		sessionStore.updateProcess()
-	} catch (e) {
-		console.log("import config error ", e)
-	}
-}
-
 const createShellModal = (type) => {
 	sessionModal.value = markRaw(shellModalInstance(type))
 	nextTick(() => sessionModalRef.value?.showModal())
 }
 
+const createSessionDefault = () => createShellModal("ssh")
+
 const contextMenus = {
 	folder: [
+		{
+			label: "home.sessions-context-menu.create-session",
+			type: "normal",
+			handler: createSessionDefault
+		},
 		{
 			label: "home.sessions-context-menu.create-folder",
 			type: "normal",
 			handler: createFolder
 		},
 		{
-			label: "home.sessions-context-menu.create-session",
-			type: "submenu",
-			submenu: [
-				{
-					label: "SSH",
-					type: "normal",
-					handler: () => createShellModal("ssh")
-				},
-				{
-					label: "SFTP",
-					type: "normal",
-					handler: () => createShellModal("ftp")
-				},
-				{
-					label: "Serial",
-					type: "normal",
-					handler: () => createShellModal("serial")
-				},
-				{
-					label: "Telnet",
-					type: "normal",
-					handler: () => createShellModal("telnet")
-				},
-				{
-					label: "VNC",
-					type: "normal",
-					handler: () => createShellModal("vnc")
-				},
-				{
-					label: "localShell",
-					type: "normal",
-					handler: () => createShellModal("localShell")
-				}
-			]
-		},
-		{
-			label: "home.sessions-context-menu.cut",
-			type: "normal",
-			handler: () => menuClipboard("cut")
-		},
-		{
-			label: "home.sessions-context-menu.copy",
-			type: "normal",
-			handler: () => menuClipboard("copy")
-		},
-		{
-			label: "home.sessions-context-menu.paste",
-			type: "normal",
-			handler: handleSessionTreeContextMenu_Paste
-		},
-		{
-			label: "home.sessions-context-menu.delete",
-			type: "normal",
-			handler: () => handleDelete(currentNode.value.sessionId)
+			type: "separator"
 		},
 		{
 			label: "home.sessions-context-menu.rename",
 			type: "normal",
 			handler: renameFolder
+		},
+		{
+			label: "home.sessions-context-menu.delete",
+			type: "normal",
+			handler: () => handleDelete(currentNode.value.sessionId)
 		}
 	],
 	node: [
@@ -346,19 +221,7 @@ const contextMenus = {
 			handler: () => handleHostOpen(currentNode.value.sessionData.data)
 		},
 		{
-			label: "home.sessions-context-menu.cut",
-			type: "normal",
-			handler: () => menuClipboard("cut")
-		},
-		{
-			label: "home.sessions-context-menu.copy",
-			type: "normal",
-			handler: () => menuClipboard("copy")
-		},
-		{
-			label: "home.sessions-context-menu.delete",
-			type: "normal",
-			handler: () => handleDelete(currentNode.value.sessionId)
+			type: "separator"
 		},
 		{
 			label: "home.sessions-context-menu.prop",
@@ -368,77 +231,26 @@ const contextMenus = {
 				sessionModal.value = markRaw(shellModalInstance(protocol))
 				nextTick(() => sessionModalRef.value?.showModal(sessionId))
 			}
+		},
+		{
+			label: "home.sessions-context-menu.delete",
+			type: "normal",
+			handler: () => handleDelete(currentNode.value.sessionId)
 		}
 	],
 	empty: [
+		{
+			label: "home.sessions-context-menu.create-session",
+			type: "normal",
+			handler: createSessionDefault
+		},
 		{
 			label: "home.sessions-context-menu.create-folder",
 			type: "normal",
 			handler: createFolder
 		},
 		{
-			label: "home.sessions-context-menu.create-session",
-			type: "submenu",
-			submenu: [
-				{
-					label: "SSH",
-					type: "normal",
-					handler: () => {
-						sessionModal.value = markRaw(shellModalInstance("ssh"))
-						nextTick(() => sessionModalRef.value?.showModal())
-					}
-				},
-				{
-					label: "SFTP",
-					type: "normal",
-					handler: () => {
-						sessionModal.value = markRaw(shellModalInstance("ftp"))
-						nextTick(() => sessionModalRef.value?.showModal())
-					}
-				},
-				{
-					label: "Serial",
-					type: "normal",
-					handler: () => {
-						sessionModal.value = markRaw(shellModalInstance("serial"))
-						nextTick(() => sessionModalRef.value?.showModal())
-					}
-				},
-				{
-					label: "Telnet",
-					type: "normal",
-					handler: () => {
-						sessionModal.value = markRaw(shellModalInstance("telnet"))
-						nextTick(() => sessionModalRef.value?.showModal())
-					}
-				},
-				{
-					label: "localShell",
-					type: "normal",
-					handler: () => {
-						sessionModal.value = markRaw(shellModalInstance("localShell"))
-						nextTick(() => sessionModalRef.value?.showModal())
-					}
-				},
-				{
-					label: "VNC",
-					type: "normal",
-					handler: () => {
-						sessionModal.value = markRaw(shellModalInstance("vnc"))
-						nextTick(() => sessionModalRef.value?.showModal())
-					}
-				}
-			]
-		},
-		{
-			label: "home.sessions-context-menu.save-config",
-			type: "normal",
-			handler: exportSessionConfig
-		},
-		{
-			label: "home.sessions-context-menu.import-config",
-			type: "normal",
-			handler: importSessionConfig
+			type: "separator"
 		},
 		{
 			label: "home.sessions-context-menu.mount-manager",
@@ -449,55 +261,22 @@ const contextMenus = {
 	// 挂载点根节点的右键菜单
 	mount: [
 		{
+			label: "home.sessions-context-menu.create-session",
+			type: "normal",
+			handler: createSessionDefault
+		},
+		{
 			label: "home.sessions-context-menu.create-folder",
 			type: "normal",
 			handler: createFolder
 		},
 		{
-			label: "home.sessions-context-menu.create-session",
-			type: "submenu",
-			submenu: [
-				{
-					label: "SSH",
-					type: "normal",
-					handler: () => createShellModal("ssh")
-				},
-				{
-					label: "SFTP",
-					type: "normal",
-					handler: () => createShellModal("ftp")
-				},
-				{
-					label: "Serial",
-					type: "normal",
-					handler: () => createShellModal("serial")
-				},
-				{
-					label: "Telnet",
-					type: "normal",
-					handler: () => createShellModal("telnet")
-				},
-				{
-					label: "VNC",
-					type: "normal",
-					handler: () => createShellModal("vnc")
-				},
-				{
-					label: "localShell",
-					type: "normal",
-					handler: () => createShellModal("localShell")
-				}
-			]
+			type: "separator"
 		},
 		{
 			label: "home.sessions-context-menu.refresh",
 			type: "normal",
 			handler: () => refreshMount()
-		},
-		{
-			label: "home.sessions-context-menu.mount-manager",
-			type: "normal",
-			handler: () => showMountManager()
 		}
 	]
 }
@@ -560,11 +339,10 @@ const nodeContextmenu = (event, data, node, _vnode) => {
 	}
 
 	if (nodeType === SESSION_CONFIG_TYPE.NODE) {
-		// TODO: 获取SessionConfig的状态，过滤掉一些无用状态
 		const contextMenu = [...contextMenus.node]
 		const { data } = currentNode.value.sessionData
 		if (data.config.protocal === "ssh") {
-			contextMenu.unshift({
+			contextMenu.splice(2, 0, {
 				label: "home.sessions-context-menu.sftp",
 				type: "normal",
 				handler: () => handleOpenSFTP(data)

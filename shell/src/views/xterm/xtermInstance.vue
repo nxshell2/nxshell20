@@ -125,52 +125,7 @@ export default {
 					handler: this.handlePaste
 				},
 				{
-					label: "home.session-instance.context-menu.select-paste",
-					type: "normal",
-					accelerator: "Alt + S",
-					handler: this.handleSelectPaste
-				},
-				{
-					label: "home.session-instance.context-menu.search",
-					type: "normal",
-					handler: this.handleSearch
-				},
-				{
-					label: "home.session-instance.context-menu.ask-ai",
-					type: "normal",
-					handler: this.handleAskAI
-				},
-				{
-					label: "home.session-instance.context-menu.fullscreen",
-					type: "normal",
-					accelerator: "Alt + Enter",
-					handler: this.handleFullscreen
-				},
-				{
-					label: "home.session-instance.context-menu.log-manager",
-					type: "submenu",
-					submenu: [
-						{
-							label: "home.session-instance.context-menu.open-log",
-							type: "normal",
-							handler: this.openLog
-						},
-						{
-							label: "home.session-instance.context-menu.close-log",
-							type: "normal",
-							handler: this.closeLog
-						},
-						{
-							label: "home.session-instance.context-menu.log-editor",
-							type: "normal",
-							handler: this.openLogFileByEditor
-						},
-						{
-							label: "home.session-instance.context-menu.log-folder",
-							type: "normal",
-							handler: this.openLogFileInFolder
-						}
-					]
+					type: "separator"
 				},
 				{
 					label: "home.session-instance.context-menu.find",
@@ -179,84 +134,80 @@ export default {
 					handler: this.handleFind
 				},
 				{
-					type: "separator"
+					label: "home.session-instance.context-menu.ask-ai",
+					type: "normal",
+					handler: this.handleAskAI
 				},
 				{
-					label: "home.session-instance.context-menu.screen-split",
+					label: "home.session-instance.context-menu.more",
 					type: "submenu",
 					submenu: [
 						{
-							label: "home.session-instance.context-menu.split-row",
+							label: "home.session-instance.context-menu.property",
 							type: "normal",
-							handler: this.split_row
+							handler: this.handleProperty
 						},
 						{
-							label: "home.session-instance.context-menu.split-column",
+							label: "home.session-instance.context-menu.fullscreen",
 							type: "normal",
-							handler: this.split_col
+							accelerator: "Alt + Enter",
+							handler: this.handleFullscreen
 						},
 						{
-							label: "home.session-instance.context-menu.split-grid",
+							label: "home.session-instance.context-menu.lock",
 							type: "normal",
-							handler: this.split_grid
+							accelerator: "Alt + L",
+							handler: this.handleLock
 						},
 						{
-							label: "home.session-instance.context-menu.split-normal",
+							label: "home.session-instance.context-menu.select-all",
 							type: "normal",
-							handler: this.split_normal
+							accelerator: "Alt + A",
+							handler: this.handleSelectAll
+						},
+						{
+							label: "home.session-instance.context-menu.log-manager",
+							type: "submenu",
+							submenu: [
+								{
+									label: "home.session-instance.context-menu.open-log",
+									type: "normal",
+									handler: this.openLog
+								},
+								{
+									label: "home.session-instance.context-menu.close-log",
+									type: "normal",
+									handler: this.closeLog
+								},
+								{
+									label: "home.session-instance.context-menu.log-editor",
+									type: "normal",
+									handler: this.openLogFileByEditor
+								},
+								{
+									label: "home.session-instance.context-menu.log-folder",
+									type: "normal",
+									handler: this.openLogFileInFolder
+								}
+							]
+						},
+						{
+							label: "home.session-instance.context-menu.send-all",
+							type: "submenu",
+							submenu: [
+								{
+									label: "home.session-instance.context-menu.send-many",
+									type: "normal",
+									handler: this.send_many
+								},
+								{
+									label: "home.session-instance.context-menu.send-one",
+									type: "normal",
+									handler: this.send_one
+								}
+							]
 						}
 					]
-				},
-				{
-					label: "home.session-instance.context-menu.send-all",
-					type: "submenu",
-					submenu: [
-						{
-							label: "home.session-instance.context-menu.send-many",
-							type: "normal",
-							handler: this.send_many
-						},
-						{
-							label: "home.session-instance.context-menu.send-one",
-							type: "normal",
-							handler: this.send_one
-						}
-					]
-				},
-				{
-					label: "home.session-instance.context-menu.lock",
-					type: "normal",
-					accelerator: "Alt + L",
-					handler: this.handleLock
-				},
-				{
-					label: "home.session-instance.context-menu.select-all",
-					type: "normal",
-					accelerator: "Alt + A",
-					handler: this.handleSelectAll
-				},
-				{
-					label: "home.session-instance.context-menu.property",
-					type: "normal",
-					handler: this.handleProperty
-				},
-				{
-					type: "separator"
-				},
-				{
-					label: "home.session-instance.context-menu.start-record",
-					type: "normal",
-					handler: this.startRecording
-				},
-				{
-					label: "home.session-instance.context-menu.stop-record",
-					type: "normal",
-					handler: this.stopRecording
-				},
-				{
-					label: "home.session-instance.context-menu.recordings",
-					type: "normal",
-					handler: this.showRecordings
 				}
 			],
 			options: {}

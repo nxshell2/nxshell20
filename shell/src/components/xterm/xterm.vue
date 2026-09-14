@@ -301,13 +301,15 @@ export default {
 			this.pendingData = []
 		},
 		async contextmenuPast(event) {
+			const selection = this.terminal?.getSelection()
+			if (selection) {
+				return
+			}
 			const text = powertools.clipboardReadText()
-			console.log(text)
 			if (text !== "") {
 				event.preventDefault()
 				event.stopPropagation()
 				this.pasteText(text)
-				powertools.clipboardWriteText("")
 			}
 		},
 		getLineString() {

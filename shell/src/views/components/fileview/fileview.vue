@@ -387,11 +387,6 @@ export default {
 							handler: this.handleContextMenu_DownloadFolder.bind(this)
 						},
 						{
-							label: 'home.fileview.context-menu.open',
-							type: 'normal',
-							handler: this.handleContextMenu_Open.bind(this)
-						},
-						{
 							type: 'separator'
 						},
 						{
@@ -405,12 +400,17 @@ export default {
 							handler: this.handleContextMenu_Rename.bind(this)
 						},
 						{
-							label: 'home.fileview.context-menu.chmod',
+							label: 'home.fileview.context-menu.move',
 							type: 'normal',
-							handler: this.handleContextMenu_Chmod.bind(this)
+							handler: this.handleContextMenu_Move.bind(this)
 						},
 						{
 							type: 'separator'
+						},
+						{
+							label: 'home.fileview.context-menu.chmod',
+							type: 'normal',
+							handler: this.handleContextMenu_Chmod.bind(this)
 						},
 						{
 							label: 'home.fileview.context-menu.prop',
@@ -438,22 +438,22 @@ export default {
 							handler: this.handleContextMenu_Delete.bind(this)
 						},
 						{
-							label: 'home.fileview.context-menu.move',
-							type: 'normal',
-							handler: this.handleContextMenu_Move.bind(this)
-						},
-						{
 							label: 'home.fileview.context-menu.rename',
 							type: 'normal',
 							handler: this.handleContextMenu_Rename.bind(this)
 						},
 						{
-							label: 'home.fileview.context-menu.chmod',
+							label: 'home.fileview.context-menu.move',
 							type: 'normal',
-							handler: this.handleContextMenu_Chmod.bind(this)
+							handler: this.handleContextMenu_Move.bind(this)
 						},
 						{
 							type: 'separator'
+						},
+						{
+							label: 'home.fileview.context-menu.chmod',
+							type: 'normal',
+							handler: this.handleContextMenu_Chmod.bind(this)
 						},
 						{
 							label: 'home.fileview.context-menu.prop',
@@ -484,25 +484,6 @@ export default {
 							label: "home.fileview.context-menu.createfile",
 							type: "normal"
 						}, */ {
-							type: 'separator'
-						},
-						{
-							label: 'home.fileview.context-menu.viewtype',
-							type: 'submenu',
-							submenu: [
-								{
-									label: 'home.fileview.context-menu.viewtype-detail',
-									type: 'normal',
-									handler: this.handleContextMenu_ChangeViewDetailIcon.bind(this)
-								},
-								{
-									label: 'home.fileview.context-menu.viewtype-medium-icon',
-									type: 'normal',
-									handler: this.handleContextMenu_ChangeViewMediumIcon.bind(this)
-								}
-							]
-						},
-						{
 							type: 'separator'
 						},
 						{

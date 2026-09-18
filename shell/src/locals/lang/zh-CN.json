@@ -528,6 +528,7 @@
         "lock": "锁定会话",
         "select-all": "选中所有",
         "ask-ai": "Ask AI",
+        "more": "更多",
         "start-record": "开始录制",
         "stop-record": "停止录制",
         "recordings": "录制记录"

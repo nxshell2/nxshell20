@@ -113,7 +113,7 @@ export default {
 	.empty-tip {
 		text-align: center;
 		padding: 40px;
-		color: var(--n-text-color-disabled);
+		color: var(--n-text-color-light);
 	}
 
 	.recording-item {
@@ -144,7 +144,7 @@ export default {
 				gap: 16px;
 				margin-top: 4px;
 				font-size: 12px;
-				color: var(--n-text-color-disabled);
+				color: var(--n-text-color-light);
 			}
 		}
 

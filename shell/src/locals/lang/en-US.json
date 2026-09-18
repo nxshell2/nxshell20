@@ -526,6 +526,7 @@
         "lock": "Lock Sessions",
         "select-all": "Select All",
         "ask-ai": "Ask AI",
+        "more": "More",
         "start-record": "Start Recording",
         "stop-record": "Stop Recording",
         "recordings": "Recordings"

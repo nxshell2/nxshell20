@@ -139,6 +139,11 @@ export default {
 					handler: this.handleAskAI
 				},
 				{
+					label: "home.session-instance.context-menu.recordings",
+					type: "normal",
+					handler: this.showRecordings
+				},
+				{
 					label: "home.session-instance.context-menu.more",
 					type: "submenu",
 					submenu: [

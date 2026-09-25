@@ -45,9 +45,24 @@ class Channel extends EventEmitter {
         this.socket.on('end', () => {
             this.emit('end');
         });
+
+        this.socket.on('error', (err: Error) => {
+            if (this.listenerCount('error') > 0) {
+                this.emit('error', err);
+            } else {
+                console.error('HSpeedIPC channel socket error:', err);
+            }
+        });
+
+        this.socket.on('close', () => {
+            this.emit('close');
+        });
     }
 
     async _socket_write(buffer: any): Promise<void> {
+        if (!this.socket || this.socket.destroyed) {
+            throw new Error('Socket is closed or destroyed');
+        }
         return new Promise((resolve, reject) => {
             this.socket.write(buffer, () => {
                 resolve();
@@ -69,6 +84,12 @@ class Channel extends EventEmitter {
     setChannelId(id: number) {
         this.channelId = id;
     }
+
+    close() {
+        if (this.socket && !this.socket.destroyed) {
+            this.socket.destroy();
+        }
+    }
 }
 
 class Server extends EventEmitter {
@@ -86,6 +107,9 @@ class Server extends EventEmitter {
             let uid = this.IdGenerator.getNext();
             let channel = new Channel(c);
             this.channel_maps[uid] = channel;
+            channel.on('close', () => {
+                delete this.channel_maps[uid];
+            });
             channel.writeChannelId(uid);
         });
         this.server.listen(get_unix_file(), () => {
@@ -121,6 +145,9 @@ class Client extends EventEmitter {
                 channel.setChannelId(uid);
 
                 this.channel_maps[uid] = channel;
+                channel.on('close', () => {
+                    delete this.channel_maps[uid];
+                });
                 resolve(channel);
             });
             channel.once('error', (error: any) => {

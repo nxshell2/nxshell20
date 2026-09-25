@@ -3,8 +3,9 @@
         v-model="visible"
         :title="$t('home.session-instance.sys-monitor.title')"
         direction="rtl"
-        size="420px"
+        size="440px"
         :append-to-body="true"
+        class="sys-monitor-drawer"
     >
         <div class="sys-monitor">
             <div class="sys-monitor__header">
@@ -17,150 +18,243 @@
             </div>
 
             <el-tabs v-model="activeTab" class="sys-monitor__tabs">
+                <!-- System Tab -->
                 <el-tab-pane
                     :label="$t('home.session-instance.sys-monitor.system')"
                     name="system"
                 >
                     <div v-loading="loading" class="sys-monitor__content">
                         <template v-if="sysInfo">
-                            <div class="info-row">
-                                <span class="info-label">OS</span>
-                                <span class="info-value">{{ sysInfo.os || '-' }}</span>
-                            </div>
-                            <div class="info-row">
-                                <span class="info-label">Version</span>
-                                <span class="info-value">{{ sysInfo.version || '-' }}</span>
-                            </div>
-                            <div class="info-row">
-                                <span class="info-label">Kernel</span>
-                                <span class="info-value">{{ sysInfo.kernelRelease || '-' }}</span>
-                            </div>
-                            <div class="info-row">
-                                <span class="info-label">Arch</span>
-                                <span class="info-value">{{ sysInfo.arch || '-' }}</span>
-                            </div>
-                            <div class="info-row">
-                                <span class="info-label">Hostname</span>
-                                <span class="info-value">{{ sysInfo.hostname || '-' }}</span>
-                            </div>
-                            <div class="info-row">
-                                <span class="info-label">Uptime</span>
-                                <span class="info-value">{{ sysInfo.uptime || '-' }}</span>
-                            </div>
-
-                            <div class="info-section">CPU</div>
-                            <div class="info-row">
-                                <span class="info-label">Model</span>
-                                <span class="info-value">{{ sysInfo.cpuModel || '-' }}</span>
-                            </div>
-                            <div class="info-row">
-                                <span class="info-label">Cores</span>
-                                <span class="info-value">{{ sysInfo.cpuCores || '-' }}</span>
-                            </div>
-                            <div class="info-row">
-                                <span class="info-label">Sockets</span>
-                                <span class="info-value">{{ sysInfo.cpuSockets || '-' }}</span>
-                            </div>
-                            <div class="info-row">
-                                <span class="info-label">Frequency</span>
-                                <span class="info-value">{{ sysInfo.cpuMhz ? sysInfo.cpuMhz + ' MHz' : '-' }}</span>
-                            </div>
-                            <div class="info-row">
-                                <span class="info-label">Load Avg</span>
-                                <span class="info-value">
-                                    {{ sysInfo.loadAvg1 || 0 }} / {{ sysInfo.loadAvg5 || 0 }} / {{ sysInfo.loadAvg15 || 0 }}
-                                </span>
+                            <!-- System Info Cards -->
+                            <div class="info-cards">
+                                <div class="info-card">
+                                    <div class="info-card__icon">
+                                        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2">
+                                            <rect x="3" y="4" width="18" height="12" rx="2"/>
+                                            <line x1="3" y1="20" x2="21" y2="20"/>
+                                        </svg>
+                                    </div>
+                                    <div class="info-card__body">
+                                        <div class="info-card__title">{{ sysInfo.os || '-' }}</div>
+                                        <div class="info-card__sub">{{ sysInfo.version || '-' }}</div>
+                                        <div class="info-card__sub">{{ sysInfo.hostname || '-' }}</div>
+                                    </div>
+                                </div>
+                                <div class="info-card">
+                                    <div class="info-card__icon">
+                                        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2">
+                                            <rect x="4" y="4" width="16" height="16" rx="2"/>
+                                            <rect x="9" y="9" width="6" height="6"/>
+                                            <line x1="9" y1="1" x2="9" y2="4"/>
+                                            <line x1="15" y1="1" x2="15" y2="4"/>
+                                            <line x1="9" y1="20" x2="9" y2="23"/>
+                                            <line x1="15" y1="20" x2="15" y2="23"/>
+                                            <line x1="20" y1="9" x2="23" y2="9"/>
+                                            <line x1="20" y1="14" x2="23" y2="14"/>
+                                            <line x1="1" y1="9" x2="4" y2="9"/>
+                                            <line x1="1" y1="14" x2="4" y2="14"/>
+                                        </svg>
+                                    </div>
+                                    <div class="info-card__body">
+                                        <div class="info-card__title">{{ sysInfo.cpuModel || '-' }}</div>
+                                        <div class="info-card__sub">{{ sysInfo.cpuCores || '-' }} cores · {{ sysInfo.cpuMhz ? sysInfo.cpuMhz + ' MHz' : '-' }}</div>
+                                        <div class="info-card__sub">{{ sysInfo.arch || '-' }} · {{ sysInfo.kernelRelease || '-' }}</div>
+                                    </div>
+                                </div>
                             </div>
 
-                            <div class="info-section">Memory</div>
-                            <div class="info-row">
-                                <span class="info-label">Total</span>
-                                <span class="info-value">{{ formatBytes(sysInfo.memTotal) }}</span>
+                            <!-- CPU Load Gauge -->
+                            <div class="gauge-section">
+                                <div class="gauge-section__title">{{ $t('home.session-instance.sys-monitor.cpu-usage') }}</div>
+                                <div class="gauge-row">
+                                    <el-progress
+                                        type="circle"
+                                        :percentage="cpuLoadPercent"
+                                        :color="progressColor(cpuLoadPercent)"
+                                        :width="80"
+                                        :stroke-width="6"
+                                    >
+                                        <template #default>
+                                            <div class="gauge-center">
+                                                <div class="gauge-center__value">{{ sysInfo.loadAvg1 || 0 }}</div>
+                                                <div class="gauge-center__label">{{ $t('home.session-instance.sys-monitor.load-avg') }}</div>
+                                            </div>
+                                        </template>
+                                    </el-progress>
+                                    <div class="gauge-stats">
+                                        <div class="gauge-stat">
+                                            <span class="gauge-stat__label">1 min</span>
+                                            <span class="gauge-stat__value">{{ sysInfo.loadAvg1 || 0 }}</span>
+                                        </div>
+                                        <div class="gauge-stat">
+                                            <span class="gauge-stat__label">5 min</span>
+                                            <span class="gauge-stat__value">{{ sysInfo.loadAvg5 || 0 }}</span>
+                                        </div>
+                                        <div class="gauge-stat">
+                                            <span class="gauge-stat__label">15 min</span>
+                                            <span class="gauge-stat__value">{{ sysInfo.loadAvg15 || 0 }}</span>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
-                            <div class="info-row">
-                                <span class="info-label">Used</span>
-                                <span class="info-value">
-                                    {{ formatBytes(sysInfo.memUsed) }}
-                                    ({{ sysInfo.memUsagePercent || 0 }}%)
-                                </span>
+
+                            <!-- Memory Gauge -->
+                            <div class="gauge-section">
+                                <div class="gauge-section__title">{{ $t('home.session-instance.sys-monitor.memory-usage') }}</div>
+                                <div class="gauge-row">
+                                    <el-progress
+                                        type="circle"
+                                        :percentage="sysInfo.memUsagePercent || 0"
+                                        :color="progressColor(sysInfo.memUsagePercent)"
+                                        :width="80"
+                                        :stroke-width="6"
+                                    >
+                                        <template #default>
+                                            <div class="gauge-center">
+                                                <div class="gauge-center__value">{{ sysInfo.memUsagePercent || 0 }}%</div>
+                                                <div class="gauge-center__label">{{ $t('home.session-instance.sys-monitor.used') }}</div>
+                                            </div>
+                                        </template>
+                                    </el-progress>
+                                    <div class="gauge-stats">
+                                        <div class="gauge-stat">
+                                            <span class="gauge-stat__label">{{ $t('home.session-instance.sys-monitor.total') }}</span>
+                                            <span class="gauge-stat__value">{{ formatBytes(sysInfo.memTotal) }}</span>
+                                        </div>
+                                        <div class="gauge-stat">
+                                            <span class="gauge-stat__label">{{ $t('home.session-instance.sys-monitor.used') }}</span>
+                                            <span class="gauge-stat__value">{{ formatBytes(sysInfo.memUsed) }}</span>
+                                        </div>
+                                        <div class="gauge-stat">
+                                            <span class="gauge-stat__label">{{ $t('home.session-instance.sys-monitor.available') }}</span>
+                                            <span class="gauge-stat__value">{{ formatBytes(sysInfo.memAvailable) }}</span>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
-                            <div class="info-row">
-                                <span class="info-label">Available</span>
-                                <span class="info-value">{{ formatBytes(sysInfo.memAvailable) }}</span>
+
+                            <!-- Swap -->
+                            <div v-if="sysInfo.swapTotal > 0" class="gauge-section">
+                                <div class="gauge-section__title">{{ $t('home.session-instance.sys-monitor.swap-usage') }}</div>
+                                <div class="gauge-row">
+                                    <el-progress
+                                        type="circle"
+                                        :percentage="swapPercent"
+                                        :color="progressColor(swapPercent)"
+                                        :width="80"
+                                        :stroke-width="6"
+                                    >
+                                        <template #default>
+                                            <div class="gauge-center">
+                                                <div class="gauge-center__value">{{ swapPercent }}%</div>
+                                                <div class="gauge-center__label">{{ $t('home.session-instance.sys-monitor.used') }}</div>
+                                            </div>
+                                        </template>
+                                    </el-progress>
+                                    <div class="gauge-stats">
+                                        <div class="gauge-stat">
+                                            <span class="gauge-stat__label">{{ $t('home.session-instance.sys-monitor.total') }}</span>
+                                            <span class="gauge-stat__value">{{ formatBytes(sysInfo.swapTotal) }}</span>
+                                        </div>
+                                        <div class="gauge-stat">
+                                            <span class="gauge-stat__label">{{ $t('home.session-instance.sys-monitor.used') }}</span>
+                                            <span class="gauge-stat__value">{{ formatBytes(sysInfo.swapTotal - sysInfo.swapFree) }}</span>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
-                            <el-progress
-                                :percentage="sysInfo.memUsagePercent || 0"
-                                :color="progressColor(sysInfo.memUsagePercent)"
-                                :show-text="false"
-                                :stroke-width="6"
-                                style="margin-top: 4px"
-                            />
-                            <div v-if="sysInfo.swapTotal > 0" class="info-row" style="margin-top: 8px">
-                                <span class="info-label">Swap</span>
-                                <span class="info-value">
-                                    {{ formatBytes(sysInfo.swapTotal - sysInfo.swapFree) }} /
-                                    {{ formatBytes(sysInfo.swapTotal) }}
-                                </span>
+
+                            <!-- Uptime -->
+                            <div class="uptime-bar">
+                                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
+                                    <circle cx="12" cy="12" r="10"/>
+                                    <polyline points="12 6 12 12 16 14"/>
+                                </svg>
+                                <span>{{ $t('home.session-instance.sys-monitor.uptime') }}: {{ sysInfo.uptime || '-' }}</span>
                             </div>
                         </template>
                         <el-empty v-else-if="!loading" :description="error || $t('home.session-instance.sys-monitor.no-data')" />
                     </div>
                 </el-tab-pane>
 
+                <!-- Disk Tab -->
                 <el-tab-pane
                     :label="$t('home.session-instance.sys-monitor.disk')"
                     name="disk"
                 >
                     <div v-loading="loading" class="sys-monitor__content">
                         <template v-if="diskInfo.length">
-                            <div v-for="(disk, idx) in diskInfo" :key="idx" class="disk-item">
-                                <div class="disk-item__header">
-                                    <span class="disk-item__mount">{{ disk.mountedOn }}</span>
-                                    <span class="disk-item__type">{{ disk.type }}</span>
-                                </div>
-                                <div class="disk-item__detail">
-                                    {{ disk.used }} / {{ disk.total }} ({{ disk.usagePercent }})
+                            <div v-for="(disk, idx) in diskInfo" :key="idx" class="disk-card">
+                                <div class="disk-card__header">
+                                    <div class="disk-card__mount">
+                                        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
+                                            <ellipse cx="12" cy="5" rx="9" ry="3"/>
+                                            <path d="M3 5v14a9 3 0 0 0 18 0V5"/>
+                                            <path d="M3 12a9 3 0 0 0 18 0"/>
+                                        </svg>
+                                        {{ disk.mountedOn }}
+                                    </div>
+                                    <el-tag size="small" :type="diskTagType(disk.usagePercent)">{{ disk.usagePercent }}</el-tag>
                                 </div>
                                 <el-progress
                                     :percentage="parseInt(disk.usagePercent) || 0"
                                     :color="progressColor(parseInt(disk.usagePercent))"
                                     :show-text="false"
-                                    :stroke-width="6"
+                                    :stroke-width="8"
                                 />
-                                <div class="disk-item__fs">{{ disk.filesystem }}</div>
+                                <div class="disk-card__detail">
+                                    <span>{{ disk.used }} / {{ disk.total }}</span>
+                                    <span class="disk-card__fs">{{ disk.filesystem }} · {{ disk.type }}</span>
+                                </div>
                             </div>
                         </template>
                         <el-empty v-else-if="!loading" :description="error || $t('home.session-instance.sys-monitor.no-data')" />
                     </div>
                 </el-tab-pane>
 
+                <!-- Network Tab -->
                 <el-tab-pane
                     :label="$t('home.session-instance.sys-monitor.network')"
                     name="network"
                 >
                     <div v-loading="loading" class="sys-monitor__content">
                         <template v-if="netInfo.length">
-                            <div v-for="(iface, idx) in netInfo" :key="idx" class="net-item">
-                                <div class="net-item__header">
-                                    <span class="net-item__name">{{ iface.name }}</span>
-                                    <el-tag
-                                        size="small"
-                                        :type="iface.state === 'UP' ? 'success' : 'info'"
-                                    >
+                            <div v-for="(iface, idx) in netInfo" :key="idx" class="net-card">
+                                <div class="net-card__header">
+                                    <div class="net-card__name">
+                                        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
+                                            <rect x="2" y="14" width="20" height="6" rx="1"/>
+                                            <line x1="6" y1="18" x2="6.01" y2="18"/>
+                                            <line x1="10" y1="18" x2="10.01" y2="18"/>
+                                            <path d="M12 14v-4M8 10h8"/>
+                                        </svg>
+                                        {{ iface.name }}
+                                    </div>
+                                    <el-tag size="small" :type="iface.state === 'UP' ? 'success' : 'info'">
                                         {{ iface.state || 'UNKNOWN' }}
                                     </el-tag>
                                 </div>
-                                <div v-if="iface.ipv4.length" class="net-item__addr">
-                                    <span class="net-item__label">IPv4:</span>
-                                    <span v-for="ip in iface.ipv4" :key="ip" class="net-item__ip">{{ ip }}</span>
+                                <div v-if="iface.ipv4.length" class="net-card__addr-row">
+                                    <span class="net-card__addr-label">IPv4</span>
+                                    <span v-for="ip in iface.ipv4" :key="ip" class="net-card__ip">{{ ip }}</span>
                                 </div>
-                                <div v-if="iface.ipv6.length" class="net-item__addr">
-                                    <span class="net-item__label">IPv6:</span>
-                                    <span v-for="ip in iface.ipv6" :key="ip" class="net-item__ip">{{ ip }}</span>
+                                <div v-if="iface.ipv6.length" class="net-card__addr-row">
+                                    <span class="net-card__addr-label">IPv6</span>
+                                    <span v-for="ip in iface.ipv6" :key="ip" class="net-card__ip">{{ ip }}</span>
                                 </div>
-                                <div v-if="iface.rxBytes !== undefined" class="net-item__traffic">
-                                    <span>RX: {{ formatBytes(iface.rxBytes) }}</span>
-                                    <span>TX: {{ formatBytes(iface.txBytes) }}</span>
+                                <div v-if="iface.rxBytes !== undefined" class="net-card__traffic">
+                                    <div class="net-card__traffic-item">
+                                        <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2">
+                                            <polyline points="7 17 17 7"/><polyline points="7 7 17 7 17 17"/>
+                                        </svg>
+                                        <span>{{ $t('home.session-instance.sys-monitor.rx') }}: {{ formatBytes(iface.rxBytes) }}</span>
+                                    </div>
+                                    <div class="net-card__traffic-item">
+                                        <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2">
+                                            <polyline points="17 7 7 17"/><polyline points="17 17 7 17 7 7"/>
+                                        </svg>
+                                        <span>{{ $t('home.session-instance.sys-monitor.tx') }}: {{ formatBytes(iface.txBytes) }}</span>
+                                    </div>
                                 </div>
                             </div>
                         </template>
@@ -168,6 +262,7 @@
                     </div>
                 </el-tab-pane>
 
+                <!-- Process Tab -->
                 <el-tab-pane
                     :label="$t('home.session-instance.sys-monitor.process')"
                     name="process"
@@ -185,18 +280,18 @@
                             :data="filteredProcesses"
                             size="small"
                             height="calc(100vh - 260px)"
-                            :header-cell-style="{ background: 'var(--n-tabs-bg-color, #f5f5f5)' }"
                         >
-                            <el-table-column prop="pid" label="PID" width="70" sortable />
-                            <el-table-column prop="user" label="User" width="80" show-overflow-tooltip />
+                            <el-table-column prop="pid" :label="$t('home.session-instance.sys-monitor.pid')" width="70" sortable />
+                            <el-table-column prop="user" :label="$t('home.session-instance.sys-monitor.user')" width="80" show-overflow-tooltip />
                             <el-table-column prop="cpu" label="CPU%" width="80" sortable />
                             <el-table-column prop="mem" label="Mem%" width="80" sortable />
-                            <el-table-column prop="comm" label="Command" show-overflow-tooltip />
+                            <el-table-column prop="comm" :label="$t('home.session-instance.sys-monitor.command')" show-overflow-tooltip />
                         </el-table>
                         <el-empty v-else-if="!loading" :description="error || $t('home.session-instance.sys-monitor.no-data')" />
                     </div>
                 </el-tab-pane>
 
+                <!-- Service Tab -->
                 <el-tab-pane
                     :label="$t('home.session-instance.sys-monitor.service')"
                     name="service"
@@ -212,10 +307,13 @@
                             :data="filteredServices"
                             size="small"
                             height="calc(100vh - 260px)"
-                            :header-cell-style="{ background: 'var(--n-tabs-bg-color, #f5f5f5)' }"
                         >
                             <el-table-column prop="name" label="Service" show-overflow-tooltip />
-                            <el-table-column prop="state" label="State" width="90" />
+                            <el-table-column prop="state" label="State" width="90">
+                                <template #default="{ row }">
+                                    <el-tag size="small" :type="serviceTagType(row.state)">{{ row.state }}</el-tag>
+                                </template>
+                            </el-table-column>
                             <el-table-column prop="description" label="Description" show-overflow-tooltip />
                         </el-table>
                         <el-empty v-else-if="!loading" :description="error || $t('home.session-instance.sys-monitor.no-data')" />
@@ -276,6 +374,16 @@ export default {
             return this.serviceInfo.filter(s =>
                 s.state.toLowerCase() === this.serviceFilter
             )
+        },
+        cpuLoadPercent() {
+            const cores = this.sysInfo?.cpuCores || 1
+            const load = this.sysInfo?.loadAvg1 || 0
+            return Math.min(100, Math.round((load / cores) * 100))
+        },
+        swapPercent() {
+            if (!this.sysInfo || !this.sysInfo.swapTotal) return 0
+            const used = this.sysInfo.swapTotal - this.sysInfo.swapFree
+            return Math.round((used / this.sysInfo.swapTotal) * 100)
         }
     },
     methods: {
@@ -364,6 +472,18 @@ export default {
             if (percent >= 90) return '#f56c6c'
             if (percent >= 70) return '#e6a23c'
             return '#67c23a'
+        },
+        diskTagType(percent) {
+            const p = parseInt(percent) || 0
+            if (p >= 90) return 'danger'
+            if (p >= 70) return 'warning'
+            return 'success'
+        },
+        serviceTagType(state) {
+            const s = (state || '').toLowerCase()
+            if (s === 'running') return 'success'
+            if (s === 'failed') return 'danger'
+            return 'info'
         }
     }
 }
@@ -395,98 +515,199 @@ export default {
     }
 }
 
-.info-row {
+/* System Info Cards */
+.info-cards {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-bottom: 16px;
+}
+
+.info-card {
+    display: flex;
+    gap: 10px;
+    padding: 10px 12px;
+    border-radius: 8px;
+    background: var(--n-bg-color-light, rgba(0, 0, 0, 0.03));
+    border: 1px solid var(--n-border-color, rgba(0, 0, 0, 0.06));
+
+    &__icon {
+        flex-shrink: 0;
+        color: var(--n-text-color-light, #999);
+        display: flex;
+        align-items: flex-start;
+        padding-top: 2px;
+    }
+
+    &__body {
+        flex: 1;
+        min-width: 0;
+    }
+
+    &__title {
+        font-size: 13px;
+        font-weight: 600;
+        color: var(--n-text-color-base, #333);
+        margin-bottom: 2px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    &__sub {
+        font-size: 11px;
+        color: var(--n-text-color-light, #999);
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+}
+
+/* Gauge Section */
+.gauge-section {
+    margin-bottom: 16px;
+
+    &__title {
+        font-size: 13px;
+        font-weight: 600;
+        color: var(--n-text-color-base, #333);
+        margin-bottom: 8px;
+    }
+}
+
+.gauge-row {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+}
+
+.gauge-center {
+    text-align: center;
+
+    &__value {
+        font-size: 16px;
+        font-weight: 700;
+        color: var(--n-text-color-base, #333);
+        line-height: 1.2;
+    }
+
+    &__label {
+        font-size: 10px;
+        color: var(--n-text-color-light, #999);
+    }
+}
+
+.gauge-stats {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    flex: 1;
+}
+
+.gauge-stat {
     display: flex;
     justify-content: space-between;
-    align-items: flex-start;
-    padding: 4px 0;
-    font-size: 13px;
+    font-size: 12px;
+
+    &__label {
+        color: var(--n-text-color-light, #999);
+    }
+
+    &__value {
+        color: var(--n-text-color-base, #333);
+        font-weight: 500;
+    }
 }
 
-.info-label {
+/* Uptime */
+.uptime-bar {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
     color: var(--n-text-color-light, #999);
-    flex-shrink: 0;
-    width: 90px;
-}
-
-.info-value {
-    color: var(--n-text-color-base, #333);
-    text-align: right;
-    word-break: break-all;
-}
-
-.info-section {
-    margin-top: 16px;
-    margin-bottom: 4px;
-    font-size: 13px;
-    font-weight: 600;
-    color: var(--n-text-color-base, #333);
-    border-bottom: 1px solid var(--n-border-color, #eee);
-    padding-bottom: 4px;
-}
-
-.disk-item {
     padding: 8px 0;
-    border-bottom: 1px solid var(--n-border-color, #eee);
+    border-top: 1px solid var(--n-border-color, rgba(0, 0, 0, 0.06));
+}
+
+/* Disk Cards */
+.disk-card {
+    padding: 10px 0;
+    border-bottom: 1px solid var(--n-border-color, rgba(0, 0, 0, 0.06));
+
+    &:last-child {
+        border-bottom: none;
+    }
 
     &__header {
         display: flex;
         justify-content: space-between;
         align-items: center;
-        margin-bottom: 4px;
+        margin-bottom: 6px;
     }
 
     &__mount {
+        display: flex;
+        align-items: center;
+        gap: 6px;
         font-weight: 600;
         font-size: 13px;
-    }
-
-    &__type {
-        font-size: 11px;
-        color: var(--n-text-color-light, #999);
+        color: var(--n-text-color-base, #333);
     }
 
     &__detail {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-top: 4px;
         font-size: 12px;
         color: var(--n-text-color-base, #333);
-        margin-bottom: 4px;
     }
 
     &__fs {
         font-size: 11px;
         color: var(--n-text-color-light, #999);
-        margin-top: 2px;
     }
 }
 
-.net-item {
-    padding: 8px 0;
-    border-bottom: 1px solid var(--n-border-color, #eee);
+/* Network Cards */
+.net-card {
+    padding: 10px 0;
+    border-bottom: 1px solid var(--n-border-color, rgba(0, 0, 0, 0.06));
+
+    &:last-child {
+        border-bottom: none;
+    }
 
     &__header {
         display: flex;
         justify-content: space-between;
         align-items: center;
-        margin-bottom: 4px;
+        margin-bottom: 6px;
     }
 
     &__name {
-        font-weight: 600;
-        font-size: 13px;
-    }
-
-    &__addr {
-        font-size: 12px;
-        margin: 2px 0;
         display: flex;
         align-items: center;
         gap: 6px;
+        font-weight: 600;
+        font-size: 13px;
+        color: var(--n-text-color-base, #333);
+    }
+
+    &__addr-row {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 12px;
+        margin: 2px 0;
         flex-wrap: wrap;
     }
 
-    &__label {
+    &__addr-label {
         color: var(--n-text-color-light, #999);
         flex-shrink: 0;
+        font-size: 11px;
     }
 
     &__ip {
@@ -496,9 +717,32 @@ export default {
     &__traffic {
         display: flex;
         gap: 16px;
+        margin-top: 6px;
+    }
+
+    &__traffic-item {
+        display: flex;
+        align-items: center;
+        gap: 4px;
         font-size: 11px;
         color: var(--n-text-color-light, #999);
-        margin-top: 4px;
+    }
+}
+</style>
+
+<style lang="scss">
+/* Component-level dark mode overrides */
+.sys-monitor-drawer {
+    .el-drawer__header {
+        color: var(--el-text-color-primary);
+    }
+
+    .el-empty__description {
+        color: var(--el-text-color-secondary);
+    }
+
+    .el-loading-mask {
+        background-color: var(--el-mask-color, rgba(255, 255, 255, 0.9));
     }
 }
 </style>

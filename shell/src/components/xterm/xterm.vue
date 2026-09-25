@@ -247,9 +247,8 @@ export default {
 				this.aiTip.show = false
 			}
 			this.$refs.xtermContainer.addEventListener("mousedown", this.hideAiTipHandler)
-			// 绑定右键粘贴功能1
-			// document.addEventListener("contextmenu", this.contextmenuPast)
-			this.$refs.xtermContainer.addEventListener("contextmenu", this.contextmenuPast)
+			// 绑定中键粘贴功能
+			this.$refs.xtermContainer.addEventListener("auxclick", this.middleClickPaste)
 			this.terminal.attachCustomKeyEventHandler((ev) => {
 				if (ev.altKey) {
 					// emit shortcut to process in home page
@@ -300,15 +299,13 @@ export default {
 			}
 			this.pendingData = []
 		},
-		async contextmenuPast(event) {
-			const selection = this.terminal?.getSelection()
-			if (selection) {
+		async middleClickPaste(event) {
+			if (event.button !== 1) {
 				return
 			}
 			const text = powertools.clipboardReadText()
 			if (text !== "") {
 				event.preventDefault()
-				event.stopPropagation()
 				this.pasteText(text)
 			}
 		},
@@ -590,7 +587,7 @@ export default {
 		//     window.removeEventListener("pt-view-resize", this.ptViewResizeHandler);
 		//     this.ptViewResizeHandler = null;
 		// }
-		this.$refs.xtermContainer?.removeEventListener("contextmenu", this.contextmenuPast)
+		this.$refs.xtermContainer?.removeEventListener("auxclick", this.middleClickPaste)
 		if (this.hideAiTipHandler) {
 			this.$refs.xtermContainer?.removeEventListener("mousedown", this.hideAiTipHandler)
 			this.hideAiTipHandler = null
@@ -599,7 +596,6 @@ export default {
 			this.updateAiTipDebounced.cancel()
 			this.updateAiTipDebounced = null
 		}
-		// document.removeEventListener("contextmenu", this.contextmenuPast)
 	}
 }
 </script>

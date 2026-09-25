@@ -41,4 +41,40 @@
 
   --n-switch-active: rgb(22 93 255);
   --n-jump-box-shadow: rgb(0 0 0 / 20%);
+
+  /* Element Plus CSS Variables Mapping */
+  --el-bg-color: #ffffff;
+  --el-bg-color-page: #f5f5f5;
+  --el-bg-color-overlay: #ffffff;
+  --el-text-color-primary: #132847;
+  --el-text-color-regular: #333333;
+  --el-text-color-secondary: #666666;
+  --el-text-color-placeholder: #999999;
+  --el-border-color: #e4e7ed;
+  --el-border-color-light: #ebeef5;
+  --el-border-color-lighter: #f2f6fc;
+  --el-fill-color: #f5f7fa;
+  --el-fill-color-light: #fafafa;
+  --el-fill-color-blank: transparent;
+
+  /* Element Plus Table */
+  --el-table-bg-color: transparent;
+  --el-table-tr-bg-color: transparent;
+  --el-table-header-bg-color: #f5f7fa;
+  --el-table-header-text-color: #132847;
+  --el-table-text-color: #333333;
+  --el-table-border-color: #ebeef5;
+  --el-table-row-hover-bg-color: #f5f7fa;
+
+  /* Element Plus Drawer */
+  --el-drawer-bg-color: #ffffff;
+
+  /* Element Plus Input */
+  --el-input-bg-color: #ffffff;
+  --el-input-text-color: #132847;
+  --el-input-border-color: #dcdfe6;
+  --el-input-placeholder-color: #999999;
+
+  /* Element Plus Mask */
+  --el-mask-bg: rgba(0, 0, 0, 0.5);
 }

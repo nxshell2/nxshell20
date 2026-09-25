@@ -42,4 +42,79 @@
 
   --n-switch-active: rgb(22 93 255);
   --n-jump-box-shadow: rgb(255 255 255 / 20%);
+
+  /* Element Plus CSS Variables Mapping */
+  --el-bg-color: #18181c;
+  --el-bg-color-page: #101014;
+  --el-bg-color-overlay: #1e1e22;
+  --el-text-color-primary: rgb(219, 223, 234);
+  --el-text-color-regular: rgb(204, 208, 220);
+  --el-text-color-secondary: rgb(168, 172, 184);
+  --el-text-color-placeholder: rgb(120, 124, 136);
+  --el-text-color-disabled: rgb(96, 98, 108);
+  --el-border-color: rgba(255, 255, 255, 0.12);
+  --el-border-color-light: rgba(255, 255, 255, 0.08);
+  --el-border-color-lighter: rgba(255, 255, 255, 0.06);
+  --el-border-color-extra-light: rgba(255, 255, 255, 0.04);
+  --el-border-color-dark: rgba(255, 255, 255, 0.16);
+  --el-fill-color: rgba(255, 255, 255, 0.06);
+  --el-fill-color-light: rgba(255, 255, 255, 0.04);
+  --el-fill-color-lighter: rgba(255, 255, 255, 0.03);
+  --el-fill-color-extra-light: rgba(255, 255, 255, 0.02);
+  --el-fill-color-blank: transparent;
+
+  /* Element Plus Table */
+  --el-table-bg-color: transparent;
+  --el-table-tr-bg-color: transparent;
+  --el-table-header-bg-color: #101014;
+  --el-table-header-text-color: rgb(219, 223, 234);
+  --el-table-text-color: rgb(219, 223, 234);
+  --el-table-border-color: rgba(255, 255, 255, 0.08);
+  --el-table-row-hover-bg-color: rgba(255, 255, 255, 0.05);
+  --el-table-fixed-box-shadow: none;
+  --el-table-current-row-bg-color: rgba(22, 93, 255, 0.15);
+
+  /* Element Plus Drawer */
+  --el-drawer-bg-color: #18181c;
+
+  /* Element Plus Tabs */
+  --el-tabs-header-color: rgb(219, 223, 234);
+  --el-tabs-header-bg-color: transparent;
+  --el-tabs-active-color: #165dff;
+  --el-tabs-border-color: rgba(255, 255, 255, 0.12);
+  --el-tabs-item-color: rgb(168, 172, 184);
+  --el-tabs-item-active-color: #fff;
+
+  /* Element Plus Input */
+  --el-input-bg-color: rgba(255, 255, 255, 0.08);
+  --el-input-text-color: rgb(219, 223, 234);
+  --el-input-border-color: rgba(255, 255, 255, 0.12);
+  --el-input-hover-border-color: rgba(255, 255, 255, 0.2);
+  --el-input-placeholder-color: rgb(120, 124, 136);
+
+  /* Element Plus Empty */
+  --el-empty-fill-color: rgba(255, 255, 255, 0.04);
+
+  /* Element Plus Mask */
+  --el-mask-bg: rgba(0, 0, 0, 0.6);
+  --el-mask-color: rgba(24, 24, 28, 0.7);
+
+  /* Element Plus Radio Button */
+  --el-radio-button-bg-color: rgba(255, 255, 255, 0.06);
+  --el-radio-button-text-color: rgb(168, 172, 184);
+  --el-radio-button-checked-bg-color: #165dff;
+  --el-radio-button-checked-text-color: #fff;
+  --el-radio-button-border-color: rgba(255, 255, 255, 0.12);
+
+  /* Element Plus Tag */
+  --el-tag-bg-color: rgba(255, 255, 255, 0.08);
+  --el-tag-text-color: rgb(204, 208, 220);
+
+  /* Element Plus Loading */
+  --el-loading-spinner-size: 42px;
+  --el-mask-bg: rgba(0, 0, 0, 0.6);
+  --el-loading-bg-color: rgba(24, 24, 28, 0.7);
+  --el-loading-text-color: rgb(219, 223, 234);
+  --el-loading-svg-color: #165dff;
+  --el-loading-svg-stroke: #165dff;
 }

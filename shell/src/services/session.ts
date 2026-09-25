@@ -1,4 +1,5 @@
 import { EventEmitter } from "events";
+import { markRaw } from "vue";
 import { isPromise } from "../../common/utils"
 
 import * as EventBus from "./eventbus";
@@ -91,6 +92,7 @@ export class SessionInterface extends EventEmitter {
     refBySessions: any[] = [];
     constructor(name: string, type: string) {
         super();
+        markRaw(this);
         this.name = name;
         this.type = type;
         this.closeCallBack = null;

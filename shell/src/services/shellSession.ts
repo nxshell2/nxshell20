@@ -59,9 +59,10 @@ class ShellSession extends SessionInterface {
         };
         this.on("resize", this.resize_window);
 
+        const safeCfg = JSON.parse(JSON.stringify(this.cfg));
         let nodeInstance;
         try {
-            nodeInstance = await createNodeSessionInstance(this.cfg.uuid, this.cfg);
+            nodeInstance = await createNodeSessionInstance(safeCfg.uuid, safeCfg);
             await nodeInstance.init();
         } catch (err: any) {
             console.error("ShellSession init error:", err);
@@ -94,7 +95,14 @@ class ShellSession extends SessionInterface {
         this.data_channel.on('data', this.data_channel_cb)
 
         this.send_data = async (data: any) => {
-            await this.data_channel.send(data);
+            if (!this.data_channel) {
+                return;
+            }
+            try {
+                await this.data_channel.send(data);
+            } catch (e) {
+                console.error("ShellSession send_data error:", e);
+            }
         };
         this.on('send_data', this.send_data);
 
@@ -108,17 +116,23 @@ class ShellSession extends SessionInterface {
                 connId = this.connId;
             }
             terminal = await nodeInstance.getTerminalInstance(connId, control.channelId);
-            await terminal.init(this.cfg.xterm);
+            await terminal.init(safeCfg.xterm);
             this.clientReady.resolve();
         } catch (err: any) {
             // notify to frontend
             let msg = err.toString();
             this.emit('data', Buffer.from(msg));
+            this.emit('error', 'Connect fail: ' + msg);
             return;
         }
         this.terminal = terminal;
 
-        this.terminal.bindDataChannel(channel.channelId);        
+        try {
+            await this.terminal.bindDataChannel(channel.channelId);
+        } catch (err: any) {
+            console.error("ShellSession bindDataChannel error:", err);
+            this.emit('error', 'bindDataChannel fail: ' + (err && err.message ? err.message : err));
+        }
     }
 
     async sendControlData(data: any) {
@@ -147,10 +161,19 @@ class ShellSession extends SessionInterface {
         }
         this.terminal = null;
         this.clientReady = null;
+        this.connId = -1;
         this.off("send_data", this.send_data);
         this.off("resize", this.resize_window);
-        this.control_channel.off("data", this.control_channel_cb);
-        this.data_channel.off("data", this.data_channel_cb);
+        if(this.control_channel) {
+            this.control_channel.off("data", this.control_channel_cb);
+            if(this.control_channel.close) this.control_channel.close();
+            this.control_channel = null;
+        }
+        if(this.data_channel) {
+            this.data_channel.off("data", this.data_channel_cb);
+            if(this.data_channel.close) this.data_channel.close();
+            this.data_channel = null;
+        }
     }
 
     close() {
@@ -180,7 +203,7 @@ class ShellSession extends SessionInterface {
                 this.resize_window(cols, rows)
             }
         }catch(e) {
-            // do nothing
+            console.error("ShellSession refresh error:", e);
         }
         this.refreshing = false;
     }

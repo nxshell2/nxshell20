@@ -14,7 +14,9 @@ async function initI18n() {
 		await loadGlobalProfile()
 		settings = getProfile("xterm")
 	}
-	const language = settings?.language ?? "zh-CN"
+	const systemLang = navigator.language || "en-US"
+	const isChinese = systemLang.toLowerCase().startsWith("zh")
+	const language = settings?.language ?? (isChinese ? "zh-CN" : "en-US")
 	// 创建vue-i18n实例i18n
 	i18nInstance = createI18n({
 		legacy: false,

@@ -1,6 +1,4 @@
 import { app, protocol, BrowserWindow } from "electron";
-import { report_app_statis } from '../utils/collect';
-import { check_app_update } from './AppUpdate';
 import "./preloadIpc";
 import { debugLog } from "../utils/debuglog";
 
@@ -49,13 +47,6 @@ function close_shell_instance() {
     }
 }
 
-function setup_app_report_interval() {
-    const interval = 24 * 60 * 60 * 1000;
-    setInterval(() => {
-        report_app_statis();
-    }, interval);
-}
-
 export default {
     async initialize() {
         debugLog("[Core] registerSchemesAsPrivileged");
@@ -89,8 +80,6 @@ export default {
         }
 
         process_macos_acitve_event();
-        report_app_statis();
-        setup_app_report_interval();
         debugLog("[Core] all initialization complete");
     }
 };

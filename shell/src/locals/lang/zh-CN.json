@@ -621,6 +621,26 @@
       "goto-feedback-or": "或者"
     },
     "fileview": {
+      "transfer": {
+        "title": "传输列表",
+        "active": "{0} 进行中",
+        "failed": "{0} 失败",
+        "done": "{0} 完成",
+        "clear-completed": "清除已完成",
+        "clear-all": "全部清除",
+        "retry": "重试",
+        "retry-all-failed": "重试全部失败",
+        "remove": "移除",
+        "empty": "暂无传输任务",
+        "status": {
+          "pending": "等待中",
+          "transferring": "传输中",
+          "done": "已完成",
+          "error": "失败"
+        },
+        "upload": "上传",
+        "download": "下载"
+      },
       "context-menu": {
         "open": "打开",
         "rename": "重命名",

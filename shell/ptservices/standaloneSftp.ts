@@ -1,6 +1,7 @@
-import * as util from 'util';
-if (typeof (util as any).isDate !== 'function') {
-    (util as any).isDate = (val: any) => val instanceof Date;
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const util = require('util');
+if (typeof util.isDate !== 'function') {
+    util.isDate = (val: any) => val instanceof Date;
 }
 
 const { Client } = require('nxshell-ssh2');

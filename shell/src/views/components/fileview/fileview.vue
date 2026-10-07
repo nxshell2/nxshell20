@@ -230,6 +230,7 @@ import { Dirent } from '../../../../common/filesystem/dirent'
 import { createDataTransfer } from '@/services/nxsys/dataTransfer'
 import FileStatusBar from '@/views/components/fileview/components/file-status-bar'
 import { showContextMenu } from '@/components/menu/contextmenu'
+import useTransferStore from '@/store/modules/transfer'
 
 function sort(dirent1, dirent2) {
 	return dirent1.name > dirent2.name
@@ -573,6 +574,8 @@ export default {
 
 	created() {
 		this.layout = this.viewMode
+		this.transferStore = useTransferStore()
+		this._transferSeq = 0
 	},
 
 	mounted() {
@@ -914,6 +917,8 @@ export default {
 				type: 'dir'
 			})
 
+			this.attachTransferToPanel(transfer, 'upload', connId)
+
 			return new Promise((resolve, reject) => {
 				transfer.on('prepare', () => {
 					this.updateProgress(progressId, 0, this.$t('home.fileview.mainview.progress.prepare-upload'))
@@ -944,6 +949,75 @@ export default {
 			})
 		},
 
+		/**
+		 * 把一个 transfer 的逐文件事件接入全局传输面板。
+		 * direction: 'upload' | 'download'; connId 用于失败后的单文件重试。
+		 */
+		attachTransferToPanel(transfer, direction, connId) {
+			const transferId = `t${Date.now()}-${this._transferSeq++}`
+			const store = this.transferStore
+			if (!store) {
+				return transferId
+			}
+
+			transfer.on('queued', (args) => {
+				const dir = (args && args.direction) || direction
+				const files = (args && args.files) || []
+				store.queueFiles(
+					transferId,
+					dir,
+					files.map((f) => ({ fileId: f.fileId, name: f.name, size: f.size }))
+				)
+				files.forEach((f) => {
+					const taskId = `${transferId}:${f.fileId}`
+					store.registerRetry(taskId, () =>
+						this._retrySingleFile(dir, connId, f.sourcePath, f.destPath, transferId, f.fileId)
+					)
+				})
+			})
+			transfer.on('file-start', (args) => store.startFile(transferId, args.fileId))
+			transfer.on('file-progress', (args) => store.updateFile(transferId, args.fileId, args.progress, args.speed))
+			transfer.on('file-done', (args) => store.finishFile(transferId, args.fileId))
+			transfer.on('file-error', (args) => store.errorFile(transferId, args.fileId, args.message))
+
+			return transferId
+		},
+
+		/**
+		 * 重试单个失败文件：新建一个只包含该文件的 transfer，并把事件映射回原任务行。
+		 */
+		async _retrySingleFile(direction, connId, sourcePath, destPath, transferId, fileId) {
+			const store = this.transferStore
+			const transfer = await createDataTransfer()
+			if (direction === 'upload') {
+				transfer._setFrom({ nodeUUID: '', path: sourcePath, type: 'file' })
+				transfer._setTo({ connId: connId, nodeUUID: this.hostInfo.uuid, path: destPath, type: 'file' })
+			} else {
+				transfer._setFrom({ connId: connId, nodeUUID: this.hostInfo.uuid, path: sourcePath, type: 'file' })
+				transfer._setTo({ nodeUUID: '', path: destPath, type: 'file' })
+			}
+
+			return new Promise((resolve) => {
+				transfer.on('file-progress', (args) => store && store.updateFile(transferId, fileId, args.progress, args.speed))
+				transfer.on('file-done', () => store && store.finishFile(transferId, fileId))
+				transfer.on('file-error', (args) => store && store.errorFile(transferId, fileId, args.message))
+				transfer.on('finished', () => {
+					this.refresh()
+					resolve()
+				})
+				transfer.on('error', (err) => {
+					if (store) {
+						store.errorFile(transferId, fileId, (err && err.message) ? err.message : String(err))
+					}
+					resolve()
+				})
+				if (store) {
+					store.startFile(transferId, fileId)
+				}
+				transfer.startTransferring()
+			})
+		},
+
 		async download(fromPath, toPath, type, progressId, createFolder = false) {
 			const transfer = await createDataTransfer()
 			const connId = await this.getconn()
@@ -959,6 +1033,8 @@ export default {
 				path: toPath,
 				type
 			})
+
+			this.attachTransferToPanel(transfer, 'download', connId)
 
 			return new Promise((resolve, reject) => {
 				transfer.on('prepare', () => {
@@ -1207,7 +1283,8 @@ export default {
 				return
 			}
 
-			const progressId = this.createProgress(this.$t('home.fileview.mainview.progress.prepare-upload'))
+			// 上传进度改由全局传输面板展示，不再占用底部状态栏
+			const progressId = null
 			try {
 				await this.upload(selectedFiles.filePaths[0], 'file', progressId)
 			} catch (err) {
@@ -1236,7 +1313,8 @@ export default {
 				return
 			}
 
-			const progressId = this.createProgress(this.$t('home.fileview.mainview.progress.prepare-upload'))
+			// 上传进度改由全局传输面板展示，不再占用底部状态栏
+			const progressId = null
 
 			try {
 				await this.upload(selectedFiles.filePaths[0], 'dir', progressId)
@@ -1373,7 +1451,8 @@ export default {
 				return
 			}
 
-			const progressId = this.createProgress(this.$t('home.fileview.mainview.progress.prepare-download'))
+			// 下载进度改由全局传输面板展示，不再占用底部状态栏
+			const progressId = null
 
 			try {
 				await this.download(filePath, selectedFiles.filePath, 'file', progressId)
@@ -1408,7 +1487,8 @@ export default {
 				return
 			}
 
-			const progressId = this.createProgress(this.$t('home.fileview.mainview.progress.prepare-download'))
+			// 下载进度改由全局传输面板展示，不再占用底部状态栏
+			const progressId = null
 
 			try {
 				await this.download(filePath, selectedFiles.filePaths[0], 'dir', progressId, true)
@@ -1669,7 +1749,8 @@ export default {
 
 		async handleFileDrop(files) {
 			for (let i = 0; i < files.length; i++) {
-				let progressId = this.createProgress(this.$t('home.fileview.mainview.progress.prepare-upload'))
+				// 上传进度改由全局传输面板展示，不再占用底部状态栏
+				let progressId = null
 				let file = files[i]
 				try {
 					let type = file.isDir ? 'dir' : 'file'

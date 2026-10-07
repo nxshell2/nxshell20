@@ -30,11 +30,11 @@ const toWebsite = () => {
 	window.powertools.openExterUrl('https://nxshell.github.io/')
 }
 const toStar = () => {
-	const github = 'https://github.com/nxshell/nxshell'
+	const github = 'https://github.com/nxshell2/nxshell20'
 	window.powertools.openExterUrl(github)
 }
 const toIssues = () => {
-	const issues = 'https://github.com/nxshell/nxshell/issues'
+	const issues = 'https://github.com/nxshell2/nxshell20/issues'
 	window.powertools.openExterUrl(issues)
 }
 </script>

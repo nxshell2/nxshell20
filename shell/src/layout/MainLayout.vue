@@ -21,11 +21,13 @@
 				</router-view>
 			</div>
 		</div>
+		<transfer-panel />
 	</div>
 </template>
 <script setup>
 import * as EventBus from '@/services/eventbus'
 import { NxMenus, NxTabMenu } from './components'
+import TransferPanel from '@/views/components/transfer-panel/index.vue'
 import { storeToRefs } from 'pinia'
 import { getCurrentInstance, onBeforeMount } from "vue";
 import { useNxTabsStore } from '@/store'

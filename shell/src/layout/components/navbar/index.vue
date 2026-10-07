@@ -36,10 +36,7 @@
 				<!-- 设置按钮 -->
 				<el-button link icon="Setting" @click="gotoGlobalSetting" />
 				<!-- 版本信息 -->
-				<el-tooltip v-if="needUpdate" effect="dark" :content="t('app.need-update')" placement="bottom">
-					<el-button link :class="{ 'version-btn': needUpdate }" icon="Sell" @click="handlerVersionUpdate" />
-				</el-tooltip>
-				<el-tooltip v-else effect="dark" :content="`${t('app.current-version')} ${version}`">
+				<el-tooltip effect="dark" :content="`${t('app.current-version')} ${version}`">
 					<el-button link icon="Warning" />
 				</el-tooltip>
 			</n-space>
@@ -51,17 +48,14 @@
 import { createLocalFs } from "@/services/nxsys/localfs"
 import { SESSION_TYPES } from "@/services/session"
 import { useSettingStore } from "@/store"
-import axios from "axios"
 import { storeToRefs } from "pinia"
-import semver from "semver"
 import { getCurrentInstance, onMounted, ref } from "vue"
 import { useI18n } from "vue-i18n"
-import { getProfile, updateProfile } from "@/services/globalSetting"
+import { updateProfile } from "@/services/globalSetting"
 
 const { t, locale } = useI18n()
 const IS_MACOS = /macintosh/i.test(navigator.userAgent)
 const version = ref("V1.0.0")
-const needUpdate = ref(false)
 const capture = ref(false)
 const captureIcon = ref("")
 const fsClient = ref()
@@ -74,7 +68,6 @@ const themeIconConstants = {
 	pink: "Cherry",
 	hazy: "Sunny"
 }
-console.log("设置", locale.value, getProfile("xterm")?.language)
 const doCapture = async (_e) => {
 	capture.value = !capture.value
 	captureIcon.value = capture.value ? "VideoPlay" : "VideoPause"
@@ -96,20 +89,6 @@ const doCapture = async (_e) => {
 		return
 	}
 	await window.powertools.captureStart()
-}
-
-const checkAppUpdate = async () => {
-	const versionUrl = "http://106.15.238.81:56789/oauth/version"
-	try {
-		const {
-			data: { version: remoteVersion = "" }
-		} = await axios.get(versionUrl, { timeout: 60 * 1000 })
-		if (remoteVersion !== "" && remoteVersion !== version.value) {
-			needUpdate.value = semver.gt(remoteVersion, version.value)
-		}
-	} catch (e) {
-		console.error("App版本检测异常", e)
-	}
 }
 
 const goLogin = () => {
@@ -141,12 +120,6 @@ const gotoGlobalSetting = () => {
 
 	sessionManager.createGlobalSettingSessionInstance()
 }
-const handlerVersionUpdate = async () => {
-	// 外链打开github地址
-	const update = "https://github.com/nxshell/nxshell/releases"
-	await window.powertools.openExterUrl(update)
-}
-
 const changeLanguage = () => {
 	const language = locale.value === "zh-CN" ? "en-US" : "zh-CN"
 	updateProfile("xterm", { "language": language })
@@ -156,7 +129,6 @@ const changeLanguage = () => {
 
 onMounted(() => {
 	version.value = window.powertools.getVersion()
-	checkAppUpdate()
 })
 </script>
 
@@ -229,13 +201,6 @@ onMounted(() => {
 			&:hover {
 				background-color: var(--n-hover-bg-color);
 			}
-		}
-
-		.version-btn {
-			color: #1de9b6 !important;
-			text-shadow: 0 0 7px #1de9b6;
-			animation: breathe 2.7s ease-in-out 0s infinite alternate;
-			-webkit-animation: breathe 2.7s ease-in-out 0s infinite alternate;
 		}
 	}
 }

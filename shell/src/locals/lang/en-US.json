@@ -98,7 +98,6 @@
       "light": "Light",
       "pink": "Pink"
     },
-    "need-update": "There is a new version, click to upgrade",
     "current-version": "Current Version",
     "website": "Website"
   },
@@ -619,6 +618,26 @@
       "goto-feedback-or": "or"
     },
     "fileview": {
+      "transfer": {
+        "title": "Transfers",
+        "active": "{0} active",
+        "failed": "{0} failed",
+        "done": "{0} done",
+        "clear-completed": "Clear completed",
+        "clear-all": "Clear all",
+        "retry": "Retry",
+        "retry-all-failed": "Retry all failed",
+        "remove": "Remove",
+        "empty": "No transfers",
+        "status": {
+          "pending": "Waiting",
+          "transferring": "Transferring",
+          "done": "Completed",
+          "error": "Failed"
+        },
+        "upload": "Upload",
+        "download": "Download"
+      },
       "context-menu": {
         "open": "Open",
         "rename": "Rename",

@@ -7,6 +7,11 @@ class NxDataTransferServer extends NxDataTransfer {
     from: NxTransferDataDesc | null = null;
     to: NxTransferDataDesc | null = null;
     channel: any = null;
+    _fileIdSeq: number = 0;
+
+    _nextFileId(): number {
+        return ++this._fileIdSeq;
+    }
 
     _setFrom(from: NxTransferDataDesc) {
         this.from = from;
@@ -62,12 +67,12 @@ class NxDataTransferServer extends NxDataTransfer {
         return { files, totalFileSize, totalFileCount };
     }
 
-    async copyFile(sourceFS: any, destFS: any, sourcePath: string, destPath: string, sourceSize: number = 0, emitProgress: boolean = false) {
+    async copyFile(sourceFS: any, destFS: any, sourcePath: string, destPath: string, sourceSize: number = 0, onProgress: ((progress: number, speed: string) => void) | null = null) {
         if (sourceFS.sftp && !destFS.sftp) {
-            return await this._fastGetFile(sourceFS, destPath, sourcePath, sourceSize, emitProgress);
+            return await this._fastGetFile(sourceFS, destPath, sourcePath, sourceSize, onProgress);
         }
         if (destFS.sftp && !sourceFS.sftp) {
-            return await this._fastPutFile(sourceFS, destFS, destPath, sourcePath, sourceSize, emitProgress);
+            return await this._fastPutFile(sourceFS, destFS, destPath, sourcePath, sourceSize, onProgress);
         }
 
         const BUFF_SIZE = 262144;
@@ -84,11 +89,11 @@ class NxDataTransferServer extends NxDataTransfer {
             let startDate = new Date();
 
             function send_speed() {
-                if (!emitProgress) { return; }
+                if (!onProgress) { return; }
                 let endDate = new Date();
                 let _seconds = (endDate.getTime() - startDate.getTime()) / 1000;
                 let speed = (that as any)._speedHuman(totalWrite * 8 / _seconds, 2);
-                that._emit({ event: "transferring", args: { progress: Math.round(totalWrite / sourceSize * 100), speed } });
+                onProgress(Math.round(totalWrite / (sourceSize || 1) * 100), speed);
             }
 
             let loop = 0;
@@ -103,6 +108,7 @@ class NxDataTransferServer extends NxDataTransfer {
                 loop += 1;
                 if (bytesRead < BUFF_SIZE) { break; }
             }
+            if (onProgress) { onProgress(100, ''); }
         } catch (err) {
             throw err;
         } finally {
@@ -111,7 +117,7 @@ class NxDataTransferServer extends NxDataTransfer {
         }
     }
 
-    async _fastGetFile(sourceFS: any, destPath: string, sourcePath: string, sourceSize: number, emitProgress: boolean) {
+    async _fastGetFile(sourceFS: any, destPath: string, sourcePath: string, sourceSize: number, onProgress: ((progress: number, speed: string) => void) | null) {
         const that = this;
         const startDate = new Date();
         let lastEmitProgress = -1;
@@ -119,26 +125,26 @@ class NxDataTransferServer extends NxDataTransfer {
         return new Promise<void>((resolve, reject) => {
             const options: any = {
                 step: (totalTransferred: number, chunk: number, total: number) => {
-                    if (!emitProgress) return;
+                    if (!onProgress) return;
                     const progress = Math.round(totalTransferred / (sourceSize || total) * 100);
                     if (progress === lastEmitProgress) return;
                     lastEmitProgress = progress;
                     const endDate: any = new Date();
                     const _seconds = (endDate - startDate) / 1000;
                     const speed = (that as any)._speedHuman(totalTransferred * 8 / _seconds, 2);
-                    that._emit({ event: "transferring", args: { progress, speed } });
+                    onProgress(progress, speed);
                 }
             };
             sourceFS.sftp.fastGet(sourcePath, destPath, options, (err: any) => {
-                if (emitProgress && !err) {
-                    that._emit({ event: "transferring", args: { progress: 100, speed: '' } });
+                if (onProgress && !err) {
+                    onProgress(100, '');
                 }
                 if (err) { reject(err); } else { resolve(); }
             });
         });
     }
 
-    async _fastPutFile(sourceFS: any, destFS: any, destPath: string, sourcePath: string, sourceSize: number, emitProgress: boolean) {
+    async _fastPutFile(sourceFS: any, destFS: any, destPath: string, sourcePath: string, sourceSize: number, onProgress: ((progress: number, speed: string) => void) | null) {
         const that = this;
         const startDate = new Date();
         let lastEmitProgress = -1;
@@ -146,54 +152,58 @@ class NxDataTransferServer extends NxDataTransfer {
         return new Promise<void>((resolve, reject) => {
             const options: any = {
                 step: (totalTransferred: number, chunk: number, total: number) => {
-                    if (!emitProgress) return;
+                    if (!onProgress) return;
                     const progress = Math.round(totalTransferred / (sourceSize || total) * 100);
                     if (progress === lastEmitProgress) return;
                     lastEmitProgress = progress;
                     const endDate: any = new Date();
                     const _seconds = (endDate - startDate) / 1000;
                     const speed = (that as any)._speedHuman(totalTransferred * 8 / _seconds, 2);
-                    that._emit({ event: "transferring", args: { progress, speed } });
+                    onProgress(progress, speed);
                 }
             };
             destFS.sftp.fastPut(sourcePath, destPath, options, (err: any) => {
-                if (emitProgress && !err) {
-                    that._emit({ event: "transferring", args: { progress: 100, speed: '' } });
+                if (onProgress && !err) {
+                    onProgress(100, '');
                 }
                 if (err) { reject(err); } else { resolve(); }
             });
         });
     }
 
-    async copyFolder(sourcePathLib: any, destPathLib: any, sourceFS: any, destFS: any, sourcePath: string, destPath: string) {
+    /**
+     * Build the flat list of files to transfer (and create destination directories).
+     * Directories are created best-effort; files that fail will be reported per-file.
+     */
+    async _buildFolderEntries(sourcePathLib: any, destPathLib: any, sourceFS: any, destFS: any, sourcePath: string, destPath: string) {
         const copyInfo = await this.walkFolder(sourcePathLib, sourceFS, sourcePath);
-        let { files, totalFileCount, totalFileSize } = copyInfo;
-        let copySize = 0;
-        let remainder = totalFileCount;
+        const { files } = copyInfo;
+        const replaceReg = sourcePathLib.sep == "\\" ? /\\/g : /\//g;
+        const entries: any[] = [];
 
         for (let i = 0; i < files.length; i++) {
-            let fileInfo = files[i];
-            let start_time = new Date().getTime();
-
-            const replaceReg = sourcePathLib.sep == "\\" ? /\\/g : /\//g;
+            const fileInfo = files[i];
             const destRelPath = fileInfo.path.replace(replaceReg, destPathLib.sep);
-            let destFilePath = destPathLib.resolve(destPath, destRelPath);
+            const destFilePath = destPathLib.resolve(destPath, destRelPath);
             if (fileInfo.type === "dir") {
                 if (destFilePath === destPathLib.normalize(destPath)) { continue; }
-                try { await destFS.mkdir(destFilePath); } catch {}
+                try {
+                    await destFS.mkdir(destFilePath);
+                } catch (e: any) {
+                    console.warn("[dataTransfer] mkdir failed:", destFilePath, e && e.message);
+                }
             } else {
-                let sourceDirPath = sourcePathLib.resolve(sourcePath, fileInfo.path);
-                await this.copyFile(sourceFS, destFS, sourceDirPath, destFilePath, fileInfo.size, false);
-                copySize += fileInfo.size;
+                entries.push({
+                    fileId: this._nextFileId(),
+                    name: fileInfo.name,
+                    relPath: fileInfo.path,
+                    sourcePath: sourcePathLib.resolve(sourcePath, fileInfo.path),
+                    destPath: destFilePath,
+                    size: fileInfo.size
+                });
             }
-            remainder--;
-            let end_time = new Date().getTime();
-            let speed = this._speedHuman(fileInfo.size / (end_time - start_time) * 1000, 2);
-            this._emit({
-                event: "transferring",
-                args: { progress: Math.round(copySize / totalFileSize * 100), remainder, totalFileCount, speed }
-            });
         }
+        return entries;
     }
 
     _speedHuman(speed: number, precision?: number): string {
@@ -218,6 +228,9 @@ class NxDataTransferServer extends NxDataTransfer {
 
         let { nodeUUID: fromNodeUUID, path: fromPath, connId: fromConnId = -1, createFolder: sourceCreateFolder = false } = this.from;
         let { nodeUUID: toNodeUUID, path: toPath, type: toType, connId: toConnId = -1, createFolder: destCreateFolder = false } = this.to;
+
+        // upload: source is local (empty nodeUUID); download: dest is local
+        const direction = fromNodeUUID === "" ? "upload" : "download";
 
         const doTransfer = async () => {
             const fromNode = getNodeSessionInstanceByUUID(fromNodeUUID);
@@ -249,8 +262,10 @@ class NxDataTransferServer extends NxDataTransfer {
                     }
                 }
 
+                // Build the flat list of files to transfer.
+                let entries: any[];
                 if (stat.isDirectory()) {
-                    await this.copyFolder(fromNode.getPathLib(), toNode.getPathLib(), sourceFS, destFS, fromPath, toPath);
+                    entries = await this._buildFolderEntries(fromNode.getPathLib(), toNode.getPathLib(), sourceFS, destFS, fromPath, toPath);
                 } else {
                     let fileName: string;
                     if (toType === "file") {
@@ -259,15 +274,75 @@ class NxDataTransferServer extends NxDataTransfer {
                         const basename = fromNode.getPathLib().basename(fromPath);
                         fileName = toNode.getPathLib().resolve(toPath, basename);
                     }
-                    await this.copyFile(sourceFS, destFS, fromPath, fileName, stat.size, true);
+                    entries = [{
+                        fileId: this._nextFileId(),
+                        name: fromNode.getPathLib().basename(fromPath),
+                        sourcePath: fromPath,
+                        destPath: fileName,
+                        size: stat.size
+                    }];
+                }
+
+                const total = entries.length;
+                this._emit({
+                    event: "queued",
+                    args: {
+                        direction,
+                        files: entries.map((e) => ({ fileId: e.fileId, name: e.name, size: e.size, sourcePath: e.sourcePath, destPath: e.destPath }))
+                    }
+                });
+
+                let totalFileSize = entries.reduce((acc, e) => acc + (e.size || 0), 0);
+                let copySize = 0;
+                const failed: any[] = [];
+
+                for (let i = 0; i < entries.length; i++) {
+                    const entry = entries[i];
+                    this._emit({
+                        event: "file-start",
+                        args: { fileId: entry.fileId, name: entry.name, size: entry.size, index: i, total, direction }
+                    });
+                    try {
+                        await this.copyFile(sourceFS, destFS, entry.sourcePath, entry.destPath, entry.size, (progress, speed) => {
+                            this._emit({ event: "file-progress", args: { fileId: entry.fileId, progress, speed } });
+                        });
+                        this._emit({ event: "file-done", args: { fileId: entry.fileId } });
+                    } catch (err: any) {
+                        const message = (err && err.message) ? err.message : String(err);
+                        console.error("[dataTransfer] file failed:", entry.sourcePath, message);
+                        failed.push({ fileId: entry.fileId, name: entry.name, message });
+                        this._emit({ event: "file-error", args: { fileId: entry.fileId, message } });
+                    }
+                    copySize += entry.size || 0;
+                    // aggregate progress for the legacy status bar
+                    this._emit({
+                        event: "transferring",
+                        args: {
+                            progress: totalFileSize > 0 ? Math.round(copySize / totalFileSize * 100) : Math.round((i + 1) / total * 100),
+                            remainder: total - (i + 1),
+                            totalFileCount: total,
+                            speed: ""
+                        }
+                    });
+                }
+
+                this._emit({ event: "filecreated" });
+                this._emit({ event: "all-done", args: { total, success: total - failed.length, failed } });
+
+                if (failed.length > 0) {
+                    const summary = failed.length === total
+                        ? (failed[0].message || "transfer failed")
+                        : `${failed.length}/${total} file(s) failed`;
+                    this._emit({ event: "error", args: { message: summary, failed, partial: failed.length < total } });
+                } else {
+                    this._emit({ event: "finished" });
                 }
             } catch (err: any) {
                 console.error(err);
-                this._emit({ event: "error", args: { message: err.message } });
+                this._emit({ event: "error", args: { message: (err && err.message) ? err.message : String(err) } });
             } finally {
                 sourceFS.dispose();
                 destFS.dispose();
-                this._emit({ event: "finished" });
             }
         };
 

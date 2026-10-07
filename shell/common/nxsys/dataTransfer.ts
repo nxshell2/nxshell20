@@ -1,6 +1,19 @@
 import { EventEmitter } from "events";
 
-export type NxDataTransferEvents = "prepare" | "transferring" | "finished" | "abort" | "error" | "filecreated" | "ask";
+export type NxDataTransferEvents =
+    | "prepare"
+    | "transferring"
+    | "finished"
+    | "abort"
+    | "error"
+    | "filecreated"
+    | "ask"
+    | "queued"
+    | "file-start"
+    | "file-progress"
+    | "file-done"
+    | "file-error"
+    | "all-done";
 export type NxDataTransferType = "file" | "dir";
 export type NxDataTransferUserAction = "retry" | "overwrite" | "rename" | "skip" | "cancel" | "merge" | "ask";
 

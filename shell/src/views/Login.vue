@@ -101,7 +101,7 @@ export default {
 		},
 
 		gotoFeedback() {
-			const feedbackUrl = "https://github.com/nxshell/nxshell/issues";
+			const feedbackUrl = "https://github.com/nxshell2/nxshell20/issues";
 			powertools.openExterUrl(feedbackUrl);
 		},
 
